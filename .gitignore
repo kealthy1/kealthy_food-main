@@ -1,0 +1,47 @@
+# Flutter build artifacts
+build/
+ios/build/
+
+# Xcode and macOS artifacts
+DerivedData/
+*.xcworkspace
+*.xcuserstate
+
+# CocoaPods
+Pods/
+
+# Miscellaneous artifacts
+*.framework.dSYM
+*.framework
+*.xcarchive
+*.plist
+*.ipa
+*.mobileprovision
+*.xcconfig
+
+# Already existing entries
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code (optional, uncomment if you don't want in version control)
+# .vscode/
+
+# Android Studio artifacts
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Miscellaneous
+*.iml
+*.ipr
+*.iws
+.idea/
