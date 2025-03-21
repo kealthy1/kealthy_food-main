@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kealthy_food/view/Login/otp_state.dart';
 import 'package:kealthy_food/view/BottomNavBar/bottom_nav_bar.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -164,12 +164,11 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                 style: const TextStyle(color: Colors.red),
               ),
             ],
+           
             const SizedBox(height: 20),
             otpState.isLoading
-                ? LoadingAnimationWidget.inkDrop(
-                        size: 30,
-                        color: const Color.fromARGB(255, 65, 88, 108),
-                      )
+                ?  const CupertinoActivityIndicator(
+                                  color: Color.fromARGB(255, 65, 88, 108),)
                 : ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState?.validate() == true) {

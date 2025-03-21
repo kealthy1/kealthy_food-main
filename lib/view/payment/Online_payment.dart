@@ -1,12 +1,12 @@
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kealthy_food/view/payment/dialogue_helper.dart';
 import 'package:kealthy_food/view/payment/services.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/Cart/cart_controller.dart';
 
@@ -33,10 +33,12 @@ class OnlinePaymentProcessing extends ConsumerStatefulWidget {
   });
 
   @override
-  _OnlinePaymentProcessingState createState() => _OnlinePaymentProcessingState();
+  _OnlinePaymentProcessingState createState() =>
+      _OnlinePaymentProcessingState();
 }
 
-class _OnlinePaymentProcessingState extends ConsumerState<OnlinePaymentProcessing> {
+class _OnlinePaymentProcessingState
+    extends ConsumerState<OnlinePaymentProcessing> {
   late Razorpay _razorpay;
 
   @override
@@ -70,7 +72,7 @@ class _OnlinePaymentProcessingState extends ConsumerState<OnlinePaymentProcessin
     ref.read(cartProvider.notifier).clearCart();
 
     // Show success dialog from the new helper
-    PaymentDialogHelper.showPaymentSuccessDialog(context,ref);
+    PaymentDialogHelper.showPaymentSuccessDialog(context, ref);
   }
 
   void _handlePaymentFailure(PaymentFailureResponse response) async {
@@ -158,12 +160,10 @@ class _OnlinePaymentProcessingState extends ConsumerState<OnlinePaymentProcessin
         backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
-      body: Center(
-        child: LoadingAnimationWidget.inkDrop(
-          size: 50,
-          color: const Color.fromARGB(255, 65, 88, 108),
-        ),
-      ),
+      body: const Center(
+          child: CupertinoActivityIndicator(
+        color: Color.fromARGB(255, 65, 88, 108),
+      )),
     );
   }
 }

@@ -1,10 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/Cart/cart_controller.dart';
 import 'package:kealthy_food/view/payment/dialogue_helper.dart';
 import 'package:kealthy_food/view/payment/services.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'Online_payment.dart';
 
 final selectedPaymentProvider =
@@ -21,16 +21,15 @@ class PaymentPage extends ConsumerStatefulWidget {
   final double deliveryfee;
   final double instantDeliveryFee;
 
-  const PaymentPage({
-    super.key,
-    required this.totalAmount,
-    required this.instructions,
-    required this.address,
-    required this.deliverytime,
-    required this.packingInstructions,
-    required this.deliveryfee,
-    required this.instantDeliveryFee
-  });
+  const PaymentPage(
+      {super.key,
+      required this.totalAmount,
+      required this.instructions,
+      required this.address,
+      required this.deliverytime,
+      required this.packingInstructions,
+      required this.deliveryfee,
+      required this.instantDeliveryFee});
 
   @override
   _PaymentPageState createState() => _PaymentPageState();
@@ -181,8 +180,9 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
         ),
         onPressed: isOrderSaving ? null : () async => _handlePayment(context),
         child: isOrderSaving
-            ? LoadingAnimationWidget.inkDrop(
-                size: 50, color: const Color(0xFF41586C))
+            ? const CupertinoActivityIndicator(
+                color: Color(0xFF41586C),
+              )
             : Text(
                 selectedPaymentMethod == 'Cash on Delivery'
                     ? "Place Order"

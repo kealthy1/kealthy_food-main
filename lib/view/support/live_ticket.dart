@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:kealthy_food/view/support/chat.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Provider for recent tickets
@@ -131,11 +130,10 @@ class OngoingTicketsPage extends ConsumerWidget {
           },
         );
       },
-      loading: () => Center(
-        child: LoadingAnimationWidget.discreteCircle(
-          color: const Color(0xFF273847),
-          size: 50,
-        ),
+      loading: () => const Center(
+        child:
+        CupertinoActivityIndicator(
+                                  color:Color(0xFF273847),)
       ),
       error: (error, stack) => Center(
         child: Text("Error: $error"),

@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:kealthy_food/view/Login/signup_provider.dart';
 import 'package:kealthy_food/view/profile%20page/Terms_and_condition.dart';
 import 'package:kealthy_food/view/profile%20page/privacy_policy.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -20,7 +20,7 @@ final otpProvider =
 class SignUpScreen extends ConsumerStatefulWidget {
   final String verificationId;
   final String phoneNumber;
- bool isTestMode; // For Apple test flow
+  bool isTestMode; // For Apple test flow
 
   SignUpScreen({
     super.key,
@@ -112,8 +112,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       print('Test Mode Login Successful!');
       _savePhoneNumber();
 
-
-
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const BottomNavBar()),
@@ -125,7 +123,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     ref.read(otpProvider.notifier).verifyOtp(
         verificationId, enteredOtp, context,
         onSuccess: _savePhoneNumber);
-
   }
 
   @override
@@ -212,7 +209,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     "I agree to",
                     style: TextStyle(fontSize: 14, color: Colors.grey[800]),
                   ),
-                  const SizedBox(width: 5,),
+                  const SizedBox(
+                    width: 5,
+                  ),
                   Flexible(
                     child: GestureDetector(
                       onTap: () {
@@ -231,7 +230,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   ),
                 ],
               ),
-              Row(mainAxisAlignment: MainAxisAlignment.start,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Checkbox(
                     activeColor: Colors.black,
@@ -247,7 +247,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     "I agree to",
                     style: TextStyle(fontSize: 14, color: Colors.grey[800]),
                   ),
-                  const SizedBox(width: 5,),
+                  const SizedBox(
+                    width: 5,
+                  ),
                   Flexible(
                     child: GestureDetector(
                       onTap: () {
@@ -270,10 +272,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               const SizedBox(height: 20),
 
               otpState.isLoading
-                  ? LoadingAnimationWidget.inkDrop(
-                        size: 30,
-                        color: const Color.fromARGB(255, 65, 88, 108),
-                      )
+                  ? const CupertinoActivityIndicator(
+                      color: Color.fromARGB(255, 65, 88, 108),
+                    )
                   : ElevatedButton(
                       onPressed: ref.watch(signUpProvider).canShowContinueButton
                           ? () {

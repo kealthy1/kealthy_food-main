@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:kealthy_food/view/product/product_page.dart';
 
@@ -147,17 +146,14 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage> {
                         prefixIcon: const Icon(CupertinoIcons.search,
                             color: Colors.green),
                         suffixIcon: isLoading
-                            ? Padding(
-                                padding: const EdgeInsets.all(
+                            ? const Padding(
+                                padding: EdgeInsets.all(
                                     10.0), // Adjust padding to position the spinner
                                 child: SizedBox(
                                   width: 6,
                                   height: 6,
-                                  child: LoadingAnimationWidget.inkDrop(
-                                    size: 50,
-                                    color:
-                                        const Color.fromARGB(255, 65, 88, 108),
-                                  ),
+                                  child: CupertinoActivityIndicator(
+                                  color:Color.fromARGB(255, 65, 88, 108))
                                 ),
                               )
                             : null, // Show nothing if not searching
@@ -249,11 +245,9 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage> {
           // Grid of Products
           Expanded(
             child: allProducts.when(
-              loading: () => Center(
-                child: LoadingAnimationWidget.inkDrop(
-                  size: 50,
-                  color: const Color.fromARGB(255, 65, 88, 108),
-                ),
+              loading: () => const Center(
+                child: CupertinoActivityIndicator(
+                                  color:Color.fromARGB(255, 65, 88, 108))
               ),
               error: (error, stack) => Center(
                 child: Text(

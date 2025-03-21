@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -11,7 +12,6 @@ import 'package:kealthy_food/view/map/distance_service.dart';
 import 'package:kealthy_food/view/map/location_service.dart';
 import 'package:kealthy_food/view/map/provider.dart';
 import 'package:kealthy_food/view/map/suggestions.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -448,16 +448,13 @@ class _LocationPageState extends ConsumerState<LocationPage> {
                               ),
                               const SizedBox(width: 8.0),
                               ref.watch(isSearchingProvider)
-                                  ? SizedBox(
+                                  ? const SizedBox(
                                       width: 24.0,
                                       height: 24.0,
                                       child: Center(
-                                        child: LoadingAnimationWidget.inkDrop(
-                                          size: 50,
-                                          color: const Color.fromARGB(
-                                              255, 65, 88, 108),
-                                        ),
-                                      ),
+                                          child: CupertinoActivityIndicator(
+                                        color: Color.fromARGB(255, 65, 88, 108),
+                                      )),
                                     )
                                   : const SizedBox.shrink(),
                             ],
@@ -469,12 +466,10 @@ class _LocationPageState extends ConsumerState<LocationPage> {
                 ),
               ],
             )
-          : Center(
-              child: LoadingAnimationWidget.inkDrop(
-                size: 50,
-                color: const Color.fromARGB(255, 65, 88, 108),
-              ),
-            ),
+          : const Center(
+              child: CupertinoActivityIndicator(
+              color: Color.fromARGB(255, 65, 88, 108),
+            )),
     );
   }
 }

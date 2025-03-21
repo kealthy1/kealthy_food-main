@@ -5,7 +5,6 @@ import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart'; // <-- NEW
 import 'package:kealthy_food/view/orders/track_provider.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class TrackOrderPage extends ConsumerWidget {
   final String orderId;
@@ -119,11 +118,9 @@ class TrackOrderPage extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      loading: () => Center(
-                        child: LoadingAnimationWidget.inkDrop(
-                          size: 50,
-                          color: const Color.fromARGB(255, 65, 88, 108),
-                        ),
+                      loading: () => const Center(
+                        child:  CupertinoActivityIndicator(
+                                  color: Color.fromARGB(255, 65, 88, 108),)
                       ),
                       error: (error, stack) => Center(
                         child: Text(
@@ -136,11 +133,9 @@ class TrackOrderPage extends ConsumerWidget {
                       ),
                     );
                   },
-                  loading: () => Center(
-                    child: LoadingAnimationWidget.inkDrop(
-                      size: 50,
-                      color: const Color.fromARGB(255, 65, 88, 108),
-                    ),
+                  loading: () => const Center(
+                    child:  CupertinoActivityIndicator(
+                                  color: Color.fromARGB(255, 65, 88, 108),)
                   ),
                   error: (error, stack) => Center(
                     child: Text(
@@ -153,11 +148,9 @@ class TrackOrderPage extends ConsumerWidget {
                   ),
                 );
               },
-              loading: () => Center(
-                child: LoadingAnimationWidget.inkDrop(
-                  size: 50,
-                  color: const Color.fromARGB(255, 65, 88, 108),
-                ),
+              loading: () => const Center(
+                child:  CupertinoActivityIndicator(
+                                  color: Color.fromARGB(255, 65, 88, 108),)
               ),
               error: (error, stack) => Center(
                 child: Text(
@@ -329,11 +322,9 @@ class TrackOrderPage extends ConsumerWidget {
                   ),
                 );
               },
-              loading: () => Center(
-                child: LoadingAnimationWidget.inkDrop(
-                  size: 50,
-                  color: const Color.fromARGB(255, 65, 88, 108),
-                ),
+              loading: () => const Center(
+                child:  CupertinoActivityIndicator(
+                                  color: Color.fromARGB(255, 65, 88, 108),)
               ),
               error: (error, stack) => Center(
                 child: Text(

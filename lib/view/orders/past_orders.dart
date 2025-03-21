@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/orders/provider.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 
 
@@ -164,12 +163,10 @@ class OrderCard extends ConsumerWidget {
             ),
           );
         },
-        loading: () => Center(
+        loading: () => const Center(
           // Added 'const' for better performance
-          child: LoadingAnimationWidget.inkDrop(
-            size: 50,
-            color: const Color.fromARGB(255, 65, 88, 108),
-          ),
+          child:  CupertinoActivityIndicator(
+                                  color: Color.fromARGB(255, 65, 88, 108),)
         ),
         error: (err, stack) => Center(
           child: Text(

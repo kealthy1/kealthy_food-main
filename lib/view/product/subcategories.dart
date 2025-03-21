@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:shimmer/shimmer.dart';
 
 import 'package:kealthy_food/view/product/all_products.dart';
@@ -47,11 +46,9 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
           builder: (context, snapshot) {
             // 1. Handle loading state
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(
-                  child: LoadingAnimationWidget.inkDrop(
-                size: 50,
-                color: const Color.fromARGB(255, 65, 88, 108),
-              ));
+              return const Center(
+                  child: CupertinoActivityIndicator(
+                                  color:Color.fromARGB(255, 65, 88, 108)));
             }
             // 2. Handle empty data
             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {

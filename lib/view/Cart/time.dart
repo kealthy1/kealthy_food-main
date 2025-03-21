@@ -61,9 +61,8 @@ class _TimePageState extends ConsumerState<TimePage> {
               // Address Container
               addressAsyncValue.when(
                 loading: () => const Center(
-                  child: CircularProgressIndicator(
-                    color: Colors.black,
-                  ),
+                  child: CupertinoActivityIndicator(
+                                  color:  Colors.black,)
                 ),
                 error: (error, stackTrace) => Center(
                   child: Text(

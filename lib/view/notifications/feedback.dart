@@ -1,9 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/Toast/toast_helper.dart';
 import 'package:kealthy_food/view/notifications/feedback_api.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 final isLoadingProvider = StateProvider<bool>((ref) => false);
 
@@ -169,10 +169,8 @@ class FeedbackPage extends ConsumerWidget {
 
               Center(
                 child: isLoading
-                    ? LoadingAnimationWidget.inkDrop(
-                        color: Colors.black,
-                        size: 50,
-                      )
+                    ?  const CupertinoActivityIndicator(
+                                  color: Colors.black,)
                     : ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: feedbackState.isSubmitEnabled

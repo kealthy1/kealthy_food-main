@@ -1,8 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/profile%20page/provider.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 final isSavingProvider = StateProvider<bool>((ref) => false);
 
@@ -135,13 +135,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                         Navigator.pop(context); // ✅ Close the screen
                       },
                 child: isSaving
-                    ? SizedBox(
+                    ? const SizedBox(
                         width: 24,
                         height: 24,
-                        child: LoadingAnimationWidget.inkDrop(
-                          size: 30,
-                          color: Colors.grey.shade300,
-                        ),
+                        child: CupertinoActivityIndicator(
+                                  color:Color.fromARGB(255, 65, 88, 108))
                       )
                     : Text(
                         "Save",

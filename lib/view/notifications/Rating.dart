@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,7 +10,6 @@ import 'package:kealthy_food/view/notifications/rating_provider.dart';
 import 'package:kealthy_food/view/notifications/review_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 
 
@@ -47,11 +47,8 @@ class RatingPage extends ConsumerWidget {
       return AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         content: Row(
-          children: [
-            LoadingAnimationWidget.inkDrop(
-                      size: 24,
-                      color: Colors.black,
-                    ),
+          children: [ const CupertinoActivityIndicator(
+                                  color: Colors.black,),
             const SizedBox(width: 20),
             Text(
               "Submitting your reviews...",

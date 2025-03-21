@@ -1,8 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final solvedTicketsProvider = StreamProvider.autoDispose((ref) async* {
@@ -29,7 +29,8 @@ class SolvedTicketsPage extends ConsumerWidget {
           return const Center(
             child: Text(
               "No Solved tickets found.",
-              style: TextStyle(fontFamily: "Poppins", fontSize: 16, color: Colors.black54),
+              style: TextStyle(
+                  fontFamily: "Poppins", fontSize: 16, color: Colors.black54),
             ),
           );
         }
@@ -43,14 +44,14 @@ class SolvedTicketsPage extends ConsumerWidget {
             final timestamp = data['timestamp'] as Timestamp?;
             final dateTime = timestamp?.toDate();
 
-            return Card(color: Colors.white,
+            return Card(
+              color: Colors.white,
               margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               child: ListTile(
                 leading: Container(
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(
-                   
                     color: const Color.fromARGB(255, 65, 88, 108),
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -59,11 +60,15 @@ class SolvedTicketsPage extends ConsumerWidget {
                     children: [
                       Text(
                         DateFormat('dd').format(dateTime ?? DateTime.now()),
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16,color: Colors.white),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Colors.white),
                       ),
                       Text(
                         DateFormat('MMM').format(dateTime ?? DateTime.now()),
-                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 14),
                       ),
                     ],
                   ),
@@ -73,11 +78,15 @@ class SolvedTicketsPage extends ConsumerWidget {
                   children: [
                     Text(
                       "Ticket ID ${data['ticketId'] ?? 'No ID'}",
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: "Poppins"),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontFamily: "Poppins"),
                     ),
                     const Text(
                       "Solved",
-                      style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontFamily: "Poppins"),
+                      style: TextStyle(
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: "Poppins"),
                     ),
                   ],
                 ),
@@ -90,12 +99,10 @@ class SolvedTicketsPage extends ConsumerWidget {
           },
         );
       },
-      loading: () => Center(
-        child: LoadingAnimationWidget.discreteCircle(
-          color: const Color(0xFF273847),
-          size: 50,
-        ),
-      ),
+      loading: () => const Center(
+          child: CupertinoActivityIndicator(
+        color: Color(0xFF273847),
+      )),
       error: (error, stack) => Center(
         child: Text(
           "Error: $error",

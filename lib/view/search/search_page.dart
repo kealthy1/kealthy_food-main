@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/product/product_page.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -202,11 +201,9 @@ Future<List<Product>> _fetchAllProducts() async {
           future: _productsFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(
-                  child: LoadingAnimationWidget.inkDrop(
-                size: 50,
-                color: const Color.fromARGB(255, 65, 88, 108),
-              ));
+              return const Center(
+                  child: CupertinoActivityIndicator(
+                                  color:Color.fromARGB(255, 65, 88, 108)));
             } else if (snapshot.hasError) {
               return Center(
                   child: Text(
@@ -394,16 +391,14 @@ Future<List<Product>> _fetchAllProducts() async {
           ),
           prefixIcon: const Icon(CupertinoIcons.search, color: Colors.green),
           suffixIcon: isSearching
-              ? Padding(
-                  padding: const EdgeInsets.all(
+              ? const Padding(
+                  padding: EdgeInsets.all(
                       10.0), // Adjust padding to position the spinner
                   child: SizedBox(
                     width: 6,
                     height: 6,
-                    child: LoadingAnimationWidget.inkDrop(
-                      size: 50,
-                      color: const Color.fromARGB(255, 65, 88, 108),
-                    ),
+                    child: CupertinoActivityIndicator(
+                                  color:Color.fromARGB(255, 65, 88, 108))
                   ),
                 )
               : null, // Show nothing if not searching

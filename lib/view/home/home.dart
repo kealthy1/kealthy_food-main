@@ -321,7 +321,8 @@ class _HomePageState extends ConsumerState<HomePage>
                 return const SizedBox.shrink();
               }
             },
-            loading: () => const CircularProgressIndicator(color: Colors.white),
+            loading: () => const CupertinoActivityIndicator(
+                                  color: Colors.white,),
             error: (error, stack) => const SizedBox.shrink(),
           ),
           IconButton(

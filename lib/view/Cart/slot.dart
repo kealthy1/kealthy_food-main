@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -96,9 +97,8 @@ class SlotSelectionContainer extends ConsumerWidget {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                      child: CircularProgressIndicator(
-                    color: Colors.black,
-                  ));
+                      child:  CupertinoActivityIndicator(
+                                  color:Colors.black,));
                 }
                 if (snapshot.hasError) {}
 

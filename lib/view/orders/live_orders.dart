@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/Login/login_page.dart';
 import 'package:kealthy_food/view/orders/provider.dart';
 import 'package:kealthy_food/view/orders/track.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class LiveOrdersTab extends ConsumerStatefulWidget {
@@ -51,11 +50,9 @@ class _LiveOrdersTabState extends ConsumerState<LiveOrdersTab> {
       ),
       backgroundColor: Colors.white,
       body: isLoading
-          ? Center(
-              child: LoadingAnimationWidget.inkDrop(
-                size: 50,
-                color: const Color.fromARGB(255, 65, 88, 108),
-              ),
+          ? const Center(
+              child:  CupertinoActivityIndicator(
+                                  color: Color.fromARGB(255, 65, 88, 108),)
             )
           : ordersList.isEmpty
               ? Center(

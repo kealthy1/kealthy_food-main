@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/blog/blog1.dart';
 import 'package:kealthy_food/view/blog/blogs_tile.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class BlogListPage extends ConsumerWidget {
   const BlogListPage({super.key});
@@ -49,9 +48,10 @@ class BlogListPage extends ConsumerWidget {
             },
           );
         },
-        loading: () => Center(
-            child: LoadingAnimationWidget.inkDrop(
-                color: const Color(0xFF273847), size: 60)),
+        loading: () => const Center(
+            child: CupertinoActivityIndicator(
+          color: Color(0xFF273847),
+        )),
         error: (error, stackTrace) => Center(
           child: Text('Error: $error'),
         ),

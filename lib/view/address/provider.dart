@@ -1,11 +1,11 @@
 import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // ✅ State Providers
@@ -81,11 +81,9 @@ Future<void> deleteAddress(String phoneNumber, String type, WidgetRef ref,  Buil
       barrierDismissible: false, // Prevents tapping outside
       builder: (context) => WillPopScope(
         onWillPop: () async => false, // Prevents back button press
-        child: Center(
-          child: LoadingAnimationWidget.inkDrop(
-                  size: 30,
-                  color: Colors.grey.shade300,
-                ), // Show loading spinner
+        child: const Center(
+          child: CupertinoActivityIndicator(
+                                  color: Colors.white)
         ),
       ),
     );

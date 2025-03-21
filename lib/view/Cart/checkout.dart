@@ -71,7 +71,8 @@ class CheckoutPage extends ConsumerWidget {
               const SizedBox(height: 10),
               addressAsyncValue.when(
                 loading: () => const Center(
-                  child: CircularProgressIndicator(),
+                  child: CupertinoActivityIndicator(
+                                  color:Color(0xFF273847),),
                 ),
                 error: (e, _) => Text(
                   "Error loading address: $e",
