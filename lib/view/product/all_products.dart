@@ -83,6 +83,7 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage> {
         ref.watch(productTypesProvider(widget.subcategoryName));
     final selectedType =
         ref.watch(selectedTypeProvider(widget.subcategoryName));
+        final screenheight = MediaQuery.of(context).size.height;
 
     // Reset the search query when the page is rebuilt
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -345,27 +346,32 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage> {
                               // Product Info.
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(productName,
-                                        style: GoogleFonts.poppins(
-                                          textStyle: const TextStyle(
-                                            fontSize: 16,
-                                            color: Colors.black,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        )),
-                                    const SizedBox(height: 4),
-                                    Text('\u20B9 $price/-',
-                                        style: GoogleFonts.poppins(
-                                          textStyle: const TextStyle(
-                                            fontSize: 15,
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        )),
-                                  ],
+                                child: SizedBox(
+                                  height: screenheight * 0.09,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(productName,
+                                      maxLines: 2,
+                                          style: GoogleFonts.poppins(
+                                            textStyle: const TextStyle(
+                                              fontSize: 16,
+                                              color: Colors.black,
+                                              overflow: TextOverflow.ellipsis,
+                                              
+                                            ),
+                                          )),
+                                      const Spacer(),
+                                      Text('\u20B9 $price/-',
+                                          style: GoogleFonts.poppins(
+                                            textStyle: const TextStyle(
+                                              fontSize: 15,
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          )),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],

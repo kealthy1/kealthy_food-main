@@ -44,7 +44,7 @@ class ProductContent extends ConsumerWidget {
     final productEAN = docData['EAN'] ?? '';
     final productSource = docData['Imported&Marketed By'] ?? '';
     final productOrigin = docData['Orgin'] ?? '';
-    final productBestBefore = docData['Expiry'] ?? '';
+    final productBestBefore = docData['Best Before'] ?? '';
     final productSoh = (docData['SOH'] is int)
         ? docData['SOH']
         : int.tryParse(docData['SOH'].toString().split('.')[0]) ?? 0;
@@ -567,9 +567,12 @@ class ProductContent extends ConsumerWidget {
 
                       children: [
                         const SizedBox(height: 10),
-                        ReusableText(
-                          text: 'Sourced & marketed by: $productSource',
-                          fontSize: 15,
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: ReusableText(
+                            text: 'Sourced & marketed by: $productSource',
+                            fontSize: 15,
+                          ),
                         ),
                         const SizedBox(height: 10),
                         Align(
@@ -583,14 +586,14 @@ class ProductContent extends ConsumerWidget {
                         Align(
                           alignment: Alignment.centerLeft,
                           child: ReusableText(
-                            text: 'Best Before: $formattedDate',
+                            text: 'Best Within: $formattedDate from the date of packaging',
                             fontSize: 15,
                           ),
                         ),
                         const SizedBox(height: 10),
                         const ReusableText(
                           text:
-                              'Disclaimer: The expiry date shown here is for indicative purposes only. Please refer to the information provided on the product package received at delivery for the actual expiry date.',
+                              'Disclaimer: Please refer to the information provided on the product package received at delivery for the actual expiry date.',
                           fontSize: 15,
                         ),
                         const SizedBox(height: 10),
@@ -602,7 +605,7 @@ class ProductContent extends ConsumerWidget {
                         const SizedBox(height: 10),
                         const ReusableText(
                           text:
-                              'Address: Cotolore Enterprises LLP Floor No:1 Building No./Flat No.:15/293-C Peringala, Road/Street:Muriyankara-Pinarmunda Milma Road, City/Town/Village:Kunnathunad, District:Ernakulam, State:Kerala, PIN Code:683565',
+                              'Address: Cotolore Enterprises LLP, 15/293 - C, Muriyankara-Pinarmunda Milma Road, Peringala (PO), Ernakulam, 683565, Kerala, India.',
                           fontSize: 15,
                         ),
                         const SizedBox(height: 20),

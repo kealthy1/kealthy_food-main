@@ -9,7 +9,7 @@ import 'package:kealthy_food/view/address/adress.dart';
 import 'package:kealthy_food/view/address/provider.dart';
 import 'package:kealthy_food/view/Cart/cart_container.dart';
 import 'package:kealthy_food/view/home/changing_image.dart';
-import 'package:kealthy_food/view/home/header.dart';
+import 'package:kealthy_food/view/home/Category.dart';
 import 'package:kealthy_food/view/notifications/feedback_alert.dart';
 import 'package:kealthy_food/view/notifications/rating_alert.dart';
 import 'package:kealthy_food/view/home/kealthy_page.dart';

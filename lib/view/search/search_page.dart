@@ -57,6 +57,7 @@ class Product {
 }
 
 final isSearchingProvider = StateProvider<bool>((ref) => false);
+final loadedProductCountProvider = StateProvider<int>((ref) => 11);
 
 /// Providers
 final productsProvider = StateProvider<List<Product>>((ref) => []);
@@ -65,7 +66,6 @@ final recentSearchesProvider =
     StateNotifierProvider<RecentSearchesNotifier, List<Product>>(
   (ref) => RecentSearchesNotifier(),
 );
-final loadedProductCountProvider = StateProvider<int>((ref) => 10);
 
 /// Recent Searches Notifier
 class RecentSearchesNotifier extends StateNotifier<List<Product>> {
@@ -103,12 +103,12 @@ class SearchPage extends ConsumerStatefulWidget {
 class _SearchPageState extends ConsumerState<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
   late Future<List<Product>> _productsFuture;
-  final FocusNode _focusNode = FocusNode(); 
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    _focusNode.requestFocus(); 
+    _focusNode.requestFocus();
     _productsFuture = _fetchAllProducts();
 
     // Reset the search query when entering the page
@@ -126,38 +126,42 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   /// Fetch all products
-Future<List<Product>> _fetchAllProducts() async {
-  try {
-    final firestore = FirebaseFirestore.instance;
-    final snapshot = await firestore.collection('Products').get();
+  Future<List<Product>> _fetchAllProducts() async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final snapshot = await firestore.collection('Products').get();
 
-    if (snapshot.docs.isEmpty) {
-      print("⚠️ Firestore: No products found in the 'Products' collection.");
+      if (snapshot.docs.isEmpty) {
+        print("⚠️ Firestore: No products found in the 'Products' collection.");
+        return [];
+      }
+
+      final products = snapshot.docs.map((doc) {
+        final data = doc.data();
+        print("✅ Firestore Data: ${doc.id} => $data");
+
+        return Product.fromFirestore(doc); // Use the updated Product model
+      }).toList();
+
+      print("✅ Loaded ${products.length} products.");
+      ref.read(productsProvider.notifier).state = products;
+
+      return products;
+    } catch (e, stackTrace) {
+      print("❌ Error fetching products: $e");
+      print(stackTrace);
       return [];
     }
-
-    final products = snapshot.docs.map((doc) {
-      final data = doc.data();
-      print("✅ Firestore Data: ${doc.id} => $data");
-
-      return Product.fromFirestore(doc); // Use the updated Product model
-    }).toList();
-
-    print("✅ Loaded ${products.length} products.");
-    ref.read(productsProvider.notifier).state = products;
-
-    return products;
-  } catch (e, stackTrace) {
-    print("❌ Error fetching products: $e");
-    print(stackTrace);
-    return [];
   }
-}
+
+  List<Product> _paginateProducts(List<Product> products, int count) {
+    return products.take(count).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
     final searchQuery = ref.watch(searchQueryProvider);
-    final products = ref.watch(productsProvider); // Get all products
+    final products = ref.watch(productsProvider);
     final recentSearches = ref.watch(recentSearchesProvider);
 
     // Filter products based on the search query
@@ -203,7 +207,7 @@ Future<List<Product>> _fetchAllProducts() async {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
                   child: CupertinoActivityIndicator(
-                                  color:Color.fromARGB(255, 65, 88, 108)));
+                      color: Color.fromARGB(255, 65, 88, 108)));
             } else if (snapshot.hasError) {
               return Center(
                   child: Text(
@@ -236,28 +240,67 @@ Future<List<Product>> _fetchAllProducts() async {
                   ],
                   const SizedBox(height: 20),
                   Expanded(
-                    child: filteredProducts.isEmpty
-                        ? Center(
-                            child: Text(
-                              "No products found for '${searchQuery.trim()}'",
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black54,
-                              ),
-                            ),
-                          )
-                        : GridView.builder(
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: GridView.builder(
                             gridDelegate:
                                 const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
                               mainAxisSpacing: 12,
                               crossAxisSpacing: 12,
-                              childAspectRatio: 0.77,
+                              childAspectRatio: 0.6,
                             ),
-                            itemCount: filteredProducts.length,
+                            itemCount: (ref.watch(loadedProductCountProvider) <
+                                    filteredProducts.length)
+                                ? _paginateProducts(
+                                            filteredProducts,
+                                            ref.watch(
+                                                loadedProductCountProvider))
+                                        .length +
+                                    1
+                                : _paginateProducts(filteredProducts,
+                                        ref.watch(loadedProductCountProvider))
+                                    .length,
                             itemBuilder: (context, index) {
-                              final product = filteredProducts[index];
+                              final paginated = _paginateProducts(
+                                  filteredProducts,
+                                  ref.watch(loadedProductCountProvider));
+
+                              // 👇 Last tile will be Load More button
+                              if (index == paginated.length &&
+                                  ref.watch(loadedProductCountProvider) <
+                                      filteredProducts.length) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    ref
+                                        .read(
+                                            loadedProductCountProvider.notifier)
+                                        .state += 11;
+                                  },
+                                  child: Center(
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          "Load More",
+                                          style: GoogleFonts.poppins(
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 5),
+                                        const Icon(
+                                          CupertinoIcons
+                                              .arrow_right_circle_fill,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              final product = paginated[index];
                               final imageUrl = product.imageUrls.isNotEmpty
                                   ? product.imageUrls.first.toString()
                                   : '';
@@ -276,71 +319,76 @@ Future<List<Product>> _fetchAllProducts() async {
                                   );
                                 },
                                 child: Container(
-                                  height: 200,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(8),
                                     boxShadow: const [
                                       BoxShadow(
-                                        color: Colors.black12,
-                                        blurRadius: 3,
-                                      ),
+                                          color: Colors.black12, blurRadius: 3)
                                     ],
                                   ),
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.max,
                                     children: [
-                                      ClipRRect(
-                                        borderRadius:
-                                            const BorderRadius.vertical(
-                                                top: Radius.circular(8)),
-                                        child: CachedNetworkImage(
-                                          imageUrl: imageUrl,
-                                          width: double.infinity,
-                                          height: 150,
-                                          fit: BoxFit.cover,
-                                          placeholder: (context, url) =>
-                                              Shimmer.fromColors(
-                                            baseColor: Colors.grey[300]!,
-                                            highlightColor: Colors.grey[100]!,
-                                            child:
-                                                Container(color: Colors.white),
+                                      Expanded(
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              const BorderRadius.vertical(
+                                                  top: Radius.circular(8)),
+                                          child: CachedNetworkImage(
+                                            imageUrl: imageUrl,
+                                            width: double.infinity,
+                                            fit: BoxFit.cover,
+                                            placeholder: (context, url) =>
+                                                Shimmer.fromColors(
+                                              baseColor: Colors.grey[300]!,
+                                              highlightColor: Colors.grey[100]!,
+                                              child: Container(
+                                                  color: Colors.white),
+                                            ),
+                                            errorWidget:
+                                                (context, url, error) =>
+                                                    Container(
+                                              color: Colors.grey.shade200,
+                                              child: const Icon(
+                                                  Icons.broken_image),
+                                            ),
                                           ),
-                                          errorWidget: (context, url, error) =>
-                                              Container(
-                                                  color: Colors.grey.shade200,
-                                                  child: const Icon(
-                                                      Icons.broken_image)),
                                         ),
                                       ),
                                       Padding(
                                         padding: const EdgeInsets.all(8),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              product.name,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: GoogleFonts.poppins(
-                                                color: Colors.black,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.bold,
+                                        child: SizedBox(
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.07,
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                product.name,
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: GoogleFonts.poppins(
+                                                  color: Colors.black,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              '₹ ${product.price}',
-                                              style: GoogleFonts.poppins(
-                                                color: Colors.black,
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w600,
+                                              const Spacer(),
+                                              Text(
+                                                '₹ ${product.price}',
+                                                style: GoogleFonts.poppins(
+                                                  color: Colors.black,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
                                               ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -349,7 +397,10 @@ Future<List<Product>> _fetchAllProducts() async {
                               );
                             },
                           ),
-                  ),
+                        ),
+                      ],
+                    ),
+                  )
                 ],
               );
             }
@@ -370,7 +421,7 @@ Future<List<Product>> _fetchAllProducts() async {
       ),
       child: TextField(
         controller: _searchController,
-        focusNode: _focusNode, 
+        focusNode: _focusNode,
         cursorHeight: 20,
         onChanged: (value) async {
           // Trigger the loading state
@@ -395,11 +446,10 @@ Future<List<Product>> _fetchAllProducts() async {
                   padding: EdgeInsets.all(
                       10.0), // Adjust padding to position the spinner
                   child: SizedBox(
-                    width: 6,
-                    height: 6,
-                    child: CupertinoActivityIndicator(
-                                  color:Color.fromARGB(255, 65, 88, 108))
-                  ),
+                      width: 6,
+                      height: 6,
+                      child: CupertinoActivityIndicator(
+                          color: Color.fromARGB(255, 65, 88, 108))),
                 )
               : null, // Show nothing if not searching
           border: OutlineInputBorder(

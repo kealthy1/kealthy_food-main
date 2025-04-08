@@ -37,8 +37,6 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          // Instead of filtering by 'Subcategory', we filter by 'Category'
-          // to get all documents whose 'Category' field = widget.categoryName
           stream: FirebaseFirestore.instance
               .collection('SubCategory')
               .where('Category', isEqualTo: widget.categoryName)
@@ -48,7 +46,7 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
                   child: CupertinoActivityIndicator(
-                                  color:Color.fromARGB(255, 65, 88, 108)));
+                      color: Color.fromARGB(255, 65, 88, 108)));
             }
             // 2. Handle empty data
             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -84,7 +82,8 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
                     );
                   },
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 3,vertical: 5),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 3, vertical: 5),
                     child: Container(
                       margin: const EdgeInsets.only(bottom: 16),
                       padding: const EdgeInsets.all(12),
@@ -104,36 +103,45 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
                           ClipRRect(
                             borderRadius: BorderRadius.circular(10),
                             child: Container(
-                              color: Colors.white,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                color: Colors.white,
+                              ),
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: CachedNetworkImage(
-                                  imageUrl: imageUrl,
-                                  width: 80,
-                                  height: 80,
-                                  fit: BoxFit.contain,
-                                  placeholder: (context, url) =>
-                                      Shimmer.fromColors(
-                                    baseColor: Colors.grey[300]!,
-                                    highlightColor: Colors.grey[100]!,
-                                    child: Container(color: Colors.white),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: CachedNetworkImage(
+                                    imageUrl: imageUrl,
+                                    width: 80,
+                                    height: 80,
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) =>
+                                        Shimmer.fromColors(
+                                      baseColor: Colors.grey[300]!,
+                                      highlightColor: Colors.grey[100]!,
+                                      child: Container(
+                                        width: 80,
+                                        height: 80,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    errorWidget: (context, url, error) =>
+                                        const Icon(
+                                      Icons.error,
+                                      color: Colors.red,
+                                    ),
                                   ),
-                                  errorWidget: (context, url, error) =>
-                                      const Icon(Icons.error,
-                                          color: Colors.red),
                                 ),
                               ),
                             ),
                           ),
 
                           const SizedBox(width: 16),
-
-                          // Subcategory details
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // The Subcategory name
                                 Text(
                                   subcategoryName,
                                   style: GoogleFonts.poppins(
@@ -141,12 +149,11 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
                                     fontSize: 18,
                                   ),
                                 ),
-                                // Optional subtitle or description
                                 Text(
                                   title,
                                   style: GoogleFonts.poppins(
                                     color: Colors.black45,
-                                    fontSize: 14,
+                                    fontSize: 13,
                                   ),
                                 ),
                                 const SizedBox(height: 8),

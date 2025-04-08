@@ -69,8 +69,8 @@ class _BmiTrackerPageState extends ConsumerState<BmiTrackerPage> {
           centerTitle: true,
           backgroundColor: Colors.white,
           title: Text(
-            "Kealthy BMI Tracker",
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            "Kealthy BMI Calculator",
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w600,fontSize: 20),
           ),
         ),
         body: Padding(

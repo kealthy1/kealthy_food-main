@@ -158,8 +158,8 @@ class _CalorieIntakePageState extends ConsumerState<CalorieIntakePage> {
           backgroundColor: Colors.white,
           centerTitle: true,
           title: Text(
-            "Kealthy Calorie Tracker",
-            style: GoogleFonts.poppins(color: Colors.black),
+            "Kealthy Calorie Calculator",
+            style: GoogleFonts.poppins(fontSize: 20,fontWeight: FontWeight.w600,),
           ),
         ),
         backgroundColor: Colors.white,
