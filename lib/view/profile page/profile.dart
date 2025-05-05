@@ -28,7 +28,14 @@ class ProfilePage extends ConsumerStatefulWidget {
 }
 
 class _ProfilePageState extends ConsumerState<ProfilePage> {
-  // Example: Delete account logic
+  @override
+  void initState() {
+    super.initState();
+    // Fetch latest data each time this page is visited
+    Future.microtask(() {
+      ref.read(profileProvider.notifier).fetchProfileData();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -212,65 +219,72 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               },
             ),
             _divider(),
-            _buildTile(
-              context: context,
-              title: 'Delete Account',
-              icon: CupertinoIcons.delete,
-              onTap: () => deleteAccount(ref, context), // Call the function
-            ),
-            _divider(),
+            if (profile.name.isNotEmpty || profile.email.isNotEmpty) ...[
+              _buildTile(
+                context: context,
+                title: 'Delete Account',
+                icon: CupertinoIcons.delete,
+                onTap: () => deleteAccount(ref, context), // Call the function
+              ),
+              _divider(),
+            ],
+
             const SizedBox(height: 20),
             // 🔹 Logout Button
-            SizedBox(
-              width: MediaQuery.of(context).size.width * 0.4,
-              height: 50,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return buildLogoutAlertDialog(context);
-                    },
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                ),
-                icon: const Icon(
-                  CupertinoIcons.power,
-                  size: 25,
-                  color: Colors.red,
-                ),
-                label: Text(
-                  'Logout',
-                  style: GoogleFonts.poppins(
-                    textStyle: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.red,
-                      overflow: TextOverflow.ellipsis,
-                      fontWeight: FontWeight.w500,
+
+            if (profile.name.isNotEmpty || profile.email.isNotEmpty) ...[
+              // 🔹 Logout Button
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.4,
+                height: 50,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return buildLogoutAlertDialog(context);
+                      },
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  icon: const Icon(
+                    CupertinoIcons.power,
+                    size: 25,
+                    color: Colors.red,
+                  ),
+                  label: Text(
+                    'Logout',
+                    style: GoogleFonts.poppins(
+                      textStyle: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.red,
+                        overflow: TextOverflow.ellipsis,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 5),
-            // 🔹 Version
-            versionAsyncValue.maybeWhen(
-              data: (version) => Text(
-                'Version: $version',
-                style: GoogleFonts.poppins(
-                  textStyle: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.black,
-                    overflow: TextOverflow.ellipsis,
+              const SizedBox(height: 5),
+              versionAsyncValue.maybeWhen(
+                data: (version) => Text(
+                  'Version: $version',
+                  style: GoogleFonts.poppins(
+                    textStyle: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.black,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
+                orElse: () => const SizedBox.shrink(),
               ),
-              orElse: () => const SizedBox.shrink(),
-            ),
+            ],
             const SizedBox(height: 50),
           ],
         ),

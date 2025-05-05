@@ -292,12 +292,10 @@ class _LocationPageState extends ConsumerState<LocationPage> {
                                     ToastHelper.showErrorToast(
                                         'Location not serviceable');
 
-                                    isBottomSheetOpen = false; // Reset flag
+                                    isBottomSheetOpen = false;
                                     return;
                                   }
                                 }
-
-                                // **Fix: Wait for the bottom sheet to close before resetting flag**
                                 showModalBottomSheet(
                                   context: context,
                                   isScrollControlled: true,

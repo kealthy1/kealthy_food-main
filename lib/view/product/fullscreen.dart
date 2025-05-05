@@ -6,7 +6,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 
 // StateNotifier for managing the current index
 class ImageIndexNotifier extends StateNotifier<int> {
-  ImageIndexNotifier(int initialIndex) : super(initialIndex);
+  ImageIndexNotifier(super.initialIndex);
 
   void setIndex(int newIndex) {
     state = newIndex;

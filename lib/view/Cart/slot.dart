@@ -4,12 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:kealthy_food/view/Cart/slot_generator.dart';
+import 'package:kealthy_food/view/Toast/toast_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ntp/ntp.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 final selectedSlotProvider =
     StateProvider<Map<String, DateTime>?>((ref) => null);
-final isExpandedProvider = StateProvider<bool>((ref) => false);
+final isExpandedProvider = StateProvider<bool>((ref) => true);
 final distanceProvider = FutureProvider<double>((ref) async {
   final prefs = await SharedPreferences.getInstance();
   return prefs.getDouble('selectedDistance') ?? 3.0;
@@ -58,32 +60,43 @@ class SlotSelectionContainer extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      selectedSlot != null
-                          ? '${DateFormat('h:mm a').format(selectedSlot["start"]!)} - ${DateFormat('h:mm a').format(selectedSlot["end"]!)}'
-                          : 'Preferred Delivery Time',
-                      style: GoogleFonts.poppins(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 15,
+                Flexible(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          selectedSlot != null
+                              ? 'Selected Slot : ${DateFormat('h:mm a').format(selectedSlot["start"]!)} - ${DateFormat('h:mm a').format(selectedSlot["end"]!)}'
+                              : 'Preferred Delivery Time',
+                          style: GoogleFonts.poppins(
+                            color: selectedSlot != null
+                                ? Colors.green
+                                : Colors.black,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                          overflow: TextOverflow.visible,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 5), // Spacing between text and icon
-                    Icon(isExpanded
-                        ? Icons.arrow_drop_up
-                        : Icons.arrow_drop_down),
-                  ],
-                ),
-                Text(
-                  'Save ₹50 🎉',
-                  style: GoogleFonts.poppins(
-                    color: Colors.green,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                      const SizedBox(width: 5),
+                      Icon(isExpanded
+                          ? Icons.arrow_drop_up
+                          : Icons.arrow_drop_down),
+                    ],
                   ),
                 ),
+                // Uncomment and wrap with Flexible or Expanded if needed
+                // Flexible(
+                //   child: Text(
+                //     'Save ₹50 🎉',
+                //     style: GoogleFonts.poppins(
+                //       color: Colors.green,
+                //       fontSize: 12,
+                //       fontWeight: FontWeight.w500,
+                //     ),
+                //     overflow: TextOverflow.ellipsis,
+                //   ),
+                // ),
               ],
             ),
           ),
@@ -97,8 +110,9 @@ class SlotSelectionContainer extends ConsumerWidget {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                      child:  CupertinoActivityIndicator(
-                                  color:Colors.black,));
+                      child: CupertinoActivityIndicator(
+                    color: Colors.black,
+                  ));
                 }
                 if (snapshot.hasError) {}
 
@@ -136,6 +150,21 @@ class SlotSelectionContainer extends ConsumerWidget {
 
                           return GestureDetector(
                             onTap: () async {
+                              final formattedStartTime =
+                                  DateFormat('hh:mm a').format(slot["start"]!);
+                              final formattedEndTime =
+                                  DateFormat('hh:mm a').format(slot["end"]!);
+                              final selectedSlotLabel =
+                                  "$formattedStartTime - $formattedEndTime";
+
+                              final isAvailable =
+                                  await isSlotAvailable(selectedSlotLabel);
+                              if (!isAvailable) {
+                                ToastHelper.showErrorToast(
+                                    'Slot not available. Please choose another slot');
+                                return;
+                              }
+
                               ref.read(selectedSlotProvider.notifier).state =
                                   slot;
                               ref.read(isExpandedProvider.notifier).state =
@@ -143,9 +172,7 @@ class SlotSelectionContainer extends ConsumerWidget {
                               final prefs =
                                   await SharedPreferences.getInstance();
                               await prefs.setString(
-                                'selectedSlot',
-                                "Slot Delivery 📦 $formattedStartTime - $formattedEndTime",
-                              );
+                                  'selectedSlot', selectedSlotLabel);
                             },
                             child: IntrinsicWidth(
                               stepWidth: 10,
@@ -188,4 +215,25 @@ class SlotSelectionContainer extends ConsumerWidget {
       ),
     );
   }
+}
+
+Future<bool> isSlotAvailable(String selectedSlotLabel) async {
+  final databaseRef = FirebaseDatabase.instanceFor(
+    app: FirebaseDatabase.instance.app,
+    databaseURL: 'https://kealthy-90c55-dd236.firebaseio.com/',
+  ).ref().child('orders');
+
+  final snapshot = await databaseRef
+      .orderByChild('selectedSlot')
+      .equalTo(selectedSlotLabel)
+      .get();
+
+  for (final child in snapshot.children) {
+    debugPrint("Matched order ID: ${child.key}");
+    debugPrint("Stored slot: ${child.child('selectedSlot').value}");
+  }
+
+  final existingOrders = snapshot.children.length;
+  debugPrint('Orders for $selectedSlotLabel: $existingOrders');
+  return existingOrders < 10; // ⛔️ only allow 0, 1, or 2 orders — NOT 3+
 }

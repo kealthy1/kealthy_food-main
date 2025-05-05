@@ -43,6 +43,7 @@ class _HomePageState extends ConsumerState<HomePage>
       VersionCheckService.checkForUpdate(context);
       ref.read(cartProvider.notifier).loadCartItems();
       checkLocationPermission(ref);
+      getSelectedAddressOrCurrentLocation(ref);
     });
     WidgetsBinding.instance.addObserver(this);
 

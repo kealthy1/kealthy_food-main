@@ -38,7 +38,6 @@ class _LiveOrdersTabState extends ConsumerState<LiveOrdersTab> {
   }
   @override
   Widget build(BuildContext context) {
-    ref.watch(phoneNumberProvider);
     final ordersList = ref.watch(ordersListProvider);
     final expandedStates = ref.watch(expandedStatesProvider);
     final isLoading = ref.watch(loadingProvider);

@@ -1,35 +1,49 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 
+enum MapProviderType {
+  google,
+  mapbox,
+}
+
+final mapTypeProvider = StateProvider<MapProviderType>((ref) => MapProviderType.google);
+
 class LocationHelper {
   /// **Fetches the user's current location.**
   static Future<Position?> getCurrentLocation() async {
-    try {
-      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) return null;
+  try {
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) return null;
 
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) return null;
-      }
-
-      if (permission == LocationPermission.deniedForever) return null;
-
-      return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.best,
-        forceAndroidLocationManager: true,
-        timeLimit: const Duration(seconds: 30),
-      );
-    } catch (e) {
-      print('Error getting location: $e');
-      return null;
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) return null;
     }
+
+    if (permission == LocationPermission.deniedForever) return null;
+
+    final position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high, // Use high accuracy
+    ).timeout(
+      const Duration(seconds: 10), // 👈 manually add timeout
+      onTimeout: () {
+        throw TimeoutException('Location request timed out.');
+      },
+    );
+
+    return position;
+  } catch (e) {
+    print('Error getting location: $e');
+    return null;
   }
+}
 
   /// **Fetches suggested locations based on user input.**
   static Future<List<String>> suggestLocations(String query) async {

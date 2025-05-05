@@ -19,14 +19,13 @@ double calculateDeliveryFee(double itemTotal, double distanceInKm) {
     } else {
       // If < 199
       if (distanceInKm <= 7) {
-        deliveryFee = 50; // flat charge up to 7 km
+        deliveryFee = 50;
       } else {
         // 50 + ((distanceInKm - 7) * 10)
         deliveryFee = 50 + 10 * (distanceInKm - 7);
       }
     }
 
-    // If you want just a raw double (e.g., 36.32), return as-is:
     return deliveryFee.roundToDouble();
   }
 
@@ -36,7 +35,7 @@ double calculateDeliveryFee(double itemTotal, double distanceInKm) {
     double handlingFee = 5;
     double deliveryFee = calculateDeliveryFee(itemTotal, distanceInKm);
 
-    // ✅ Ensure both delivery fees are added together
+
     double totalDeliveryFee = deliveryFee + instantDeliveryFee;
 
     double finalTotal = itemTotal + totalDeliveryFee + handlingFee;

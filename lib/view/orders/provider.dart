@@ -27,7 +27,8 @@ class OrderRepository {
     ref.read(loadingProvider.notifier).state = true;
 
     try {
-      final phoneNumber = ref.read(phoneNumberProvider);
+      final prefs = await SharedPreferences.getInstance();
+      final phoneNumber = prefs.getString('phoneNumber') ?? '';
       if (phoneNumber.isEmpty) {
         ref.read(loadingProvider.notifier).state = false;
         return;

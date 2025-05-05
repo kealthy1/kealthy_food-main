@@ -9,7 +9,7 @@ import 'package:kealthy_food/view/Cart/time_provider.dart';
 import 'package:kealthy_food/view/Toast/toast_helper.dart';
 import 'package:kealthy_food/view/address/adress.dart';
 import 'package:kealthy_food/view/Cart/checkout.dart';
-import 'package:kealthy_food/view/home/title.dart';
+// import 'package:kealthy_food/view/home/title.dart';
 import 'package:kealthy_food/view/Cart/slot.dart';
 import 'package:ntp/ntp.dart';
 import 'package:intl/intl.dart';
@@ -30,11 +30,11 @@ class _TimePageState extends ConsumerState<TimePage> {
 
   @override
   Widget build(BuildContext context) {
-    final isInstantDeliveryVisible =
-        ref.watch(isInstantDeliveryVisibleProvider);
-    final isInstantDeliverySelected =
-        ref.watch(isInstantDeliverySelectedProvider);
-    final isSlotContainerVisible = ref.watch(isSlotContainerVisibleProvider);
+    // final isInstantDeliveryVisible =
+    //     ref.watch(isInstantDeliveryVisibleProvider);
+    // final isInstantDeliverySelected =
+    //     ref.watch(isInstantDeliverySelectedProvider);
+    // final isSlotContainerVisible = ref.watch(isSlotContainerVisibleProvider);
     final addressAsyncValue = ref.watch(addressProvider);
 
     return Scaffold(
@@ -153,121 +153,121 @@ class _TimePageState extends ConsumerState<TimePage> {
                 },
               ),
               const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Text(
-                  'Select Delivery Time',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(horizontal: 8),
+              //   child: Text(
+              //     'Select Delivery Time',
+              //     style: GoogleFonts.poppins(
+              //       fontWeight: FontWeight.w500,
+              //       color: Colors.black,
+              //       fontSize: 16,
+              //     ),
+              //   ),
+              // ),
+              // const SizedBox(height: 10),
 
               // Instant Delivery Container
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: isInstantDeliveryVisible
-                    ? FutureBuilder<String>(
-                        future: calculateEstimatedDeliveryTime(),
-                        builder: (context, snapshot) {
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.2),
-                                  blurRadius: 5,
-                                  spreadRadius: 1,
-                                  offset: const Offset(0, 1),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(15.0),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              "Instant Delivery",
-                                              style: GoogleFonts.poppins(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w500,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 5),
-                                            const Icon(
-                                              Icons.flash_on,
-                                              color: Colors.amber,
-                                            ),
-                                          ],
-                                        ),
-                                        Text(
-                                          snapshot.connectionState ==
-                                                  ConnectionState.waiting
-                                              ? 'Loading..'
-                                              : "Estimated Delivery Time: ${snapshot.data}",
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.black87,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                Text(
-                                  '₹50',
-                                  style: GoogleFonts.poppins(
-                                    color: Colors.black,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                Checkbox(
-                                  value: isInstantDeliverySelected,
-                                  onChanged: (value) {
-                                    ref
-                                        .read(isInstantDeliverySelectedProvider
-                                            .notifier)
-                                        .state = value!;
-                                    ref
-                                        .read(isSlotContainerVisibleProvider
-                                            .notifier)
-                                        .state = !value;
-                                  },
-                                  activeColor:
-                                      const Color.fromARGB(255, 65, 88, 108),
-                                  checkColor: Colors.white,
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      )
-                    : const SizedBox.shrink(),
-              ),
-              if (isSlotContainerVisible && isInstantDeliveryVisible)
-                const SizedBox(height: 20),
-              if (isSlotContainerVisible && isInstantDeliveryVisible)
-                const CenteredTitleWidget(title: "OR"),
-              if (isSlotContainerVisible && isInstantDeliveryVisible)
-                const SizedBox(height: 20),
-
-              // Slot Selection Container
-              if (isSlotContainerVisible) const SlotSelectionContainer(),
+              // AnimatedSwitcher(
+              //   duration: const Duration(milliseconds: 300),
+              //   child: isInstantDeliveryVisible
+              //       ? FutureBuilder<String>(
+              //           future: calculateEstimatedDeliveryTime(),
+              //           builder: (context, snapshot) {
+              //             return Container(
+              //               decoration: BoxDecoration(
+              //                 color: Colors.white,
+              //                 borderRadius: BorderRadius.circular(10),
+              //                 boxShadow: [
+              //                   BoxShadow(
+              //                     color: Colors.grey.withOpacity(0.2),
+              //                     blurRadius: 5,
+              //                     spreadRadius: 1,
+              //                     offset: const Offset(0, 1),
+              //                   ),
+              //                 ],
+              //               ),
+              //               child: Row(
+              //                 mainAxisAlignment: MainAxisAlignment.spaceAround,
+              //                 children: [
+              //                   Expanded(
+              //                     child: Padding(
+              //                       padding: const EdgeInsets.all(15.0),
+              //                       child: Column(
+              //                         crossAxisAlignment:
+              //                             CrossAxisAlignment.start,
+              //                         children: [
+              //                           Row(
+              //                             children: [
+              //                               Text(
+              //                                 "Instant Delivery",
+              //                                 style: GoogleFonts.poppins(
+              //                                   fontSize: 18,
+              //                                   fontWeight: FontWeight.w500,
+              //                                   color: Colors.black,
+              //                                 ),
+              //                               ),
+              //                               const SizedBox(width: 5),
+              //                               const Icon(
+              //                                 Icons.flash_on,
+              //                                 color: Colors.amber,
+              //                               ),
+              //                             ],
+              //                           ),
+              //                           Text(
+              //                             snapshot.connectionState ==
+              //                                     ConnectionState.waiting
+              //                                 ? 'Loading..'
+              //                                 : "Estimated Delivery Time: ${snapshot.data}",
+              //                             style: GoogleFonts.poppins(
+              //                               fontSize: 10,
+              //                               fontWeight: FontWeight.w500,
+              //                               color: Colors.black87,
+              //                             ),
+              //                           ),
+              //                         ],
+              //                       ),
+              //                     ),
+              //                   ),
+              //                   Text(
+              //                     '₹50',
+              //                     style: GoogleFonts.poppins(
+              //                       color: Colors.black,
+              //                       fontSize: 12,
+              //                       fontWeight: FontWeight.w500,
+              //                     ),
+              //                   ),
+              //                   Checkbox(
+              //                     value: isInstantDeliverySelected,
+              //                     onChanged: (value) {
+              //                       ref
+              //                           .read(isInstantDeliverySelectedProvider
+              //                               .notifier)
+              //                           .state = value!;
+              //                       ref
+              //                           .read(isSlotContainerVisibleProvider
+              //                               .notifier)
+              //                           .state = !value;
+              //                     },
+              //                     activeColor:
+              //                         const Color.fromARGB(255, 65, 88, 108),
+              //                     checkColor: Colors.white,
+              //                   ),
+              //                 ],
+              //               ),
+              //             );
+              //           },
+              //         )
+              //       : const SizedBox.shrink(),
+              // ),
+              // if (isSlotContainerVisible && isInstantDeliveryVisible)
+              //   const SizedBox(height: 20),
+              // if (isSlotContainerVisible && isInstantDeliveryVisible)
+              //   const CenteredTitleWidget(title: "OR"),
+              // // if (isSlotContainerVisible && isInstantDeliveryVisible)
+              //   const SizedBox(height: 20),
+              // // Slot Selection Container
+              // if (isSlotContainerVisible) 
+              const SlotSelectionContainer(),
               const SizedBox(height: 100),
             ],
           ),

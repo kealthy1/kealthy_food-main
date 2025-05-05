@@ -58,9 +58,7 @@ final liveOrdersProvider = StreamProvider<List<Map<String, dynamic>>>((ref) asyn
     return data.entries
         .where((entry) =>
             entry.value['phoneNumber'] == phoneNumber &&
-            (entry.value['status'] == 'Order Placed' ||
-             entry.value['status'] == 'Order Picked' ||
-             entry.value['status'] == 'Order Reached'))
+            (entry.value['assignedTo'] != 'none' ))
         .map<Map<String, dynamic>>((entry) =>
             Map<String, dynamic>.from(entry.value as Map<dynamic, dynamic>))
         .toList();

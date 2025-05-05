@@ -185,11 +185,6 @@ class TrackOrderPage extends ConsumerWidget {
                   return const SizedBox.shrink();
                 }
 
-                // Calculate estimated delivery time
-                int estimatedTime = calculateDeliveryTime(
-                  currentLocation,
-                  destinationLocation,
-                );
 
                 return Container(
                   decoration: BoxDecoration(
@@ -223,37 +218,6 @@ class TrackOrderPage extends ConsumerWidget {
                               fontSize: 25,
                               fontWeight: FontWeight.bold,
                               color: Colors.black,
-                            ),
-                          ),
-                          const Spacer(),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: const Color.fromARGB(255, 65, 88, 108),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 10,
-                            ),
-                            child: Column(
-                              children: [
-                                Text(
-                                  '$estimatedTime',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 20,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  'min',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 15,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
                             ),
                           ),
                         ],

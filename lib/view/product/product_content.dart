@@ -20,7 +20,8 @@ class ProductContent extends ConsumerWidget {
   final Map<String, dynamic> docData;
   final String productId;
 
-  const ProductContent({super.key, 
+  const ProductContent({
+    super.key,
     required this.docData,
     required this.pageController,
     required this.productId,
@@ -193,9 +194,11 @@ class ProductContent extends ConsumerWidget {
                 // Product name + Add-to-Cart section.
                 Row(
                   children: [
+                    /// Wrap the long text with `Expanded` or `Flexible`
                     Expanded(
                       child: Text(
-                        productName,
+                        '$productName $productQty',
+                        overflow: TextOverflow.visible,
                         style: GoogleFonts.poppins(
                           textStyle: const TextStyle(
                             fontSize: 20,
@@ -204,7 +207,8 @@ class ProductContent extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    //  KealthyScoreSection(productIdOrName: productId),
+
+                    // KealthyScoreSection(productIdOrName: productId),
                   ],
                 ),
                 Consumer(
@@ -274,13 +278,13 @@ class ProductContent extends ConsumerWidget {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Baseline(
+                            const Baseline(
                               baseline:
-                                  20, // Adjust this value for proper alignment
+                                  17, // Adjust this value for proper alignment
                               baselineType: TextBaseline.alphabetic,
                               child: Text(
                                 '\u20B9',
-                                style: GoogleFonts.poppins(
+                                style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black,
@@ -290,7 +294,7 @@ class ProductContent extends ConsumerWidget {
                             Text(
                               '$productPrice/-', // Product price
 
-                              style: GoogleFonts.poppins(
+                              style: const TextStyle(
                                 fontSize: 20, // Larger size for the price
                                 color: Colors.black,
                               ),
@@ -389,6 +393,13 @@ class ProductContent extends ConsumerWidget {
                 const SizedBox(height: 30),
                 // Price + Kealthy Score section.
                 const Divider(),
+                Row(
+                  children: [
+                     const ReusableText(text: 'Brand : ', fontSize: 20,fontWeight: FontWeight.w600,),
+                    ReusableText(text: '$productBrand', fontSize: 20),
+                  ],
+                ),
+
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -449,6 +460,18 @@ class ProductContent extends ConsumerWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
+                                    if (relatedProducts.isNotEmpty)
+                                      Text(
+                                        'Similar Products :',
+                                        style: GoogleFonts.poppins(
+                                          textStyle: const TextStyle(
+                                            fontSize: 15,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      ),
+                                    const SizedBox(height: 10),
+
                                     // Product image
                                     Expanded(
                                       child: ClipRRect(
@@ -491,10 +514,8 @@ class ProductContent extends ConsumerWidget {
                     ),
                   ],
                 ),
-                ReusableText(text: 'Brand : $productBrand', fontSize: 20),
-                ReusableText(text: 'Qty : $productQty', fontSize: 20),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 // "What is it?" section.
                 if (productWhatIs.isNotEmpty) ...[
                   Text(
@@ -586,7 +607,8 @@ class ProductContent extends ConsumerWidget {
                         Align(
                           alignment: Alignment.centerLeft,
                           child: ReusableText(
-                            text: 'Best Within: $formattedDate from the date of packaging',
+                            text:
+                                'Best Within: $formattedDate from the date of packaging',
                             fontSize: 15,
                           ),
                         ),

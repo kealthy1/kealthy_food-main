@@ -85,7 +85,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
 
             const SizedBox(height: 10),
 
-            // Place Order / Make Payment Button
+
             _buildActionButton(selectedPaymentMethod, isOrderSaving, context),
             const SizedBox(height: 10),
           ],

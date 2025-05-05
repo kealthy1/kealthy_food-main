@@ -12,7 +12,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  try {
+  try { 
     await NotificationService.instance.initialize();
     await NotificationService.instance.setupFlutterNotifications();
     print("[MAIN] Notification service initialized successfully.");

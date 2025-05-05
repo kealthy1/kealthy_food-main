@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kealthy_food/view/Login/login_notifier.dart';
 import 'package:kealthy_food/view/Login/otp_state.dart';
 import 'package:kealthy_food/view/BottomNavBar/bottom_nav_bar.dart';
+import 'package:kealthy_food/view/profile%20page/provider.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -16,7 +18,7 @@ final otpProvider =
 class OTPScreen extends ConsumerStatefulWidget {
   final String verificationId;
   final String phoneNumber;
-  bool isTestMode; // 🔹 Added to detect test mode
+  bool isTestMode;
 
   OTPScreen({
     super.key,
@@ -70,6 +72,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
 
   Future<void> _savePhoneNumber() async {
     final prefs = await SharedPreferences.getInstance();
+
     String cleanedPhoneNumber =
         widget.phoneNumber.replaceAll('+91', '').replaceAll(' ', '');
     await prefs.setString('phoneNumber', cleanedPhoneNumber);
@@ -102,7 +105,10 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
 
     if (isTestMode || enteredOtp == testOtp) {
       print('Test Mode Login Successful!');
-      _savePhoneNumber(); // Save test number as login
+      await _savePhoneNumber(); // Save test number as login
+      await ref.read(loginStatusProvider.notifier).login(widget.phoneNumber);
+
+      await ref.read(profileProvider.notifier).loadProfileData();
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const BottomNavBar()),
@@ -114,6 +120,8 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
     ref.read(otpProvider.notifier).verifyOtp(
         verificationId, enteredOtp, context,
         onSuccess: _savePhoneNumber);
+
+    await ref.read(loginStatusProvider.notifier).login(widget.phoneNumber);
   }
 
   @override
@@ -142,7 +150,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                 onChanged: (value) {},
                 onCompleted: (otp) {
                   if (_formKey.currentState?.validate() == true) {
-                    _verifyOtp(); // 🔹 Handle verification
+                    _verifyOtp();
                   }
                 },
                 pinTheme: PinTheme(
@@ -164,11 +172,11 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                 style: const TextStyle(color: Colors.red),
               ),
             ],
-           
             const SizedBox(height: 20),
             otpState.isLoading
-                ?  const CupertinoActivityIndicator(
-                                  color: Color.fromARGB(255, 65, 88, 108),)
+                ? const CupertinoActivityIndicator(
+                    color: Color.fromARGB(255, 65, 88, 108),
+                  )
                 : ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState?.validate() == true) {

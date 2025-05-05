@@ -156,7 +156,7 @@ class OrderService {
       print('Order saved successfully with orderId = $orderId');
 
       // Decrement stock
-      await decrementSOHForItems(address);
+      // await decrementSOHForItems(address);
 
       // Optionally save a notification doc to Firestore
       await saveNotificationToFirestore(orderId, address.cartItems);

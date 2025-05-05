@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/BottomNavBar/bottom_nav_bar_proivder.dart';
 import 'package:kealthy_food/view/Cart/cart_controller.dart';
+import 'package:kealthy_food/view/Login/login_notifier.dart';
 import 'package:kealthy_food/view/Login/login_page.dart';
 import 'package:kealthy_food/view/Toast/toast_helper.dart';
 import 'package:kealthy_food/view/address/provider.dart';
@@ -17,13 +18,15 @@ import 'package:http/http.dart' as http;
 class ProfileModel {
   final String name;
   final String email;
+  final bool isLoading;
 
-  ProfileModel({required this.name, required this.email});
+  ProfileModel({required this.name, required this.email,this.isLoading = false,});
 
-  ProfileModel copyWith({String? name, String? email}) {
+  ProfileModel copyWith({String? name, String? email,bool? isLoading,}) {
     return ProfileModel(
       name: name ?? this.name,
       email: email ?? this.email,
+      isLoading: isLoading ?? this.isLoading,
     );
   }
 }
@@ -34,57 +37,68 @@ final profileProvider = StateNotifierProvider<ProfileNotifier, ProfileModel>(
 );
 
 class ProfileNotifier extends StateNotifier<ProfileModel> {
-  ProfileNotifier() : super(ProfileModel(name: '', email: '')) {
+  ProfileNotifier() : super(ProfileModel(name: '', email: '', isLoading: true)) {
     loadProfileData();
   }
 
   // ✅ 1️⃣ Load Profile from SharedPreferences (Fast Fetch)
   Future<void> loadProfileData() async {
     final prefs = await SharedPreferences.getInstance();
+
+    state = state.copyWith(isLoading: true);
     final storedName = prefs.getString('user_name') ?? '';
     final storedEmail = prefs.getString('user_email') ?? '';
 
     // Update state with SharedPreferences data
-    state = ProfileModel(name: storedName, email: storedEmail);
+    state = ProfileModel(name: storedName, email: storedEmail, isLoading: false);
 
     // Fetch updated data from API in the background
     fetchProfileData();
   }
 
   // ✅ 2️⃣ Fetch Profile from API (Background Fetch)
-  Future<void> fetchProfileData() async {
+    Future<void> fetchProfileData() async {
     final prefs = await SharedPreferences.getInstance();
     final phoneNumber = prefs.getString('phoneNumber');
 
     if (phoneNumber != null) {
-      final userDetails = await UserService.getUserDetails(phoneNumber);
+      try {
+        state = state.copyWith(isLoading: true); // show shimmer during API call
+        final userDetails = await UserService.getUserDetails(phoneNumber);
 
-      // Update UI state
-      state = ProfileModel(
-        name: userDetails['name']!,
-        email: userDetails['email']!,
-      );
+        state = ProfileModel(
+          name: userDetails['name'] ?? '',
+          email: userDetails['email'] ?? '',
+          isLoading: false,
+        );
+
+        // Optionally store updated values to SharedPreferences
+        prefs.setString('user_name', userDetails['name'] ?? '');
+        prefs.setString('user_email', userDetails['email'] ?? '');
+      } catch (e) {
+        state = state.copyWith(isLoading: false); // hide shimmer on error
+      }
     }
   }
 
   // ✅ 3️⃣ Update User Profile
-  Future<void> updateUserData(String name, String email) async {
+   Future<void> updateUserData(String name, String email) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final phoneNumber = prefs.getString('phoneNumber');
 
-      if (phoneNumber == null) {
-        print("❌ Phone number not found in SharedPreferences.");
-        return;
-      }
+      if (phoneNumber == null) return;
 
       await UserService.updateUserDetails(phoneNumber, name, email);
 
-      // ✅ Update UI state after successful update
+      // ✅ Update state
       state = state.copyWith(name: name, email: email);
-      print("✅ UI updated with new profile details.");
+
+      // ✅ Update SharedPreferences
+      prefs.setString('user_name', name);
+      prefs.setString('user_email', email);
     } catch (e) {
-      print("❌ Error updating user profile: $e");
+      debugPrint("❌ Error updating profile: $e");
     }
   }
 }
@@ -206,6 +220,11 @@ Future<void> deleteAccount(WidgetRef ref, BuildContext context) async {
   }
 }
 
+final isLoggedInProvider = FutureProvider<bool>((ref) async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.containsKey('phoneNumber');
+});
+
 // Example: logout logic
 Future<void> logoutUser(BuildContext context, WidgetRef ref) async {
   // Show a quick "Logging out" dialog
@@ -236,6 +255,11 @@ Future<void> logoutUser(BuildContext context, WidgetRef ref) async {
 
   final prefs = await SharedPreferences.getInstance();
   await prefs.clear();
+
+  await ref.read(loginStatusProvider.notifier).logout();
+
+  // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+  ref.read(profileProvider.notifier).state = ProfileModel(name: '', email: '', isLoading: false);
 
   // Invalidate providers
   ref.invalidate(selectedLocationProvider);

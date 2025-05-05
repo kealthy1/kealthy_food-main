@@ -351,15 +351,13 @@ class CartPage extends ConsumerWidget {
                   Row(
                     children: [
                       Text(
-                        'Total Bill',
+                        'Total Amount',
                         style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
                       ),
-                      const SizedBox(width: 5),
-                      const Icon(CupertinoIcons.doc_text),
                       const Spacer(),
                       Text(
                         '₹${calculateTotalPrice(cartItems)}',

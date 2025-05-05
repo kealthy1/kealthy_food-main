@@ -35,7 +35,6 @@ final productTypesProvider = FutureProvider.family<List<String>, String>(
   },
 );
 
-
 final allProductsProvider = FutureProvider.family<
     List<QueryDocumentSnapshot<Map<String, dynamic>>>, String>(
   (ref, subcategory) async {
@@ -79,11 +78,11 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage> {
     final searchQuery = ref.watch(searchQueryProvider).toLowerCase().trim();
     final isLoading = ref.watch(isLoadingProvider);
     final allProducts = ref.watch(allProductsProvider(widget.subcategoryName));
-    final productTypes =
-        ref.watch(productTypesProvider(widget.subcategoryName));
+    // final productTypes =
+    //     ref.watch(productTypesProvider(widget.subcategoryName));
     final selectedType =
         ref.watch(selectedTypeProvider(widget.subcategoryName));
-        final screenheight = MediaQuery.of(context).size.height;
+    final screenheight = MediaQuery.of(context).size.height;
 
     // Reset the search query when the page is rebuilt
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -151,11 +150,11 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage> {
                                 padding: EdgeInsets.all(
                                     10.0), // Adjust padding to position the spinner
                                 child: SizedBox(
-                                  width: 6,
-                                  height: 6,
-                                  child: CupertinoActivityIndicator(
-                                  color:Color.fromARGB(255, 65, 88, 108))
-                                ),
+                                    width: 6,
+                                    height: 6,
+                                    child: CupertinoActivityIndicator(
+                                        color:
+                                            Color.fromARGB(255, 65, 88, 108))),
                               )
                             : null, // Show nothing if not searching
                         border: OutlineInputBorder(
@@ -170,86 +169,11 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage> {
             ),
           ),
           const SizedBox(height: 16),
-          // Product Types List
-          productTypes.when(
-            loading: () => const SizedBox.shrink(),
-            error: (error, stack) => Center(
-              child: Text(
-                "Error: $error",
-                style: GoogleFonts.poppins(),
-              ),
-            ),
-            data: (types) {
-              return SizedBox(
-                height: 40,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: types.length,
-                  itemBuilder: (context, index) {
-                    final type = types[index];
-                    final isSelected = (type == selectedType);
-
-                    return GestureDetector(
-                      onTap: () {
-                        if (isSelected) {
-                          // Deselect the type if it's already selected
-                          ref
-                              .read(selectedTypeProvider(widget.subcategoryName)
-                                  .notifier)
-                              .state = null;
-                        } else {
-                          // Select the new type
-                          ref
-                              .read(selectedTypeProvider(widget.subcategoryName)
-                                  .notifier)
-                              .state = type;
-                        }
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 16),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? const Color.fromARGB(255, 65, 88, 108)
-                                : Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(10),
-                            border: isSelected
-                                ? Border.all(
-                                    color:
-                                        const Color.fromARGB(255, 65, 88, 108),
-                                  )
-                                : null,
-                          ),
-                          child: Center(
-                            child: Text(
-                              type,
-                              style: GoogleFonts.poppins(
-                                color:
-                                    isSelected ? Colors.white : Colors.black54,
-                                fontWeight: FontWeight.bold
-                                ,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-
-          // Grid of Products
           Expanded(
             child: allProducts.when(
               loading: () => const Center(
-                child: CupertinoActivityIndicator(
-                                  color:Color.fromARGB(255, 65, 88, 108))
-              ),
+                  child: CupertinoActivityIndicator(
+                      color: Color.fromARGB(255, 65, 88, 108))),
               error: (error, stack) => Center(
                 child: Text(
                   "Error: $error",
@@ -262,11 +186,10 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage> {
                   final data = product.data();
                   final productName =
                       data['Name']?.toString().toLowerCase() ?? '';
-                 
+
                   return (searchQuery.isEmpty ||
                           productName.contains(searchQuery)) &&
                       (selectedType == null || data['Type'] == selectedType);
-                   
                 }).toList();
                 if (filteredProducts.isEmpty) {
                   return Center(
@@ -289,6 +212,7 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage> {
                     itemBuilder: (context, index) {
                       final data = filteredProducts[index].data();
                       final productName = data['Name'] ?? 'No Name';
+                      final productqty = data['Qty'] ?? '0';
                       final price = data['Price'] ?? '0';
                       final imageUrls = data['ImageUrl'] ?? [];
                       final firstImageUrl = imageUrls.isNotEmpty
@@ -349,27 +273,43 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage> {
                                 child: SizedBox(
                                   height: screenheight * 0.09,
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(productName,
-                                      maxLines: 2,
+                                          maxLines: 2,
                                           style: GoogleFonts.poppins(
                                             textStyle: const TextStyle(
                                               fontSize: 16,
                                               color: Colors.black,
                                               overflow: TextOverflow.ellipsis,
-                                              
                                             ),
                                           )),
                                       const Spacer(),
-                                      Text('\u20B9 $price/-',
-                                          style: GoogleFonts.poppins(
-                                            textStyle: const TextStyle(
+                                      Row(
+                                        children: [
+                                          Text(
+                                            '\u20B9$price/-',
+                                            style: TextStyle(
                                               fontSize: 15,
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.bold,
+                                              color: Colors.green.shade800,
+                                              fontWeight: FontWeight.w600,
                                             ),
-                                          )),
+                                          ),
+                                          const Spacer(),
+                                          Text(productqty,
+                                              maxLines: 2,
+                                              style: GoogleFonts.poppins(
+                                                textStyle: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.w400,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              )),
+                                        ],
+                                      ),
                                     ],
                                   ),
                                 ),

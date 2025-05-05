@@ -37,9 +37,10 @@ class AddToCartSection extends ConsumerWidget {
             ),
             child: Center(
               child: Text(
-                'SOLD OUT',
+                'OUT OF STOCK',
                 style: GoogleFonts.poppins(
                   textStyle: const TextStyle(
+                    fontSize: 12,
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
