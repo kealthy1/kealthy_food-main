@@ -10,6 +10,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:kealthy_food/view/Cart/cart_controller.dart';
 
 /// 🔹 **State Providers**
+final newsletterSubscribedProvider = StateProvider<bool>((ref) => false);
 final hasShownReviewAlertProvider = StateProvider<bool>((ref) => false);
 final selectedItemProvider = StateProvider<CartItem?>((ref) => null);
 final tapPositionProvider = StateProvider<Offset?>((ref) => null);

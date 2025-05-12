@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kealthy_food/view/product/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:kealthy_food/view/product/product_page.dart';
 
@@ -58,7 +59,10 @@ class AllProductsPage extends ConsumerStatefulWidget {
   _AllProductsPageState createState() => _AllProductsPageState();
 }
 
-class _AllProductsPageState extends ConsumerState<AllProductsPage> {
+class _AllProductsPageState extends ConsumerState<AllProductsPage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
   late TextEditingController _searchController;
 
   @override
@@ -74,6 +78,7 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final ref = this.ref;
     final searchQuery = ref.watch(searchQueryProvider).toLowerCase().trim();
     final isLoading = ref.watch(isLoadingProvider);
@@ -193,9 +198,25 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage> {
                 }).toList();
                 if (filteredProducts.isEmpty) {
                   return Center(
-                    child: Text("No products available",
-                        style: GoogleFonts.poppins()),
+                    child: Column(
+                      children: [
+                        const Icon(CupertinoIcons.exclamationmark_circle,
+                            size: 50, color: Colors.black),
+                        const SizedBox(height: 10),
+                        Text("No products available",
+                            style: GoogleFonts.poppins()),
+                      ],
+                    ),
                   );
+                }
+
+                // Pre-cache first image of each product
+                for (final product in filteredProducts) {
+                  final data = product.data();
+                  final imageUrls = data['ImageUrl'] ?? [];
+                  if (imageUrls.isNotEmpty && imageUrls[0] is String) {
+                    precacheImage(CachedNetworkImageProvider(imageUrls[0]), context);
+                  }
                 }
 
                 return Padding(
@@ -271,7 +292,7 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage> {
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: SizedBox(
-                                  height: screenheight * 0.09,
+                                  height: screenheight * 0.1,
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -285,6 +306,71 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage> {
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                           )),
+                                      Consumer(
+                                        builder: (context, ref, child) {
+                                          final averageStarsAsync = ref.watch(
+                                              averageStarsProvider(
+                                                  productName));
+
+                                          return averageStarsAsync.when(
+                                            data: (rating) {
+                                              if (rating == 0.0) {
+                                                return const SizedBox
+                                                    .shrink(); // Hide stars if rating is 0
+                                              }
+
+                                              int fullStars = rating
+                                                  .floor(); // Get integer part (e.g., 3 from 3.8)
+                                              bool hasHalfStar = rating -
+                                                      fullStars >=
+                                                  0.5; // Check if it needs a half-star
+
+                                              return Row(
+                                                children: [
+                                                  Text(
+                                                    rating.toStringAsFixed(1),
+                                                    style: GoogleFonts.poppins(
+                                                      fontSize: 10,
+                                                      color: Colors.black54,
+                                                    ),
+                                                  ),
+                                                  // Generate full stars
+                                                  ...List.generate(
+                                                    fullStars,
+                                                    (index) => const Icon(
+                                                        Icons.star,
+                                                        color: Colors.orange,
+                                                        size: 12),
+                                                  ),
+
+                                                  // Show half-star if needed
+                                                  if (hasHalfStar)
+                                                    const Icon(Icons.star_half,
+                                                        color: Colors.orange,
+                                                        size: 12),
+
+                                                  // Show empty stars to keep alignment
+                                                  ...List.generate(
+                                                    5 -
+                                                        fullStars -
+                                                        (hasHalfStar ? 1 : 0),
+                                                    (index) => const Icon(
+                                                        Icons.star_border,
+                                                        color: Colors.orange,
+                                                        size: 12),
+                                                  ),
+
+                                                  const SizedBox(width: 5),
+
+                                                  // Show the numeric rating next to stars
+                                                ],
+                                              );
+                                            },
+                                            loading: () => Container(),
+                                            error: (error, _) => const Text(''),
+                                          );
+                                        },
+                                      ),
                                       const Spacer(),
                                       Row(
                                         children: [

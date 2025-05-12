@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/firebase_options.dart';
 import 'package:kealthy_food/view/notifications/fcm.dart';
 import 'package:kealthy_food/view/splash_screen/splash_screen.dart';
-
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  try { 
+  await SystemChrome.setPreferredOrientations([
+   DeviceOrientation.portraitUp,
+]);
+
+  try {
     await NotificationService.instance.initialize();
     await NotificationService.instance.setupFlutterNotifications();
     print("[MAIN] Notification service initialized successfully.");
@@ -20,8 +24,6 @@ void main() async {
     print("[MAIN] Error initializing notification service: $e");
   }
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-
-  
 
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -36,7 +38,6 @@ class MyApp extends ConsumerWidget {
   final GlobalKey<NavigatorState> navigatorKey;
 
   MyApp({super.key, required this.navigatorKey}) {
-    
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('[Foreground Message] Received: ${message.notification?.title}');
 
@@ -65,6 +66,11 @@ class MyApp extends ConsumerWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
+      theme: ThemeData(
+        textTheme: GoogleFonts.poppinsTextTheme(
+          Theme.of(context).textTheme,
+        ),
+      ),
       home: const SplashScreen(),
     );
   }

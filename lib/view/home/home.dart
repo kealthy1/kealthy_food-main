@@ -21,7 +21,6 @@ import 'package:kealthy_food/view/search/searchbar.dart';
 import 'package:kealthy_food/view/splash_screen/version_check.dart';
 import 'package:lottie/lottie.dart';
 
-
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
@@ -30,7 +29,9 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
   bool hasShownDialog = false;
   final bool _hasLocationPermission = false;
   late ScrollController _scrollController;
@@ -66,8 +67,6 @@ class _HomePageState extends ConsumerState<HomePage>
     }
   }
 
-  
-
   void _onScroll() {
     if (_scrollController.position.userScrollDirection ==
         ScrollDirection.reverse) {
@@ -82,6 +81,7 @@ class _HomePageState extends ConsumerState<HomePage>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final cartItems = ref.read(cartProvider);
     final selectedAddress = ref.watch(selectedLocationProvider);
     final totalItems =
@@ -139,13 +139,15 @@ class _HomePageState extends ConsumerState<HomePage>
                       SizedBox(height: 10),
                       HomeCategory(),
                       SizedBox(height: 50),
-                      KealthyPage()
+                      KealthyPage(),
+                      // Newsletter subscription UI (redesigned) - show only if no email in SharedPreferences
+
+                      SizedBox(height: 100),
                     ],
                   ),
                 ),
               ],
             ),
-
             const ReviewAlert(),
             Consumer(
               builder: (context, ref, child) {
@@ -195,7 +197,7 @@ class _HomePageState extends ConsumerState<HomePage>
               future: getSelectedAddressOrCurrentLocation(ref),
               builder: (context, snapshot) {
                 String displayText;
-                bool showSubText = false; // Flag to control subText display
+                bool showSubText = false;
                 String subText = "";
 
                 if (locationPermission == LocationPermission.denied) {
@@ -323,7 +325,8 @@ class _HomePageState extends ConsumerState<HomePage>
               }
             },
             loading: () => const CupertinoActivityIndicator(
-                                  color: Colors.white,),
+              color: Colors.white,
+            ),
             error: (error, stack) => const SizedBox.shrink(),
           ),
           IconButton(
@@ -408,5 +411,4 @@ class _HomePageState extends ConsumerState<HomePage>
       ),
     );
   }
-
 }

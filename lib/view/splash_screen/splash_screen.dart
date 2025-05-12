@@ -1,19 +1,22 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kealthy_food/view/BottomNavBar/bottom_nav_bar.dart';
 import 'package:kealthy_food/view/Login/login_page.dart';
+import 'package:kealthy_food/view/maintanence/maintanence.dart';
 import 'package:kealthy_food/view/splash_screen/network.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
@@ -21,22 +24,44 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _initializeApp() async {
-
-    // Delay navigation by 3 seconds
     await Future.delayed(const Duration(seconds: 3));
 
-    // Check if the user has a saved phone number
-    final hasPhoneNumber = await _checkPhoneNumber();
+    final isUnderMaintenance = await _checkMaintenanceStatus();
+    if (!mounted) return;
 
-    if (mounted) {
+    if (isUnderMaintenance) {
+      Navigator.pushReplacement(
+        context,
+        CupertinoPageRoute(builder: (_) => const MaintenanceScreen()),
+      );
+    } else {
+      final prefs = await SharedPreferences.getInstance();
+      final storedPhone = prefs.getString('phoneNumber') ?? '';
+
+      // ✅ Set phone number into provider
+      ref.read(phoneNumberProvider.notifier).state = storedPhone;
+
       Navigator.pushReplacement(
         context,
         CupertinoModalPopupRoute(
-          builder: (context) => hasPhoneNumber
+          builder: (_) => storedPhone.isNotEmpty
               ? const InternetAwareWidget(child: BottomNavBar())
               : const LoginFields(),
         ),
       );
+    }
+  }
+
+  Future<bool> _checkMaintenanceStatus() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('maintenance')
+          .doc('status')
+          .get();
+      return doc.data()?['maintenance'] == true;
+    } catch (e) {
+      print("⚠️ Maintenance check failed: $e");
+      return false;
     }
   }
 
@@ -57,10 +82,5 @@ class _SplashScreenState extends State<SplashScreen> {
         ),
       ),
     );
-  }
-
-  Future<bool> _checkPhoneNumber() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.containsKey('phoneNumber');
   }
 }

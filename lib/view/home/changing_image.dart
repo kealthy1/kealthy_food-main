@@ -44,6 +44,15 @@ class _ChangingImageWidgetState extends ConsumerState<ChangingImageWidget> {
     _startAutoScroll();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final imageList = ref.read(imageDataProvider);
+    for (final image in imageList) {
+      precacheImage(CachedNetworkImageProvider(image.imageUrl), context);
+    }
+  }
+
   void _startAutoScroll() {
     _timer?.cancel(); // Ensure any existing timer is canceled
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
@@ -140,7 +149,7 @@ class _ChangingImageWidgetState extends ConsumerState<ChangingImageWidget> {
                 color: Colors.grey[300],
                 borderRadius: BorderRadius.circular(20)),
             width: MediaQuery.of(context).size.width,
-            height: 150,
+            height: 180,
           ),
         ),
       );
@@ -235,16 +244,13 @@ class _ChangingImageWidgetState extends ConsumerState<ChangingImageWidget> {
     );
   }
 
-
-@override
+  @override
   void dispose() {
     _timer?.cancel();
     _pageController.dispose();
     super.dispose();
   }
 }
-
-
 
 class ImageNotifier extends StateNotifier<List<ImageData>> {
   ImageNotifier({required Ref ref}) : super([]) {

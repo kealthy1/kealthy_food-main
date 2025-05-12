@@ -1388,10 +1388,10 @@
       "languageVersion": "2.17"
     }
   ],
-  "generated": "2025-04-30T12:27:13.535631Z",
+  "generated": "2025-05-09T12:01:54.046662Z",
   "generator": "pub",
   "generatorVersion": "3.7.2",
   "flutterRoot": "file:///Users/cotoloreenterprises/flutter",
-  "flutterVersion": "3.29.2",
+  "flutterVersion": "3.29.3",
   "pubCache": "file:///Users/cotoloreenterprises/.pub-cache"
 }

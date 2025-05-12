@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/notifications/feedback.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 // StateNotifier for tracking whether to show the feedback alert
 class ReviewAlertNotifier extends StateNotifier<bool> {
@@ -37,13 +38,28 @@ class OrderFeedbackAlert extends ConsumerStatefulWidget {
       _OrderFeedbackAlertState();
 }
 
-class _OrderFeedbackAlertState extends ConsumerState<OrderFeedbackAlert> {
+class _OrderFeedbackAlertState extends ConsumerState<OrderFeedbackAlert>
+    with AutomaticKeepAliveClientMixin {
   String? latestOrderId;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
     _checkOrderCompletionTime();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    precacheImage(
+      CachedNetworkImageProvider(
+        'https://firebasestorage.googleapis.com/v0/b/kealthy-90c55.appspot.com/o/feedback_image.jpg?alt=media',
+      ),
+      context,
+    );
   }
 
   Future<void> _checkOrderCompletionTime() async {
@@ -63,6 +79,7 @@ class _OrderFeedbackAlertState extends ConsumerState<OrderFeedbackAlert> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final shouldShowAlert = ref.watch(reviewAlertProvider);
 
     if (!shouldShowAlert || latestOrderId == null) {
@@ -93,9 +110,11 @@ class _OrderFeedbackAlertState extends ConsumerState<OrderFeedbackAlert> {
           actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           title: Column(
             children: [
-              Image.asset(
-                'lib/assets/images/PHOTO-2025-02-15-15-01-53.jpg',
+              CachedNetworkImage(
+                imageUrl: 'https://firebasestorage.googleapis.com/v0/b/kealthy-90c55.appspot.com/o/feedback_image.jpg?alt=media',
                 height: 100,
+                placeholder: (context, url) => const CupertinoActivityIndicator(),
+                errorWidget: (context, url, error) => const Icon(Icons.error),
               ),
               const SizedBox(height: 10),
               Text(

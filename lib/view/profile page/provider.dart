@@ -33,53 +33,61 @@ class ProfileModel {
 
 // Profile Provider
 final profileProvider = StateNotifierProvider<ProfileNotifier, ProfileModel>(
-  (ref) => ProfileNotifier(),
+  (ref) => ProfileNotifier(ref),
 );
 
 class ProfileNotifier extends StateNotifier<ProfileModel> {
-  ProfileNotifier() : super(ProfileModel(name: '', email: '', isLoading: true)) {
-    loadProfileData();
+  final Ref ref;
+  ProfileNotifier(this.ref) : super(ProfileModel(name: '', email: '', isLoading: true)) {
+    final phone = ref.read(phoneNumberProvider);
+    if (phone.isNotEmpty) {
+      loadProfileData();
+    } else {
+      state = ProfileModel(name: '', email: '', isLoading: false);
+    }
   }
 
   // ✅ 1️⃣ Load Profile from SharedPreferences (Fast Fetch)
   Future<void> loadProfileData() async {
-    final prefs = await SharedPreferences.getInstance();
+  final prefs = await SharedPreferences.getInstance();
+  final phoneNumber = ref.read(phoneNumberProvider);
 
-    state = state.copyWith(isLoading: true);
-    final storedName = prefs.getString('user_name') ?? '';
-    final storedEmail = prefs.getString('user_email') ?? '';
-
-    // Update state with SharedPreferences data
-    state = ProfileModel(name: storedName, email: storedEmail, isLoading: false);
-
-    // Fetch updated data from API in the background
-    fetchProfileData();
+  if (phoneNumber.isEmpty) {
+    state = ProfileModel(name: '', email: '', isLoading: false);
+    return;
   }
+
+  state = state.copyWith(isLoading: true);
+  final storedName = prefs.getString('user_name') ?? '';
+  final storedEmail = prefs.getString('user_email') ?? '';
+
+  state = ProfileModel(name: storedName, email: storedEmail, isLoading: false);
+  fetchProfileData();
+}
 
   // ✅ 2️⃣ Fetch Profile from API (Background Fetch)
-    Future<void> fetchProfileData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final phoneNumber = prefs.getString('phoneNumber');
+   Future<void> fetchProfileData() async {
+  final prefs = await SharedPreferences.getInstance();
+  final phoneNumber = ref.read(phoneNumberProvider);
 
-    if (phoneNumber != null) {
-      try {
-        state = state.copyWith(isLoading: true); // show shimmer during API call
-        final userDetails = await UserService.getUserDetails(phoneNumber);
+  if (phoneNumber.isEmpty) return;
 
-        state = ProfileModel(
-          name: userDetails['name'] ?? '',
-          email: userDetails['email'] ?? '',
-          isLoading: false,
-        );
+  try {
+    state = state.copyWith(isLoading: true);
+    final userDetails = await UserService.getUserDetails(phoneNumber);
 
-        // Optionally store updated values to SharedPreferences
-        prefs.setString('user_name', userDetails['name'] ?? '');
-        prefs.setString('user_email', userDetails['email'] ?? '');
-      } catch (e) {
-        state = state.copyWith(isLoading: false); // hide shimmer on error
-      }
-    }
+    state = ProfileModel(
+      name: userDetails['name'] ?? '',
+      email: userDetails['email'] ?? '',
+      isLoading: false,
+    );
+
+    prefs.setString('user_name', userDetails['name'] ?? '');
+    prefs.setString('user_email', userDetails['email'] ?? '');
+  } catch (e) {
+    state = state.copyWith(isLoading: false);
   }
+}
 
   // ✅ 3️⃣ Update User Profile
    Future<void> updateUserData(String name, String email) async {
@@ -108,6 +116,9 @@ Future<void> deleteAccount(WidgetRef ref, BuildContext context) async {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
             title: Text(
               "Delete Account",
               style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
@@ -122,11 +133,17 @@ Future<void> deleteAccount(WidgetRef ref, BuildContext context) async {
                 child: Text("Cancel",
                     style: GoogleFonts.poppins(color: Colors.black)),
               ),
-              TextButton(
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
                 onPressed: () => Navigator.pop(context, true),
                 child: Text("Delete",
                     style: GoogleFonts.poppins(
-                        color: Colors.red, fontWeight: FontWeight.bold)),
+                        color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ],
           );
@@ -146,7 +163,7 @@ Future<void> deleteAccount(WidgetRef ref, BuildContext context) async {
         return AlertDialog(
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -195,6 +212,8 @@ Future<void> deleteAccount(WidgetRef ref, BuildContext context) async {
 
       // Clear all saved data from SharedPreferences
       await prefs.clear();
+      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+      ref.read(profileProvider.notifier).state = ProfileModel(name: '', email: '', isLoading: false);
       ref.invalidate(selectedLocationProvider);
       ref.invalidate(phoneNumberProvider);
       ref.invalidate(customerNameProvider);
@@ -255,6 +274,7 @@ Future<void> logoutUser(BuildContext context, WidgetRef ref) async {
 
   final prefs = await SharedPreferences.getInstance();
   await prefs.clear();
+  await prefs.remove('phoneNumber');
 
   await ref.read(loginStatusProvider.notifier).logout();
 

@@ -127,20 +127,6 @@ class VersionCheckService {
           actions: [
             TextButton(
               onPressed: () {
-                print("🕒 [VersionCheckService] User chose 'Not Now' — dismissing dialog.");
-                Navigator.pop(context);
-              },
-              child: Text(
-                "Not Now",
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  color: Colors.black54,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
                 const storeUrl = "https://apps.apple.com/in/app/id$appStoreId";
                 print("➡️ [VersionCheckService] Opening App Store URL: $storeUrl");
                 launchUrl(

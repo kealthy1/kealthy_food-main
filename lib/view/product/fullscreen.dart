@@ -32,18 +32,34 @@ class ImageZoomPage extends ConsumerStatefulWidget {
   _ImageZoomPageState createState() => _ImageZoomPageState();
 }
 
-class _ImageZoomPageState extends ConsumerState<ImageZoomPage> {
+class _ImageZoomPageState extends ConsumerState<ImageZoomPage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   late PageController _pageController;
+  late List<ImageProvider> _cachedImages;
 
  @override
 void initState() {
   super.initState();
   _pageController = PageController(initialPage: widget.initialIndex);
+  _cachedImages = widget.imageUrls
+      .map((url) => CachedNetworkImageProvider(url))
+      .toList();
   
   // Delay the provider update to avoid modifying it during widget build
   WidgetsBinding.instance.addPostFrameCallback((_) {
     ref.read(imageIndexProvider.notifier).setIndex(widget.initialIndex);
   });
+}
+
+@override
+void didChangeDependencies() {
+  super.didChangeDependencies();
+  for (final provider in _cachedImages) {
+    precacheImage(provider, context);
+  }
 }
     
 
@@ -55,6 +71,7 @@ void initState() {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     ref.watch(imageIndexProvider);
 
     return Scaffold(
@@ -84,7 +101,7 @@ void initState() {
               },
               builder: (context, index) {
                 return PhotoViewGalleryPageOptions(
-                  imageProvider: CachedNetworkImageProvider(widget.imageUrls[index]),
+                  imageProvider: _cachedImages[index],
                   minScale: PhotoViewComputedScale.contained,
                   maxScale: PhotoViewComputedScale.covered * 2.5,
                   heroAttributes: PhotoViewHeroAttributes(tag: index),

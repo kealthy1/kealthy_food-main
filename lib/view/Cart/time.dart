@@ -335,7 +335,7 @@ class _TimePageState extends ConsumerState<TimePage> {
                 }
 
                 deliveryTime =
-                    "${DateFormat('hh:mm a').format(slotStart)} - ${DateFormat('hh:mm a').format(slotEnd)}";
+                    "${DateFormat('MMM d').format(slotStart)}, ${DateFormat('hh:mm a').format(slotStart)} - ${DateFormat('hh:mm a').format(slotEnd)}";
               } else {
                 ToastHelper.showErrorToast(
                     'Please select a delivery slot or instant delivery.');

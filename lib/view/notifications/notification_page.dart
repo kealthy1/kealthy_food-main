@@ -212,7 +212,12 @@ Widget _buildNotificationTile(
                   final productImageAsync =
                       ref.watch(productImageProvider(productNames.first));
                   return productImageAsync.when(
-                    data: (imageUrl) => _buildImage(imageUrl),
+                    data: (imageUrl) {
+                      if (imageUrl != null) {
+                        precacheImage(CachedNetworkImageProvider(imageUrl), context);
+                      }
+                      return _buildImage(imageUrl);
+                    },
                     loading: () => _buildLoadingImage(),
                     error: (_, __) =>
                         const Icon(Icons.image, size: 60, color: Colors.grey),

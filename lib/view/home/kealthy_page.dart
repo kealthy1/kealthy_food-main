@@ -1,12 +1,18 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kealthy_food/view/home/provider.dart';
+import 'package:kealthy_food/view/profile%20page/edit_profile.dart';
+import 'package:kealthy_food/view/profile%20page/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class KealthyPage extends StatelessWidget {
+class KealthyPage extends ConsumerWidget {
   const KealthyPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(profileProvider);
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
 
@@ -92,6 +98,65 @@ class KealthyPage extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
+              FutureBuilder<String?>(
+                        future: SharedPreferences.getInstance()
+                            .then((prefs) => prefs.getString('user_email')),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const SizedBox.shrink();
+                          }
+                          final email = snapshot.data;
+                          if (email != null && email.isNotEmpty) {
+                            return const SizedBox.shrink();
+                          }
+
+                          return Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Center(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text(
+                                    "Subscribe to our newsletter",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Color.fromRGBO(0, 0, 0, 0.4),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  GestureDetector(
+                                    onTap: () async {
+                                      final result = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => EditProfilePage(
+                                              name: profile.name,
+                                              email: profile.email),
+                                        ),
+                                      );
+                                      if (result == true) {
+                                        ref
+                                            .read(newsletterSubscribedProvider
+                                                .notifier)
+                                            .state = true;
+                                      }
+                                    },
+                                    child: Text(
+                                      'click here',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.blue.shade400,
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
             ],
           ),
         ),

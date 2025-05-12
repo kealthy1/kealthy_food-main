@@ -4,7 +4,7 @@ import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:kealthy_food/view/support/live_ticket.dart';
 import 'package:kealthy_food/view/orders/myorders.dart';
 import 'package:kealthy_food/view/orders/past_orders.dart';
-import 'package:kealthy_food/view/profile%20page/support.dart';
+import 'package:kealthy_food/view/support/support.dart';
 
 class HelpCenterPage extends StatelessWidget {
   const HelpCenterPage({super.key});

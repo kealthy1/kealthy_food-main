@@ -28,9 +28,8 @@ class SolvedTicketsPage extends ConsumerWidget {
         if (snapshot.docs.isEmpty) {
           return const Center(
             child: Text(
-              "No Solved tickets found.",
-              style: TextStyle(
-                  fontFamily: "Poppins", fontSize: 16, color: Colors.black54),
+              "No solved tickets found",
+              style: TextStyle(fontFamily: "poppins"),
             ),
           );
         }

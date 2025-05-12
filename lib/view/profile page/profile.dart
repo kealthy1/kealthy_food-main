@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kealthy_food/view/Login/login_page.dart';
 import 'package:kealthy_food/view/profile%20page/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:kealthy_food/view/address/adress.dart';
@@ -11,7 +12,7 @@ import 'package:kealthy_food/view/profile%20page/edit_profile.dart';
 import 'package:kealthy_food/view/profile%20page/refund_and_return.dart';
 import 'package:kealthy_food/view/profile%20page/Terms_and_condition.dart';
 import 'package:kealthy_food/view/profile%20page/share.dart';
-import 'package:kealthy_food/view/profile%20page/support.dart';
+import 'package:kealthy_food/view/support/support.dart';
 import 'package:shimmer/shimmer.dart';
 
 // Example: version from package_info
@@ -41,31 +42,21 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   Widget build(BuildContext context) {
     final profile = ref.watch(profileProvider);
     final versionAsyncValue = ref.watch(versionProvider);
+    final phoneNumber = ref.watch(phoneNumberProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        title: Text(
-          'Profile',
-          style: GoogleFonts.poppins(
-            textStyle: const TextStyle(
-              fontSize: 25,
-              color: Colors.black,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ),
-      ),
       // 🚀 No more `profile.isLoading ? spinner : content`
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // 🔹 Profile Row
+            SizedBox(
+              height: MediaQuery.of(context).padding.top + 20,
+            ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+              ),
               child: Row(
                 children: [
                   const Icon(
@@ -78,7 +69,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        profile.name.isEmpty
+                        // Name
+                        profile.isLoading
                             ? Shimmer.fromColors(
                                 baseColor: Colors.grey[300]!,
                                 highlightColor: Colors.grey[100]!,
@@ -92,15 +84,18 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                 ),
                               )
                             : Text(
-                                profile.name,
+                                profile.name.isNotEmpty
+                                    ? profile.name
+                                    : 'Guest',
                                 overflow: TextOverflow.visible,
                                 style: GoogleFonts.poppins(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                        const SizedBox(height: 4),
-                        profile.email.isEmpty
+
+                        // Email
+                        profile.isLoading
                             ? Shimmer.fromColors(
                                 baseColor: Colors.grey[300]!,
                                 highlightColor: Colors.grey[100]!,
@@ -113,30 +108,34 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                   ),
                                 ),
                               )
-                            : Text(
-                                profile.email,
-                                overflow: TextOverflow.visible,
-                                style: GoogleFonts.poppins(fontSize: 12),
-                              ),
+                            : profile.email.isNotEmpty
+                                ? Text(
+                                    profile.email,
+                                    overflow: TextOverflow.visible,
+                                    style: GoogleFonts.poppins(fontSize: 12),
+                                  )
+                                : const SizedBox
+                                    .shrink(), // 🔁 hide completely if no value
                       ],
                     ),
                   ),
-                  IconButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EditProfilePage(
-                            name: profile.name,
-                            email: profile.email,
+                  if (phoneNumber.isNotEmpty)
+                    IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditProfilePage(
+                              name: profile.name,
+                              email: profile.email,
+                            ),
                           ),
-                        ),
-                      ).then((_) {
-                        ref.read(profileProvider.notifier).fetchProfileData();
-                      });
-                    },
-                    icon: const Icon(Icons.edit_outlined),
-                  ),
+                        ).then((_) {
+                          ref.read(profileProvider.notifier).fetchProfileData();
+                        });
+                      },
+                      icon: const Icon(Icons.edit_outlined),
+                    ),
                   const ShareAppButton(),
                 ],
               ),
@@ -219,7 +218,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               },
             ),
             _divider(),
-            if (profile.name.isNotEmpty || profile.email.isNotEmpty) ...[
+            if (phoneNumber.isNotEmpty) ...[
               _buildTile(
                 context: context,
                 title: 'Delete Account',
@@ -232,7 +231,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             const SizedBox(height: 20),
             // 🔹 Logout Button
 
-            if (profile.name.isNotEmpty || profile.email.isNotEmpty) ...[
+             if (phoneNumber.isNotEmpty) ...[
               // 🔹 Logout Button
               SizedBox(
                 width: MediaQuery.of(context).size.width * 0.4,
@@ -383,6 +382,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             style: GoogleFonts.poppins(
               color: Colors.white,
               fontSize: 15,
+              fontWeight: FontWeight.bold,
             ),
           ),
         )

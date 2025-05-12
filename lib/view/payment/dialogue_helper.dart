@@ -54,7 +54,7 @@ class PaymentDialogHelper {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    "Payment successful!",
+                    "Order placed!",
                     textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
                       fontSize: 18,

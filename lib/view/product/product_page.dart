@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,6 +7,7 @@ import 'package:kealthy_food/view/product/alert_dialogue.dart';
 import 'package:kealthy_food/view/product/product_content.dart';
 // import 'package:kealthy_food/view/product/kealthy_score.dart';
 import 'package:kealthy_food/view/Cart/cart_container.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 // ----------------------------------------------------------------------
 
 final currentPageProvider = StateProvider<int>((ref) => 0);
@@ -21,7 +23,11 @@ class ProductPage extends StatefulWidget {
   State<ProductPage> createState() => _ProductPageState();
 }
 
-class _ProductPageState extends State<ProductPage> with WidgetsBindingObserver {
+class _ProductPageState extends State<ProductPage>
+    with WidgetsBindingObserver, AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   late final PageController _pageController;
 
   @override
@@ -41,6 +47,7 @@ class _ProductPageState extends State<ProductPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       appBar: AppBar(
         surfaceTintColor: Colors.white,
@@ -69,13 +76,23 @@ class _ProductPageState extends State<ProductPage> with WidgetsBindingObserver {
                   ));
                 }
                 if (!snapshot.hasData || !snapshot.data!.exists) {
-                  return Center(
-                      child: Text(
-                    'Product not found.',
-                    style: GoogleFonts.poppins(),
-                  ));
+                  return Column(
+                    children: [
+                      const Icon(CupertinoIcons.exclamationmark_circle,
+                          size: 50, color: Colors.black),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Product not found.',
+                        style: GoogleFonts.poppins(),
+                      ),
+                    ],
+                  );
                 }
                 final docData = snapshot.data!.data()!;
+                final imageUrls = docData['ImageUrl'] ?? [];
+                if (imageUrls.isNotEmpty && imageUrls[0] is String) {
+                  precacheImage(CachedNetworkImageProvider(imageUrls[0]), context);
+                }
 
                 return ProductContent(
                   docData: docData,
@@ -91,8 +108,6 @@ class _ProductPageState extends State<ProductPage> with WidgetsBindingObserver {
     );
   }
 }
-
-
 
 void showDetailsDialog({
   required BuildContext context,

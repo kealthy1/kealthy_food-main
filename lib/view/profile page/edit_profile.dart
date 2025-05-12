@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kealthy_food/view/Toast/toast_helper.dart';
 import 'package:kealthy_food/view/profile%20page/provider.dart';
 
 final isSavingProvider = StateProvider<bool>((ref) => false);
@@ -49,7 +50,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
+        backgroundColor: Colors.white,
         appBar: AppBar(
+          backgroundColor: Colors.white,
           title: Text(
             "Edit Profile",
             style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
@@ -84,6 +87,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
               TextField(
                 controller: _emailController,
                 onChanged: (value) {
+                  if (!value.contains('@gmail.com')) {
+                    ToastHelper.showErrorToast(
+                        "Please enter a valid email address");
+                    return;
+                  }
                   // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
                   ref.read(profileProvider.notifier).state =
                       profile.copyWith(email: value);
@@ -123,7 +131,19 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                         final newName = _nameController.text.trim();
                         final newEmail = _emailController.text.trim();
 
-                        if (newName.isNotEmpty && newEmail.isNotEmpty) {
+                        if (newName.isEmpty || newEmail.isEmpty) {
+                          // Show a simple alert
+                          ToastHelper.showErrorToast("Please fill all fields");
+
+                          ref.read(isSavingProvider.notifier).state = false;
+                          return;
+                        }
+                        if (!newEmail.contains('@gmail.com')) {
+                          ToastHelper.showErrorToast(
+                              "Please enter a valid email address");
+                          ref.read(isSavingProvider.notifier).state = false;
+                          return;
+                        } else {
                           await ref
                               .read(profileProvider.notifier)
                               .updateUserData(newName, newEmail);
@@ -139,8 +159,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                         width: 24,
                         height: 24,
                         child: CupertinoActivityIndicator(
-                                  color:Color.fromARGB(255, 65, 88, 108))
-                      )
+                            color: Color.fromARGB(255, 65, 88, 108)))
                     : Text(
                         "Save",
                         style: GoogleFonts.poppins(

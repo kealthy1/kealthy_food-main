@@ -72,6 +72,7 @@ class _LocationPageState extends ConsumerState<LocationPage> {
                 SizedBox(
                   height: MediaQuery.of(context).size.height,
                   child: GoogleMap(
+                    key: ValueKey('${currentPosition.latitude}_${currentPosition.longitude}'),
                     initialCameraPosition: CameraPosition(
                       target: LatLng(
                         currentPosition.latitude,
