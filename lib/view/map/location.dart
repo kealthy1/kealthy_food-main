@@ -1,3 +1,4 @@
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -54,6 +55,7 @@ class _LocationPageState extends ConsumerState<LocationPage> {
     ref.watch(suggestionsProvider); // Watch suggestions
     ref.watch(placeSuggestionsProvider);
     bool isBottomSheetOpen = false;
+    final asyncShowMap = ref.watch(showMapProvider);
 
     return Scaffold(
       key: _scaffoldKey,
@@ -66,7 +68,7 @@ class _LocationPageState extends ConsumerState<LocationPage> {
           style: GoogleFonts.poppins(),
         ),
       ),
-      body: currentPosition != null
+      body: (currentPosition != null && asyncShowMap.asData?.value == true)
           ? Stack(
               children: [
                 SizedBox(

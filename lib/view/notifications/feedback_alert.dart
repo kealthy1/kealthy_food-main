@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/notifications/feedback.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 // StateNotifier for tracking whether to show the feedback alert
 class ReviewAlertNotifier extends StateNotifier<bool> {
@@ -34,8 +33,7 @@ class OrderFeedbackAlert extends ConsumerStatefulWidget {
   const OrderFeedbackAlert({super.key});
 
   @override
-  ConsumerState<OrderFeedbackAlert> createState() =>
-      _OrderFeedbackAlertState();
+  ConsumerState<OrderFeedbackAlert> createState() => _OrderFeedbackAlertState();
 }
 
 class _OrderFeedbackAlertState extends ConsumerState<OrderFeedbackAlert>
@@ -55,9 +53,7 @@ class _OrderFeedbackAlertState extends ConsumerState<OrderFeedbackAlert>
   void didChangeDependencies() {
     super.didChangeDependencies();
     precacheImage(
-      CachedNetworkImageProvider(
-        'https://firebasestorage.googleapis.com/v0/b/kealthy-90c55.appspot.com/o/feedback_image.jpg?alt=media',
-      ),
+      const AssetImage('lib/assets/images/PHOTO-2025-02-15-15-01-53.jpg'),
       context,
     );
   }
@@ -65,7 +61,8 @@ class _OrderFeedbackAlertState extends ConsumerState<OrderFeedbackAlert>
   Future<void> _checkOrderCompletionTime() async {
     final prefs = await SharedPreferences.getInstance();
     final String? orderTimeString = prefs.getString('order_completed_time');
-    latestOrderId = prefs.getString('latest_order_id'); // Get the latest order ID
+    latestOrderId =
+        prefs.getString('latest_order_id'); // Get the latest order ID
 
     if (orderTimeString != null) {
       final DateTime orderTime = DateTime.parse(orderTimeString);
@@ -96,7 +93,8 @@ class _OrderFeedbackAlertState extends ConsumerState<OrderFeedbackAlert>
     return const SizedBox.shrink();
   }
 
-  void _showOrderFeedbackDialog(BuildContext context, WidgetRef ref, String orderId) {
+  void _showOrderFeedbackDialog(
+      BuildContext context, WidgetRef ref, String orderId) {
     showDialog(
       context: context,
       builder: (dialogContext) {
@@ -106,15 +104,16 @@ class _OrderFeedbackAlertState extends ConsumerState<OrderFeedbackAlert>
             borderRadius: BorderRadius.circular(12),
           ),
           titlePadding: const EdgeInsets.all(16),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          actionsPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           title: Column(
             children: [
-              CachedNetworkImage(
-                imageUrl: 'https://firebasestorage.googleapis.com/v0/b/kealthy-90c55.appspot.com/o/feedback_image.jpg?alt=media',
+              Image.asset(
+                'lib/assets/images/PHOTO-2025-02-15-15-01-53.jpg',
                 height: 100,
-                placeholder: (context, url) => const CupertinoActivityIndicator(),
-                errorWidget: (context, url, error) => const Icon(Icons.error),
+                fit: BoxFit.cover,
               ),
               const SizedBox(height: 10),
               Text(

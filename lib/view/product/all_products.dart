@@ -250,158 +250,211 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                             ),
                           );
                         },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.grey.shade300),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.2),
-                                blurRadius: 5,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              // Product Image.
-                              Expanded(
-                                child: ClipRRect(
-                                  borderRadius: const BorderRadius.only(
-                                    topLeft: Radius.circular(10),
-                                    topRight: Radius.circular(10),
+                        child: Stack(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: Colors.grey.shade300),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.2),
+                                    blurRadius: 5,
+                                    offset: const Offset(0, 3),
                                   ),
-                                  child: CachedNetworkImage(
-                                    imageUrl: firstImageUrl,
-                                    fit: BoxFit.cover,
-                                    placeholder: (context, url) =>
-                                        Shimmer.fromColors(
-                                      baseColor: Colors.grey[300]!,
-                                      highlightColor: Colors.grey[100]!,
-                                      child: Container(color: Colors.white),
-                                    ),
-                                    errorWidget: (context, url, error) =>
-                                        const Icon(Icons.error,
-                                            color: Colors.red),
-                                  ),
-                                ),
+                                ],
                               ),
-                              // Product Info.
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: SizedBox(
-                                  height: screenheight * 0.1,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(productName,
-                                          maxLines: 2,
-                                          style: GoogleFonts.poppins(
-                                            textStyle: const TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.black,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          )),
-                                      Consumer(
-                                        builder: (context, ref, child) {
-                                          final averageStarsAsync = ref.watch(
-                                              averageStarsProvider(
-                                                  productName));
-
-                                          return averageStarsAsync.when(
-                                            data: (rating) {
-                                              if (rating == 0.0) {
-                                                return const SizedBox
-                                                    .shrink(); // Hide stars if rating is 0
-                                              }
-
-                                              int fullStars = rating
-                                                  .floor(); // Get integer part (e.g., 3 from 3.8)
-                                              bool hasHalfStar = rating -
-                                                      fullStars >=
-                                                  0.5; // Check if it needs a half-star
-
-                                              return Row(
-                                                children: [
-                                                  Text(
-                                                    rating.toStringAsFixed(1),
-                                                    style: GoogleFonts.poppins(
-                                                      fontSize: 10,
-                                                      color: Colors.black54,
-                                                    ),
-                                                  ),
-                                                  // Generate full stars
-                                                  ...List.generate(
-                                                    fullStars,
-                                                    (index) => const Icon(
-                                                        Icons.star,
-                                                        color: Colors.orange,
-                                                        size: 12),
-                                                  ),
-
-                                                  // Show half-star if needed
-                                                  if (hasHalfStar)
-                                                    const Icon(Icons.star_half,
-                                                        color: Colors.orange,
-                                                        size: 12),
-
-                                                  // Show empty stars to keep alignment
-                                                  ...List.generate(
-                                                    5 -
-                                                        fullStars -
-                                                        (hasHalfStar ? 1 : 0),
-                                                    (index) => const Icon(
-                                                        Icons.star_border,
-                                                        color: Colors.orange,
-                                                        size: 12),
-                                                  ),
-
-                                                  const SizedBox(width: 5),
-
-                                                  // Show the numeric rating next to stars
-                                                ],
-                                              );
-                                            },
-                                            loading: () => Container(),
-                                            error: (error, _) => const Text(''),
-                                          );
-                                        },
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  // Product Image.
+                                  Expanded(
+                                    child: ClipRRect(
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(10),
+                                        topRight: Radius.circular(10),
                                       ),
-                                      const Spacer(),
-                                      Row(
+                                      child: CachedNetworkImage(
+                                        imageUrl: firstImageUrl,
+                                        fit: BoxFit.cover,
+                                        placeholder: (context, url) =>
+                                            Shimmer.fromColors(
+                                          baseColor: Colors.grey[300]!,
+                                          highlightColor: Colors.grey[100]!,
+                                          child: Container(color: Colors.white),
+                                        ),
+                                        errorWidget: (context, url, error) =>
+                                            const Icon(Icons.error,
+                                                color: Colors.red),
+                                      ),
+                                    ),
+                                  ),
+                                  // Product Info.
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: SizedBox(
+                                      height: screenheight * 0.1,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            '\u20B9$price/-',
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              color: Colors.green.shade800,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                          const Spacer(),
-                                          Text(productqty,
+                                          Text(productName,
                                               maxLines: 2,
                                               style: GoogleFonts.poppins(
                                                 textStyle: const TextStyle(
-                                                  fontSize: 12,
+                                                  fontSize: 16,
                                                   color: Colors.black,
-                                                  fontWeight: FontWeight.w400,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
                                               )),
+                                          Consumer(
+                                            builder: (context, ref, child) {
+                                              final averageStarsAsync = ref.watch(
+                                                  averageStarsProvider(
+                                                      productName));
+                                              return averageStarsAsync.when(
+                                                data: (rating) {
+                                                  if (rating == 0.0) {
+                                                    return const SizedBox
+                                                        .shrink(); // Hide stars if rating is 0
+                                                  }
+                                                  int fullStars = rating
+                                                      .floor(); // Get integer part (e.g., 3 from 3.8)
+                                                  bool hasHalfStar = rating -
+                                                          fullStars >=
+                                                      0.5; // Check if it needs a half-star
+                                                  return Row(
+                                                    children: [
+                                                      Text(
+                                                        rating.toStringAsFixed(1),
+                                                        style: GoogleFonts.poppins(
+                                                          fontSize: 10,
+                                                          color: Colors.black54,
+                                                        ),
+                                                      ),
+                                                      // Generate full stars
+                                                      ...List.generate(
+                                                        fullStars,
+                                                        (index) => const Icon(
+                                                            Icons.star,
+                                                            color: Colors.orange,
+                                                            size: 12),
+                                                      ),
+                                                      // Show half-star if needed
+                                                      if (hasHalfStar)
+                                                        const Icon(Icons.star_half,
+                                                            color: Colors.orange,
+                                                            size: 12),
+                                                      // Show empty stars to keep alignment
+                                                      ...List.generate(
+                                                        5 -
+                                                            fullStars -
+                                                            (hasHalfStar ? 1 : 0),
+                                                        (index) => const Icon(
+                                                            Icons.star_border,
+                                                            color: Colors.orange,
+                                                            size: 12),
+                                                      ),
+                                                      const SizedBox(width: 5),
+                                                    ],
+                                                  );
+                                                },
+                                                loading: () => Container(),
+                                                error: (error, _) => const Text(''),
+                                              );
+                                            },
+                                          ),
+                                          const Spacer(),
+                                          Row(
+                                            children: [
+                                              Text(
+                                                '\u20B9$price/-',
+                                                style: TextStyle(
+                                                  fontSize: 15,
+                                                  color: Colors.green.shade800,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              const Spacer(),
+                                              Text(productqty,
+                                                  maxLines: 2,
+                                                  style: GoogleFonts.poppins(
+                                                    textStyle: const TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.black,
+                                                      fontWeight: FontWeight.w400,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  )),
+                                            ],
+                                          ),
                                         ],
                                       ),
-                                    ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if ((data['SOH'] ?? 1) <= 4)
+                              Positioned(
+                                top: 0,
+                                right: 0,
+                                child: ClipRRect(
+                                  borderRadius: const BorderRadius.only(
+                                    topRight: Radius.circular(10),
+                                  ),
+                                  child: Container(
+                                    height: 46,
+                                    width: 38,
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                    decoration: const BoxDecoration(
+                                      color: Color.fromARGB(255, 201, 82, 74),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: (data['SOH'] ?? 1) == 0
+                                          ? [
+                                              Text('OUT',
+                                                  style: GoogleFonts.poppins(
+                                                      color: Colors.white,
+                                                      fontSize: 6,
+                                                      fontWeight: FontWeight.bold)),
+                                              Text('OF',
+                                                  style: GoogleFonts.poppins(
+                                                      color: Colors.white,
+                                                      fontSize: 7,
+                                                      fontWeight: FontWeight.bold)),
+                                              Text('STOCK',
+                                                  style: GoogleFonts.poppins(
+                                                      color: Colors.white,
+                                                      fontSize: 6,
+                                                      fontWeight: FontWeight.bold)),
+                                            ]
+                                          : [
+                                              Text('ONLY',
+                                                  style: GoogleFonts.poppins(
+                                                      color: Colors.white,
+                                                      fontSize: 6,
+                                                      fontWeight: FontWeight.bold)),
+                                              Text('${data['SOH']}',
+                                                  style: GoogleFonts.poppins(
+                                                      color: Colors.white,
+                                                      fontSize: 7,
+                                                      fontWeight: FontWeight.bold)),
+                                              Text('LEFT',
+                                                  style: GoogleFonts.poppins(
+                                                      color: Colors.white,
+                                                      fontSize: 6,
+                                                      fontWeight: FontWeight.bold)),
+                                            ],
+                                    ),
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
+                          ],
                         ),
                       );
                     },

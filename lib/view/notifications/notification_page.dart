@@ -1,5 +1,3 @@
-//
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -26,7 +24,7 @@ final notificationProvider =
   final database = FirebaseFirestore.instance;
   yield* database
       .collection('Notifications')
-      .where('phoneNumber', isEqualTo: phoneNumber) // ✅ Filter by phone number
+      .where('phoneNumber', isEqualTo: phoneNumber)
       .orderBy('timestamp', descending: true)
       .snapshots()
       .map((snapshot) =>

@@ -66,13 +66,14 @@ class SlotSelectionContainer extends ConsumerWidget {
                       Expanded(
                         child: Text(
                           selectedSlot != null
-                              ? 'Selected Slot : ${DateFormat('MMM d').format(selectedSlot["start"]!)}, ${DateFormat('h:mm a').format(selectedSlot["start"]!)} - ${DateFormat('h:mm a').format(selectedSlot["end"]!)}'
+                              ? '${DateFormat('MMM d').format(selectedSlot["start"]!)}, ${DateFormat('h:mm a').format(selectedSlot["start"]!)} - ${DateFormat('h:mm a').format(selectedSlot["end"]!)}'
                               : 'Preferred Delivery Time',
                           style: GoogleFonts.poppins(
                             color: selectedSlot != null
-                                ? Colors.green
+                                ? Colors.black
                                 : Colors.black,
                             fontSize: 13,
+                            fontWeight: FontWeight.w600
                           ),
                           overflow: TextOverflow.visible,
                         ),
@@ -229,25 +230,27 @@ class SlotSelectionContainer extends ConsumerWidget {
                     if (todaySlots.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Text("Today’s Slots",
+                        child: Text(
+                            "Today’s Slots - ${DateFormat('MMM d, yyyy').format(today)}",
                             style: GoogleFonts.poppins(
                                 fontSize: 13)),
                       )
                     else
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Text("No slots for today. Book for tomorrow.",
+                        child: Text("No slots for today. Book for tomorrow!",
                             style: GoogleFonts.poppins(
-                                fontSize: 13,)),
+                                fontSize: 13,fontWeight: FontWeight.w600,)),
                       ),
                     if (todaySlots.isNotEmpty) buildSlotButtons(todaySlots),
                     if (tomorrowSlots.isNotEmpty)
                     const SizedBox(height: 10),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Text("Tomorrow’s Slots",
+                        child: Text(
+                            "Tomorrow’s Slots - ${DateFormat('MMM d, yyyy').format(tomorrow)}",
                             style: GoogleFonts.poppins(
-                                fontSize: 13,)),
+                                fontSize: 13,fontWeight: FontWeight.w600)),
                       ),
                     if (tomorrowSlots.isNotEmpty) buildSlotButtons(tomorrowSlots),
                   ],

@@ -10,6 +10,11 @@ import 'package:kealthy_food/view/BottomNavBar/bottom_nav_bar.dart';
 import 'package:kealthy_food/view/map/distance_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+final showMapProvider = FutureProvider<bool>((ref) async {
+  await Future.delayed(const Duration(milliseconds: 300));
+  return true;
+});
+
 final addressTypes = ['Home', 'Work', 'Other'];
 final searchTextProvider = StateProvider<String>((ref) => '');
 
