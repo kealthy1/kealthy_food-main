@@ -56,53 +56,67 @@ class _ProductPageState extends State<ProductPage>
         elevation: 0,
       ),
       backgroundColor: Colors.white,
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-              stream: FirebaseFirestore.instance
-                  .collection('Products')
-                  .doc(widget.productId)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(
-                      child: Text(
-                    'Error: ${snapshot.error}',
-                    style: GoogleFonts.poppins(),
-                  ));
-                }
-                if (!snapshot.hasData || !snapshot.data!.exists) {
-                  return Column(
-                    children: [
-                      const Icon(CupertinoIcons.exclamationmark_circle,
-                          size: 50, color: Colors.black),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Product not found.',
+          Column(
+            children: [
+              Expanded(
+                child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                  stream: FirebaseFirestore.instance
+                      .collection('Products')
+                      .doc(widget.productId)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return Center(
+                          child: Text(
+                        'Error: ${snapshot.error}',
                         style: GoogleFonts.poppins(),
-                      ),
-                    ],
-                  );
-                }
-                final docData = snapshot.data!.data()!;
-                final imageUrls = docData['ImageUrl'] ?? [];
-                if (imageUrls.isNotEmpty && imageUrls[0] is String) {
-                  precacheImage(CachedNetworkImageProvider(imageUrls[0]), context);
-                }
+                      ));
+                    }
+                    if (!snapshot.hasData || !snapshot.data!.exists) {
+                      return Column(
+                        children: [
+                          const Icon(CupertinoIcons.exclamationmark_circle,
+                              size: 50, color: Colors.black),
+                          const SizedBox(height: 10),
+                          Text(
+                            'Product not found.',
+                            style: GoogleFonts.poppins(),
+                          ),
+                        ],
+                      );
+                    }
+                    final docData = snapshot.data!.data()!;
+                    final imageUrls = docData['ImageUrl'] ?? [];
+                    if (imageUrls.isNotEmpty && imageUrls[0] is String) {
+                      precacheImage(CachedNetworkImageProvider(imageUrls[0]), context);
+                    }
 
-                return ProductContent(
-                  docData: docData,
-                  pageController: _pageController,
-                  productId: widget.productId,
-                );
-              },
+                    return ProductContent(
+                      docData: docData,
+                      pageController: _pageController,
+                      productId: widget.productId,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+          const Positioned(
+            bottom: 30,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: CartContainer(),
+              ),
             ),
           ),
-          const CartContainer(),
         ],
       ),
     );

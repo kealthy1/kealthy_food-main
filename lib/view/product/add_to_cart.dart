@@ -9,13 +9,15 @@ class AddToCartSection extends ConsumerWidget {
   final String productName;
   final int productPrice;
   final String productEAN;
-  final int soh; // Add Stock on Hand parameter
+  final int soh;
+  final String imageurl;// Add Stock on Hand parameter
 
   const AddToCartSection({super.key, 
     required this.productName,
     required this.productPrice,
     required this.productEAN,
-    required this.soh, // Include in constructor
+    required this.soh,
+    required this.imageurl // Include in constructor
   });
 
   @override
@@ -63,6 +65,7 @@ class AddToCartSection extends ConsumerWidget {
                     name: productName,
                     price: productPrice,
                     ean: productEAN,
+                    imageUrl: imageurl
                   ),
                 );
               },

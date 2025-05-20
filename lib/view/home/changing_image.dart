@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/home/Calorie.dart';
 import 'package:kealthy_food/view/blog/blog.dart';
 import 'package:kealthy_food/view/home/bmi_calculator.dart';
+import 'package:kealthy_food/view/subscription/subscription_details.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -117,13 +118,20 @@ class _ChangingImageWidgetState extends ConsumerState<ChangingImageWidget> {
       case 4:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const CalorieIntakePage()),
+          MaterialPageRoute(
+              builder: (context) => const SubscriptionDetailsPage()),
         );
         break;
       case 5:
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const BmiTrackerPage()),
+        );
+        break;
+      case 6:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const CalorieIntakePage()),
         );
         break;
       default:
@@ -199,11 +207,12 @@ class _ChangingImageWidgetState extends ConsumerState<ChangingImageWidget> {
                             errorWidget: (context, url, error) =>
                                 const Icon(Icons.error, color: Colors.red),
                           ),
-                          Positioned.fill(
-                            child: Container(
-                              color: Colors.black.withOpacity(0.2),
+                          if (imageData.title.trim().isNotEmpty)
+                            Positioned.fill(
+                              child: Container(
+                                color: Colors.black.withOpacity(0.2),
+                              ),
                             ),
-                          ),
                           Positioned(
                             top: 10,
                             left: 10,

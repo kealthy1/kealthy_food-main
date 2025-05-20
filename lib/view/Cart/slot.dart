@@ -66,7 +66,7 @@ class SlotSelectionContainer extends ConsumerWidget {
                       Expanded(
                         child: Text(
                           selectedSlot != null
-                              ? '${DateFormat('MMM d').format(selectedSlot["start"]!)}, ${DateFormat('h:mm a').format(selectedSlot["start"]!)} - ${DateFormat('h:mm a').format(selectedSlot["end"]!)}'
+                              ? 'Selected Slot : ${DateFormat('MMM d').format(selectedSlot["start"]!)}, ${DateFormat('h:mm a').format(selectedSlot["start"]!)} - ${DateFormat('h:mm a').format(selectedSlot["end"]!)}'
                               : 'Preferred Delivery Time',
                           style: GoogleFonts.poppins(
                             color: selectedSlot != null
@@ -233,7 +233,7 @@ class SlotSelectionContainer extends ConsumerWidget {
                         child: Text(
                             "Today’s Slots - ${DateFormat('MMM d, yyyy').format(today)}",
                             style: GoogleFonts.poppins(
-                                fontSize: 13)),
+                                fontSize: 13,fontWeight: FontWeight.w600)),
                       )
                     else
                       Padding(

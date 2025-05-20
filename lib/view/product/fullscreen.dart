@@ -14,7 +14,7 @@ class ImageIndexNotifier extends StateNotifier<int> {
 }
 
 // Provider for image index management
-final imageIndexProvider = StateNotifierProvider<ImageIndexNotifier, int>(
+final imageIndexProvider = StateNotifierProvider<ImageIndexNotifier, int> (
   (ref) => ImageIndexNotifier(0),
 );
 

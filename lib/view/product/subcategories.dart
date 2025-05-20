@@ -153,7 +153,7 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
                                   title,
                                   style: GoogleFonts.poppins(
                                     color: Colors.black45,
-                                    fontSize: 13,
+                                    fontSize: 13  ,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -162,7 +162,7 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
                           ),
                           const Icon(
                             Icons.arrow_forward_ios,
-                            color: Colors.black,
+                            color: Colors.grey,
                             size: 16,
                           ),
                         ],

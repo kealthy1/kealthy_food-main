@@ -7,6 +7,7 @@ import 'package:kealthy_food/view/address/adress.dart';
 import 'package:kealthy_food/view/address/provider.dart';
 import 'package:kealthy_food/view/Cart/time.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 final slotAvailabilityProvider =
     StateProvider<bool>((ref) => true); // Default: slot available
@@ -29,7 +30,6 @@ class SelectedLocationNotifier extends StateNotifier<String?> {
     }
   }
 }
-
 
 class CartPage extends ConsumerWidget {
   const CartPage({super.key});
@@ -75,14 +75,14 @@ class CartPage extends ConsumerWidget {
               ),
             )
           : Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(10.0),
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 1, vertical: 1),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 1, vertical: 1),
                       child: Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -108,211 +108,250 @@ class CartPage extends ConsumerWidget {
                             final item = cartItems[index];
                             return Padding(
                               padding: const EdgeInsets.symmetric(vertical: 8.0),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              child: Column(
                                 children: [
-                                  // Product Name, Price, Remove Button
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                item.name,
-                                                style: GoogleFonts.poppins(
-                                                  fontWeight: FontWeight.w500,
-                                                  fontSize: 16,
-                                                  color: Colors.black,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          '₹${item.price}',
-                                          style: GoogleFonts.poppins(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 20,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 20),
-                                        Stack(
-                                          children: [
-                                            GestureDetector(
-                                              onTap: ref
-                                                      .read(cartProvider.notifier)
-                                                      .isRemoving(item.name)
-                                                  ? null
-                                                  : () {
-                                                      ref
-                                                          .read(
-                                                              cartProvider.notifier)
-                                                          .removeItem(item.name);
-                                                    },
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(5),
-                                                  border: Border.all(
-                                                    color: Colors.grey.shade300,
-                                                  ),
-                                                ),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(5.0),
-                                                  child: Text(
-                                                    'Remove',
-                                                    style: GoogleFonts.poppins(
-                                                      fontSize: 10,
-                                                      color: Colors.black,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            if (ref
-                                                .read(cartProvider.notifier)
-                                                .isRemoving(item.name))
-                                              const Positioned.fill(
-                                                child: Align(
-                                                  alignment:
-                                                      Alignment.bottomCenter,
-                                                  child:
-                                                      LinearProgressIndicator(
-                                                    minHeight: 2,
-                                                    color: Colors.grey,
-                                                    backgroundColor:
-                                                        Colors.transparent,
-                                                  ),
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10,),
-                                  // Quantity + Price Column
-                                  Column(
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Stack(
+                                      // Product Image
+                                      Column(
                                         children: [
-                                          Container(
-                                            height: 40,
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFFF4F4F5),
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                              border: Border.all(
-                                                color: const Color.fromARGB(
-                                                    255, 65, 88, 108),
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(8),
+                                            child: CachedNetworkImage(
+                                              imageUrl: item.imageUrl,
+                                              width: 60,
+                                              height: 60,
+                                              fit: BoxFit.cover,
+                                              placeholder: (context, url) => Container(
+                                                width: 60,
+                                                height: 60,
+                                                color: const Color(0xFFF4F4F5),
+                                                child: const Center(child: CupertinoActivityIndicator()),
                                               ),
-                                            ),
-                                            child: Center(
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  IconButton(
-                                                    icon: const Icon(
-                                                      Icons.remove,
-                                                      color: Colors.black,
-                                                    ),
-                                                    onPressed: ref
-                                                            .read(
-                                                                cartProvider
-                                                                    .notifier)
-                                                            .isLoading(item.name)
-                                                        ? null
-                                                        : () {
-                                                            if (item.quantity >
-                                                                1) {
-                                                              ref
-                                                                  .read(cartProvider
-                                                                      .notifier)
-                                                                  .decrementItem(
-                                                                      item.name);
-                                                            } else {
-                                                              ref
-                                                                  .read(cartProvider
-                                                                      .notifier)
-                                                                  .removeItem(
-                                                                      item.name);
-                                                            }
-                                                          },
-                                                  ),
-                                                  Text(
-                                                    '${item.quantity}',
-                                                    style: GoogleFonts.poppins(
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: Colors.black,
-                                                    ),
-                                                  ),
-                                                  IconButton(
-                                                    icon: const Icon(
-                                                      Icons.add,
-                                                      color: Colors.black,
-                                                    ),
-                                                    onPressed: ref
-                                                            .read(
-                                                                cartProvider
-                                                                    .notifier)
-                                                            .isLoading(item.name)
-                                                        ? null
-                                                        : () {
-                                                            ref
-                                                                .read(cartProvider
-                                                                    .notifier)
-                                                                .incrementItem(
-                                                                    item.name);
-                                                          },
-                                                  ),
-                                                ],
+                                              errorWidget: (context, url, error) => Container(
+                                                width: 60,
+                                                height: 60,
+                                                color: const Color(0xFFF4F4F5),
+                                                child: const Icon(Icons.broken_image, color: Colors.grey),
                                               ),
                                             ),
                                           ),
-                                          if (ref
-                                              .read(cartProvider.notifier)
-                                              .isLoading(item.name))
-                                            const Positioned.fill(
-                                              child: Align(
-                                                alignment:
-                                                    Alignment.bottomCenter,
-                                                child: Padding(
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal: 6,
-                                                    vertical: 1,
+                                          const SizedBox(height: 10),
+                                          Stack(
+                                            children: [
+                                              GestureDetector(
+                                                onTap: ref
+                                                        .read(
+                                                            cartProvider.notifier)
+                                                        .isRemoving(item.name)
+                                                    ? null
+                                                    : () {
+                                                        ref
+                                                            .read(cartProvider
+                                                                .notifier)
+                                                            .removeItem(
+                                                                item.name);
+                                                      },
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(5),
+                                                    border: Border.all(
+                                                      color: Colors.grey.shade300,
+                                                    ),
                                                   ),
-                                                  child:
-                                                      LinearProgressIndicator(
-                                                    minHeight: 2,
-                                                    color: Color.fromARGB(
-                                                        255, 65, 88, 108),
-                                                    backgroundColor:
-                                                        Colors.transparent,
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(5.0),
+                                                    child: Text(
+                                                      'Remove',
+                                                      style: GoogleFonts.poppins(
+                                                        fontSize: 8,
+                                                        color: Colors.black,
+                                                      ),
+                                                    ),
                                                   ),
                                                 ),
                                               ),
-                                            ),
+                                              if (ref
+                                                  .read(cartProvider.notifier)
+                                                  .isRemoving(item.name))
+                                                const Positioned.fill(
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.bottomCenter,
+                                                    child:
+                                                        LinearProgressIndicator(
+                                                      minHeight: 2,
+                                                      color: Colors.grey,
+                                                      backgroundColor:
+                                                          Colors.transparent,
+                                                    ),
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
                                         ],
                                       ),
-                                      const SizedBox(height: 10),
-                                      Text(
-                                        '₹${item.price * item.quantity}',
-                                        style: GoogleFonts.poppins(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 15,
-                                          color: Colors.black,
+                                      const SizedBox(width: 10),
+                                      // Product Name, Price, Remove Button
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    item.name,
+                                                    style: GoogleFonts.poppins(
+                                                      fontWeight: FontWeight.w500,
+                                                      fontSize: 14,
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              '₹${item.price}',
+                                              style: GoogleFonts.poppins(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 18,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            
+                                          ],
                                         ),
+                                      ),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      // Quantity + Price Column
+                                      Column(
+                                        children: [
+                                          Stack(
+                                            children: [
+                                              Container(
+                                                height: 40,
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFFF4F4F5),
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                  border: Border.all(
+                                                    color: const Color.fromARGB(
+                                                        255, 65, 88, 108),
+                                                  ),
+                                                ),
+                                                child: Center(
+                                                  child: Row(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      IconButton(
+                                                        icon: const Icon(
+                                                          Icons.remove,
+                                                          color: Colors.black,
+                                                        ),
+                                                        onPressed: ref
+                                                                .read(cartProvider
+                                                                    .notifier)
+                                                                .isLoading(
+                                                                    item.name)
+                                                            ? null
+                                                            : () {
+                                                                if (item.quantity >
+                                                                    1) {
+                                                                  ref
+                                                                      .read(cartProvider
+                                                                          .notifier)
+                                                                      .decrementItem(
+                                                                          item.name);
+                                                                } else {
+                                                                  ref
+                                                                      .read(cartProvider
+                                                                          .notifier)
+                                                                      .removeItem(
+                                                                          item.name);
+                                                                }
+                                                              },
+                                                      ),
+                                                      Text(
+                                                        '${item.quantity}',
+                                                        style: GoogleFonts.poppins(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.black,
+                                                        ),
+                                                      ),
+                                                      IconButton(
+                                                        icon: const Icon(
+                                                          Icons.add,
+                                                          color: Colors.black,
+                                                        ),
+                                                        onPressed: ref
+                                                                .read(cartProvider
+                                                                    .notifier)
+                                                                .isLoading(
+                                                                    item.name)
+                                                            ? null
+                                                            : () {
+                                                                ref
+                                                                    .read(cartProvider
+                                                                        .notifier)
+                                                                    .incrementItem(
+                                                                        item.name);
+                                                              },
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                              if (ref
+                                                  .read(cartProvider.notifier)
+                                                  .isLoading(item.name))
+                                                const Positioned.fill(
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.bottomCenter,
+                                                    child: Padding(
+                                                      padding: EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 1,
+                                                      ),
+                                                      child:
+                                                          LinearProgressIndicator(
+                                                        minHeight: 2,
+                                                        color: Color.fromARGB(
+                                                            255, 65, 88, 108),
+                                                        backgroundColor:
+                                                            Colors.transparent,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 10),
+                                          Text(
+                                            '₹${item.price * item.quantity}',
+                                            style: GoogleFonts.poppins(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 15,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
+                                  const SizedBox(height: 12),
+                                  if (index != cartItems.length - 1)
+                                    const Divider(thickness: 1, color: Color(0xFFE0E0E0)),
                                 ],
                               ),
                             );
@@ -375,8 +414,7 @@ class CartPage extends ConsumerWidget {
                     height: 50,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color.fromARGB(255, 65, 88, 108),
+                        backgroundColor: const Color.fromARGB(255, 65, 88, 108),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),

@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// CartItem model
 class CartItem {
   final String name;
+  final String imageUrl;
   final int price;
   int quantity;
   final String ean;
@@ -13,7 +14,9 @@ class CartItem {
     required this.name,
     required this.price,
     this.quantity = 1,
-    required this.ean
+    required this.ean,
+    required this.imageUrl,
+    
   });
 
   /// Returns the total price (price * quantity) for this item
@@ -24,7 +27,8 @@ class CartItem {
         'Name': name,
         'Price': price,
         'Quantity': quantity,
-        'EAN' : ean
+        'EAN' : ean,
+        'ImageUrl': imageUrl,
       };
 
   /// Create a CartItem from JSON
@@ -34,6 +38,7 @@ class CartItem {
       price: json['Price'],
       quantity: json['Quantity'],
       ean: json['EAN'],
+      imageUrl: json['ImageUrl'] ?? '',
     );
   }
 
@@ -42,7 +47,8 @@ class CartItem {
         name: name,
         price: price,
         quantity: quantity ?? this.quantity,
-        ean: ean
+        ean: ean,
+        imageUrl: imageUrl,
       );
 }
 

@@ -200,7 +200,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       ),
       backgroundColor: Colors.white,
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 18),
         child: FutureBuilder<List<Product>>(
           future: _productsFuture,
           builder: (context, snapshot) {

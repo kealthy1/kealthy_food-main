@@ -43,7 +43,11 @@ class ProductContent extends ConsumerWidget {
     final productWhatIs = docData['What is it?'] ?? '';
     final productUseFor = docData['What is it used for?'] ?? '';
     final productEAN = docData['EAN'] ?? '';
-    final productSource = docData['Imported&Marketed By'] ?? '';
+    final productImageUrl =
+        (docData['ImageUrl'] is List<dynamic> && (docData['ImageUrl'] as List).isNotEmpty)
+            ? docData['ImageUrl'][0]
+            : '';
+    // final productSource = docData['Imported&Marketed By'] ?? '';
     final productOrigin = docData['Orgin'] ?? '';
     final productBestBefore = docData['Best Before'] ?? '';
     final productSoh = (docData['SOH'] is int)
@@ -317,6 +321,8 @@ class ProductContent extends ConsumerWidget {
                       productPrice: productPrice,
                       productEAN: productEAN,
                       soh: productSoh,
+                      imageurl: productImageUrl,
+                      
                     ),
                   ],
                 ),
@@ -591,10 +597,10 @@ class ProductContent extends ConsumerWidget {
 
                       children: [
                         const SizedBox(height: 10),
-                        Align(
+                        const Align(
                           alignment: Alignment.centerLeft,
                           child: ReusableText(
-                            text: 'Sourced & marketed by: $productSource',
+                            text: 'Sourced & marketed by : Cotolore Enterprises LLP, 15/293 - C, Muriyankara-Pinarmunda Milma Road, Peringala (PO), Ernakulam, 683565, Kerala, India.',
                             fontSize: 15,
                           ),
                         ),
@@ -642,6 +648,7 @@ class ProductContent extends ConsumerWidget {
               ],
             ),
           ),
+          const SizedBox(height: 80),
         ],
       ),
     );

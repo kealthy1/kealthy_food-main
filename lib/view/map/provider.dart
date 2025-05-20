@@ -98,107 +98,103 @@ class LocationNotifier extends StateNotifier<Position?> {
 }
 
 Future<void> saveOrUpdateAddress(
-    AddressDetails addressDetails,
-    double latitude,
-    double longitude,
-    String? addressType,
-    bool isUpdate,
-    String? existingAddressId,
-    WidgetRef ref,
-    BuildContext context,
-  ) async {
-    final prefs = await SharedPreferences.getInstance();
-    final phoneNumber = prefs.getString('phoneNumber') ?? '';
+  AddressDetails addressDetails,
+  double latitude,
+  double longitude,
+  String? addressType,
+  bool isUpdate,
+  String? existingAddressId,
+  WidgetRef ref,
+  BuildContext context,
+) async {
+  final prefs = await SharedPreferences.getInstance();
+  final phoneNumber = prefs.getString('phoneNumber') ?? '';
 
-    final double? distanceInKm = await DistanceService().getDrivingDistanceInKm(
-      startLat: 10.010099620051944, // Restaurant latitude
-      startLng: 76.38422358870001, // Restaurant longitude
-      endLat: latitude,
-      endLng: longitude,
-    );
-    final double distanceValue = distanceInKm ?? 0.0;
+  final double? distanceInKm = await DistanceService().getDrivingDistanceInKm(
+    startLat: 10.010099620051944, // Restaurant latitude
+    startLng: 76.38422358870001, // Restaurant longitude
+    endLat: latitude,
+    endLng: longitude,
+  );
+  final double distanceValue = distanceInKm ?? 0.0;
 
-    final addressData = addressDetails.toJson();
-    addressData['phoneNumber'] = phoneNumber;
-    addressData['latitude'] = latitude;
-    addressData['longitude'] = longitude;
-    addressData['type'] = addressType;
-    addressData['distance'] = distanceValue; // Save distance to MongoDB
-    print(phoneNumber);
-    print(addressType);
+  final addressData = addressDetails.toJson();
+  addressData['phoneNumber'] = phoneNumber;
+  addressData['latitude'] = latitude;
+  addressData['longitude'] = longitude;
+  addressData['type'] = addressType;
+  addressData['distance'] = distanceValue; // Save distance to MongoDB
+  print(phoneNumber);
+  print(addressType);
 
-    if (isUpdate && existingAddressId != null) {
-      addressData['_id'] = existingAddressId;
-    }
+  if (isUpdate && existingAddressId != null) {
+    addressData['_id'] = existingAddressId;
+  }
 
-    ref.read(addressSaveProvider.notifier).setLoading(true);
+  ref.read(addressSaveProvider.notifier).setLoading(true);
 
-    try {
-      final url = isUpdate
-          ? 'https://api-jfnhkjk4nq-uc.a.run.app/editaddress'
-          : 'https://api-jfnhkjk4nq-uc.a.run.app/address';
+  try {
+    final url = isUpdate
+        ? 'https://api-jfnhkjk4nq-uc.a.run.app/editaddress'
+        : 'https://api-jfnhkjk4nq-uc.a.run.app/address';
 
-      final response = isUpdate
-          ? await http.put(
-              Uri.parse(url),
-              headers: {'Content-Type': 'application/json'},
-              body: jsonEncode(addressData),
-            )
-          : await http.post(
-              Uri.parse(url),
-              headers: {'Content-Type': 'application/json'},
-              body: jsonEncode(addressData),
-            );
+    final response = isUpdate
+        ? await http.put(
+            Uri.parse(url),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(addressData),
+          )
+        : await http.post(
+            Uri.parse(url),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(addressData),
+          );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        print('${isUpdate ? 'Address updated' : 'Address saved'} successfully');
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      print('${isUpdate ? 'Address updated' : 'Address saved'} successfully');
 
-        await saveSelectedAddress(
-          ref: ref,
-          prefs: prefs,
-          address: addressDetails.flatRoomArea ?? '',
-          name: addressDetails.name ?? '',
-          type: addressDetails.addressType ?? '',
-          landmark: addressDetails.landmark ?? '',
-          instructions: addressDetails.otherInstructions ?? '',
-          latitude: latitude,
-          longitude: longitude,
-          distance: distanceValue, // You can update this value as needed
-        );
+      await saveSelectedAddress(
+        ref: ref,
+        prefs: prefs,
+        address: addressDetails.flatRoomArea ?? '',
+        name: addressDetails.name ?? '',
+        type: addressDetails.addressType ?? '',
+        landmark: addressDetails.landmark ?? '',
+        instructions: addressDetails.otherInstructions ?? '',
+        latitude: latitude,
+        longitude: longitude,
+        distance: distanceValue, // You can update this value as needed
+      );
 
-        ref.invalidate(addressFutureProvider);
-         final updatedAddresses = await fetchAndCacheAddresses(phoneNumber);
+      ref.invalidate(addressFutureProvider);
+      final updatedAddresses = await fetchAndCacheAddresses(phoneNumber);
       if (updatedAddresses != null) {
         ref.invalidate(addressFutureProvider);
       }
 
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const BottomNavBar()),
-          (route) => false,
-        );
-      } else {
-        print(
-            'Failed to ${isUpdate ? 'update' : 'save'} address: ${response.body}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                'Failed to ${isUpdate ? 'update' : 'save'} address: ${response.reasonPhrase}'),
-          ),
-        );
-      }
-    } catch (e) {
-      print('Error ${isUpdate ? 'updating' : 'saving'} address: $e');
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const BottomNavBar()),
+        (route) => false,
+      );
+    } else {
+      print(
+          'Failed to ${isUpdate ? 'update' : 'save'} address: ${response.body}');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error saving address. Please try again later.'),
+        SnackBar(
+          content: Text(
+              'Failed to ${isUpdate ? 'update' : 'save'} address: ${response.reasonPhrase}'),
         ),
       );
-    } finally {
-      ref.read(addressSaveProvider.notifier).setLoading(false);
     }
+  } catch (e) {
+    print('Error ${isUpdate ? 'updating' : 'saving'} address: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Error saving address. Please try again later.'),
+      ),
+    );
+  } finally {
+    ref.read(addressSaveProvider.notifier).setLoading(false);
   }
-
-  
-
-  
+}
