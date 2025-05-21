@@ -107,33 +107,43 @@ class CartPage extends ConsumerWidget {
                           itemBuilder: (context, index) {
                             final item = cartItems[index];
                             return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8.0),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8.0),
                               child: Column(
                                 children: [
                                   Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       // Product Image
                                       Column(
                                         children: [
                                           ClipRRect(
-                                            borderRadius: BorderRadius.circular(8),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                             child: CachedNetworkImage(
                                               imageUrl: item.imageUrl,
                                               width: 60,
                                               height: 60,
                                               fit: BoxFit.cover,
-                                              placeholder: (context, url) => Container(
+                                              placeholder: (context, url) =>
+                                                  Container(
                                                 width: 60,
                                                 height: 60,
                                                 color: const Color(0xFFF4F4F5),
-                                                child: const Center(child: CupertinoActivityIndicator()),
+                                                child: const Center(
+                                                    child:
+                                                        CupertinoActivityIndicator()),
                                               ),
-                                              errorWidget: (context, url, error) => Container(
+                                              errorWidget:
+                                                  (context, url, error) =>
+                                                      Container(
                                                 width: 60,
                                                 height: 60,
                                                 color: const Color(0xFFF4F4F5),
-                                                child: const Icon(Icons.broken_image, color: Colors.grey),
+                                                child: const Icon(
+                                                    Icons.broken_image,
+                                                    color: Colors.grey),
                                               ),
                                             ),
                                           ),
@@ -142,8 +152,8 @@ class CartPage extends ConsumerWidget {
                                             children: [
                                               GestureDetector(
                                                 onTap: ref
-                                                        .read(
-                                                            cartProvider.notifier)
+                                                        .read(cartProvider
+                                                            .notifier)
                                                         .isRemoving(item.name)
                                                     ? null
                                                     : () {
@@ -156,17 +166,21 @@ class CartPage extends ConsumerWidget {
                                                 child: Container(
                                                   decoration: BoxDecoration(
                                                     borderRadius:
-                                                        BorderRadius.circular(5),
+                                                        BorderRadius.circular(
+                                                            5),
                                                     border: Border.all(
-                                                      color: Colors.grey.shade300,
+                                                      color:
+                                                          Colors.grey.shade300,
                                                     ),
                                                   ),
                                                   child: Padding(
                                                     padding:
-                                                        const EdgeInsets.all(5.0),
+                                                        const EdgeInsets.all(
+                                                            5.0),
                                                     child: Text(
                                                       'Remove',
-                                                      style: GoogleFonts.poppins(
+                                                      style:
+                                                          GoogleFonts.poppins(
                                                         fontSize: 8,
                                                         color: Colors.black,
                                                       ),
@@ -207,7 +221,8 @@ class CartPage extends ConsumerWidget {
                                                   child: Text(
                                                     item.name,
                                                     style: GoogleFonts.poppins(
-                                                      fontWeight: FontWeight.w500,
+                                                      fontWeight:
+                                                          FontWeight.w500,
                                                       fontSize: 14,
                                                       color: Colors.black,
                                                     ),
@@ -224,7 +239,6 @@ class CartPage extends ConsumerWidget {
                                                 color: Colors.black,
                                               ),
                                             ),
-                                            
                                           ],
                                         ),
                                       ),
@@ -239,7 +253,8 @@ class CartPage extends ConsumerWidget {
                                               Container(
                                                 height: 40,
                                                 decoration: BoxDecoration(
-                                                  color: const Color(0xFFF4F4F5),
+                                                  color:
+                                                      const Color(0xFFF4F4F5),
                                                   borderRadius:
                                                       BorderRadius.circular(10),
                                                   border: Border.all(
@@ -249,7 +264,8 @@ class CartPage extends ConsumerWidget {
                                                 ),
                                                 child: Center(
                                                   child: Row(
-                                                    mainAxisSize: MainAxisSize.min,
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
                                                     children: [
                                                       IconButton(
                                                         icon: const Icon(
@@ -281,7 +297,8 @@ class CartPage extends ConsumerWidget {
                                                       ),
                                                       Text(
                                                         '${item.quantity}',
-                                                        style: GoogleFonts.poppins(
+                                                        style:
+                                                            GoogleFonts.poppins(
                                                           fontSize: 16,
                                                           fontWeight:
                                                               FontWeight.bold,
@@ -319,7 +336,8 @@ class CartPage extends ConsumerWidget {
                                                     alignment:
                                                         Alignment.bottomCenter,
                                                     child: Padding(
-                                                      padding: EdgeInsets.symmetric(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
                                                         horizontal: 6,
                                                         vertical: 1,
                                                       ),
@@ -351,7 +369,8 @@ class CartPage extends ConsumerWidget {
                                   ),
                                   const SizedBox(height: 12),
                                   if (index != cartItems.length - 1)
-                                    const Divider(thickness: 1, color: Color(0xFFE0E0E0)),
+                                    const Divider(
+                                        thickness: 1, color: Color(0xFFE0E0E0)),
                                 ],
                               ),
                             );

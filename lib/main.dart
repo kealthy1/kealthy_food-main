@@ -67,6 +67,27 @@ class MyApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       theme: ThemeData(
+        brightness: Brightness.light,
+        primaryColor: Colors.black,
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          iconTheme: IconThemeData(color: Colors.black),
+          titleTextStyle: TextStyle(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+          surfaceTintColor: Colors.white,
+        ),
+        colorScheme: const ColorScheme.light(
+          primary: Colors.black,
+          secondary: Colors.white,
+          onPrimary: Colors.white,
+          onSecondary: Colors.black,
+          background: Colors.white,
+          onBackground: Colors.black,
+        ),
         textTheme: GoogleFonts.poppinsTextTheme(
           Theme.of(context).textTheme,
         ),
