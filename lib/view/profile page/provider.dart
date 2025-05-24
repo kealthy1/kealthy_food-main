@@ -218,7 +218,7 @@ Future<void> deleteAccount(WidgetRef ref, BuildContext context) async {
       ref.invalidate(phoneNumberProvider);
       ref.invalidate(customerNameProvider);
       ref.invalidate(cartProvider);
-      ref.invalidate(addressProvider);
+      ref.invalidate(addressProviders);
       ref.invalidate(bottomNavProvider);
 
       ToastHelper.showSuccessToast('Account deleted successfully.');
@@ -286,7 +286,7 @@ Future<void> logoutUser(BuildContext context, WidgetRef ref) async {
   ref.invalidate(phoneNumberProvider);
   ref.invalidate(customerNameProvider);
   ref.invalidate(cartProvider);
-  ref.invalidate(addressProvider);
+  ref.invalidate(addressProviders);
   ref.invalidate(bottomNavProvider);
 
   Navigator.pop(context); // close the "Logging out" dialog

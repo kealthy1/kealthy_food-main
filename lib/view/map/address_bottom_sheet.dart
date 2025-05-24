@@ -52,7 +52,7 @@ class _AddressDetailsBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    final address = ref.watch(addressProvider);
+    final address = ref.watch(addressProviders);
     final isSaving = ref.watch(addressSaveProvider);
 
     return Padding(

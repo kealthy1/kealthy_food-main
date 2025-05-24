@@ -233,7 +233,8 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
               deliverytime: widget.deliverytime,
               deliveryFee: widget.deliveryfee,
               instantDeliveryFee: widget.instantDeliveryFee,
-              razorpayOrderId: razorpayOrderId,
+              razorpayOrderId: razorpayOrderId, 
+              orderType: 'Normal',
             ),
           ),
         );

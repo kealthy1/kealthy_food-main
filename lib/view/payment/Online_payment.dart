@@ -19,6 +19,7 @@ class OnlinePaymentProcessing extends ConsumerStatefulWidget {
   final double deliveryFee;
   final double instantDeliveryFee;
   final String razorpayOrderId;
+  final String orderType;
 
   const OnlinePaymentProcessing({
     super.key,
@@ -30,6 +31,7 @@ class OnlinePaymentProcessing extends ConsumerStatefulWidget {
     required this.deliveryFee,
     required this.instantDeliveryFee,
     required this.razorpayOrderId,
+    required this.orderType,
   });
 
   @override
@@ -57,16 +59,29 @@ class _OnlinePaymentProcessingState
     await OrderService.removeRazorpayOrderId();
 
     // Payment succeeded, so let's save the order
-    await OrderService.saveOrderToFirebase(
-      address: widget.address,
-      totalAmount: widget.totalAmount,
-      deliveryFee: widget.deliveryFee,
-      packingInstructions: widget.packingInstructions,
-      deliveryInstructions: widget.deliveryInstructions,
-      deliveryTime: widget.deliverytime,
-      instantDeliveryFee: widget.instantDeliveryFee,
-      paymentMethod: "Online Payment",
-    );
+    if (widget.orderType == 'subscription') {
+      await OrderService.saveSubscriptionOrderToFirebase(
+        address: widget.address,
+        totalAmount: widget.totalAmount,
+        deliveryFee: widget.deliveryFee,
+        packingInstructions: widget.packingInstructions,
+        deliveryInstructions: widget.deliveryInstructions,
+        deliveryTime: widget.deliverytime,
+        instantDeliveryFee: widget.instantDeliveryFee,
+        paymentMethod: "Online Payment",
+      );
+    } else {
+      await OrderService.saveOrderToFirebase(
+        address: widget.address,
+        totalAmount: widget.totalAmount,
+        deliveryFee: widget.deliveryFee,
+        packingInstructions: widget.packingInstructions,
+        deliveryInstructions: widget.deliveryInstructions,
+        deliveryTime: widget.deliverytime,
+        instantDeliveryFee: widget.instantDeliveryFee,
+        paymentMethod: "Online Payment",
+      );
+    }
 
     // Clear the cart
     ref.read(cartProvider.notifier).clearCart();

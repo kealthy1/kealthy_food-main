@@ -63,7 +63,7 @@ final selectedContainerIndexProvider =
     StateProvider<int>((ref) => -1); // -1 indicates no selection
 
 final isSearchingProvider = StateProvider<bool>((ref) => false);
-final addressProvider = StateProvider<String?>((ref) => null);
+final addressProviders = StateProvider<String?>((ref) => null);
 
 class LocationNotifier extends StateNotifier<Position?> {
   LatLng? selectedPosition;

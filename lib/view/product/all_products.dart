@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kealthy_food/view/Cart/cart_container.dart';
 import 'package:kealthy_food/view/product/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:kealthy_food/view/product/product_page.dart';
@@ -87,7 +88,6 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
     //     ref.watch(productTypesProvider(widget.subcategoryName));
     final selectedType =
         ref.watch(selectedTypeProvider(widget.subcategoryName));
-    final screenheight = MediaQuery.of(context).size.height;
 
     // Reset the search query when the page is rebuilt
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -215,13 +215,15 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                   final data = product.data();
                   final imageUrls = data['ImageUrl'] ?? [];
                   if (imageUrls.isNotEmpty && imageUrls[0] is String) {
-                    precacheImage(CachedNetworkImageProvider(imageUrls[0]), context);
+                    precacheImage(
+                        CachedNetworkImageProvider(imageUrls[0]), context);
                   }
                 }
 
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: GridView.builder(
+                    padding: const EdgeInsets.only(bottom: 100),
                     itemCount: filteredProducts.length,
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
@@ -232,8 +234,8 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                     ),
                     itemBuilder: (context, index) {
                       final data = filteredProducts[index].data();
-                      final productName = data['Name'] ?? 'No Name';
                       final productqty = data['Qty'] ?? '0';
+                      final productNameRaw = data['Name'] ?? 'No Name';
                       final price = data['Price'] ?? '0';
                       final imageUrls = data['ImageUrl'] ?? [];
                       final firstImageUrl = imageUrls.isNotEmpty
@@ -293,78 +295,106 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                                   // Product Info.
                                   Padding(
                                     padding: const EdgeInsets.all(8.0),
-                                    child: SizedBox(
-                                      height: screenheight * 0.1,
+                                    child: IntrinsicHeight(
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text(productName,
+                                          SizedBox(
+                                            height:
+                                                50, // enough to fit two lines of text
+                                            child: Text(
+                                              productNameRaw,
                                               maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
                                               style: GoogleFonts.poppins(
                                                 textStyle: const TextStyle(
                                                   fontSize: 16,
                                                   color: Colors.black,
-                                                  overflow: TextOverflow.ellipsis,
                                                 ),
-                                              )),
-                                          Consumer(
-                                            builder: (context, ref, child) {
-                                              final averageStarsAsync = ref.watch(
-                                                  averageStarsProvider(
-                                                      productName));
-                                              return averageStarsAsync.when(
-                                                data: (rating) {
-                                                  if (rating == 0.0) {
-                                                    return const SizedBox
-                                                        .shrink(); // Hide stars if rating is 0
-                                                  }
-                                                  int fullStars = rating
-                                                      .floor(); // Get integer part (e.g., 3 from 3.8)
-                                                  bool hasHalfStar = rating -
-                                                          fullStars >=
-                                                      0.5; // Check if it needs a half-star
-                                                  return Row(
-                                                    children: [
-                                                      Text(
-                                                        rating.toStringAsFixed(1),
-                                                        style: GoogleFonts.poppins(
-                                                          fontSize: 10,
-                                                          color: Colors.black54,
-                                                        ),
-                                                      ),
-                                                      // Generate full stars
-                                                      ...List.generate(
-                                                        fullStars,
-                                                        (index) => const Icon(
-                                                            Icons.star,
-                                                            color: Colors.orange,
-                                                            size: 12),
-                                                      ),
-                                                      // Show half-star if needed
-                                                      if (hasHalfStar)
-                                                        const Icon(Icons.star_half,
-                                                            color: Colors.orange,
-                                                            size: 12),
-                                                      // Show empty stars to keep alignment
-                                                      ...List.generate(
-                                                        5 -
-                                                            fullStars -
-                                                            (hasHalfStar ? 1 : 0),
-                                                        (index) => const Icon(
-                                                            Icons.star_border,
-                                                            color: Colors.orange,
-                                                            size: 12),
-                                                      ),
-                                                      const SizedBox(width: 5),
-                                                    ],
-                                                  );
-                                                },
-                                                loading: () => Container(),
-                                                error: (error, _) => const Text(''),
-                                              );
-                                            },
+                                              ),
+                                            ),
                                           ),
+                                          SizedBox(
+                                            height: 18,
+                                            child: Consumer(
+                                              builder: (context, ref, child) {
+                                                final averageStarsAsync = ref
+                                                    .watch(averageStarsProvider(
+                                                        productNameRaw));
+
+                                                return averageStarsAsync.when(
+                                                  data: (rating) {
+                                                    if (rating == 0.0) {
+                                                      return const SizedBox(); // Hide stars if rating is 0
+                                                    }
+
+                                                    int fullStars = rating
+                                                        .floor(); // Get integer part (e.g., 3 from 3.8)
+                                                    bool hasHalfStar = rating -
+                                                            fullStars >=
+                                                        0.5; // Check if it needs a half-star
+
+                                                    return Row(
+                                                      children: [
+                                                        Text(
+                                                          rating
+                                                              .toStringAsFixed(
+                                                                  1),
+                                                          style: GoogleFonts
+                                                              .poppins(
+                                                            fontSize: 14,
+                                                            color:
+                                                                Colors.black54,
+                                                          ),
+                                                        ),
+
+                                                        // Generate full stars
+                                                        ...List.generate(
+                                                          fullStars,
+                                                          (index) => const Icon(
+                                                              Icons.star,
+                                                              color:
+                                                                  Colors.orange,
+                                                              size: 16),
+                                                        ),
+
+                                                        // Show half-star if needed
+                                                        if (hasHalfStar)
+                                                          const Icon(
+                                                              Icons.star_half,
+                                                              color:
+                                                                  Colors.orange,
+                                                              size: 20),
+
+                                                        // Show empty stars to keep alignment
+                                                        ...List.generate(
+                                                          5 -
+                                                              fullStars -
+                                                              (hasHalfStar
+                                                                  ? 1
+                                                                  : 0),
+                                                          (index) => const Icon(
+                                                              Icons.star_border,
+                                                              color:
+                                                                  Colors.orange,
+                                                              size: 20),
+                                                        ),
+
+                                                        // Show the numeric rating next to stars
+                                                      ],
+                                                    );
+                                                  },
+                                                  loading: () => Container(),
+                                                  error: (error, _) =>
+                                                      const Text('N/A'),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: 8,
+                                          ),  
                                           const Spacer(),
                                           Row(
                                             children: [
@@ -383,7 +413,8 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                                                     textStyle: const TextStyle(
                                                       fontSize: 12,
                                                       color: Colors.black,
-                                                      fontWeight: FontWeight.w400,
+                                                      fontWeight:
+                                                          FontWeight.w400,
                                                       overflow:
                                                           TextOverflow.ellipsis,
                                                     ),
@@ -408,7 +439,8 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                                   child: Container(
                                     height: 46,
                                     width: 38,
-                                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0, vertical: 4.0),
                                     decoration: const BoxDecoration(
                                       color: Color.fromARGB(255, 201, 82, 74),
                                     ),
@@ -421,34 +453,40 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                                                   style: GoogleFonts.poppins(
                                                       color: Colors.white,
                                                       fontSize: 6,
-                                                      fontWeight: FontWeight.bold)),
+                                                      fontWeight:
+                                                          FontWeight.bold)),
                                               Text('OF',
                                                   style: GoogleFonts.poppins(
                                                       color: Colors.white,
                                                       fontSize: 7,
-                                                      fontWeight: FontWeight.bold)),
+                                                      fontWeight:
+                                                          FontWeight.bold)),
                                               Text('STOCK',
                                                   style: GoogleFonts.poppins(
                                                       color: Colors.white,
                                                       fontSize: 6,
-                                                      fontWeight: FontWeight.bold)),
+                                                      fontWeight:
+                                                          FontWeight.bold)),
                                             ]
                                           : [
                                               Text('ONLY',
                                                   style: GoogleFonts.poppins(
                                                       color: Colors.white,
                                                       fontSize: 6,
-                                                      fontWeight: FontWeight.bold)),
+                                                      fontWeight:
+                                                          FontWeight.bold)),
                                               Text('${data['SOH']}',
                                                   style: GoogleFonts.poppins(
                                                       color: Colors.white,
                                                       fontSize: 7,
-                                                      fontWeight: FontWeight.bold)),
+                                                      fontWeight:
+                                                          FontWeight.bold)),
                                               Text('LEFT',
                                                   style: GoogleFonts.poppins(
                                                       color: Colors.white,
                                                       fontSize: 6,
-                                                      fontWeight: FontWeight.bold)),
+                                                      fontWeight:
+                                                          FontWeight.bold)),
                                             ],
                                     ),
                                   ),
@@ -463,8 +501,12 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
               },
             ),
           ),
+          const SizedBox(
+            height: 10,
+          ),
         ],
       ),
+      bottomSheet: const CartContainer(),
     );
   }
 }

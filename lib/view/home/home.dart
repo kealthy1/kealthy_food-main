@@ -234,7 +234,6 @@ class _HomePageState extends ConsumerState<HomePage>
                         ),
                       ),
                       const KealthyPage(),
-                      // Newsletter subscription UI (redesigned) - show only if no email in SharedPreferences
                       const SizedBox(height: 100),
                     ],
                   ),
@@ -257,10 +256,7 @@ class _HomePageState extends ConsumerState<HomePage>
                     duration: const Duration(milliseconds: 300),
                     child: const Align(
                       alignment: Alignment.bottomCenter,
-                      child: Padding(
-                        padding: EdgeInsets.all(20.0),
-                        child: CartContainer(),
-                      ),
+                      child: CartContainer(),
                     ),
                   ),
                 );

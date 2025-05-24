@@ -1,0 +1,142 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:kealthy_food/view/payment/Online_payment.dart';
+import 'package:kealthy_food/view/payment/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class SubscriptionPaymentPage extends StatelessWidget {
+  final String title;
+  final DateTime startDate;
+  final String endDate;
+  final int quantity;
+  final Map<String, DateTime> slot;
+  final dynamic address;
+  final double totalAmount;
+  final String productName;
+
+  const SubscriptionPaymentPage({
+    super.key,
+    required this.title,
+    required this.startDate,
+    required this.endDate,
+    required this.quantity,
+    required this.slot,
+    required this.address,
+    required this.totalAmount,
+    required this.productName,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(backgroundColor: Colors.white,
+      appBar: AppBar(surfaceTintColor: Colors.white,
+        title: const Text("Make Payment"),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 1,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Review Your Subscription", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  Text("Plan: $title"),
+                  Text("Product: $productName"),
+                  Text("Start Date: ${DateFormat('MMMM d, y').format(startDate)}"),
+                  Text("End Date: $endDate"),
+                  Text("Quantity: $quantity L"),
+                  const SizedBox(height: 12),
+                  const Text("Delivery Slot", style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text("${DateFormat('h:mm a').format(slot['start']!)} - ${DateFormat('h:mm a').format(slot['end']!)}"),
+                  const SizedBox(height: 12),
+                  const Text("Delivery Address", style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(address.type),
+                  Text("${address.name}, ${address.selectedRoad}"),
+                ],
+              ),
+            ),
+            const Spacer(),
+           Row(
+              children: [
+                const Text("Total Amount: ", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                const Spacer(),
+                Text("₹${totalAmount.toStringAsFixed(0)}", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 65, 88, 108),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () async {
+                  print('Subscription Payment Details:');
+                  print('Title: $title');
+                  print('Product Name: $productName');
+                  print('Start Date: ${DateFormat('yyyy-MM-dd').format(startDate)}');
+                  print('End Date: $endDate');
+                  print('Quantity: $quantity');
+                  print('Slot: ${slot['start']} - ${slot['end']}');
+                  print('Address: ${address.name}, ${address.selectedRoad}, Type: ${address.type}');
+                  print('Total Amount: $totalAmount');
+
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setString('subscription_plan_title', title);
+                  await prefs.setString('subscription_product_name', productName);
+                  await prefs.setString('subscription_start_date', DateFormat('yyyy-MM-dd').format(startDate));
+                  await prefs.setString('subscription_end_date', endDate);
+                  await prefs.setString('subscription_qty', quantity.toString());
+
+                  final razorpayOrderId = await OrderService.createRazorpayOrder(totalAmount);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => OnlinePaymentProcessing(
+                        totalAmount: totalAmount,
+                        packingInstructions: '',
+                        deliveryInstructions: '',
+                        address: address,
+                        deliverytime: slot.toString(),
+                        deliveryFee: 0,
+                        instantDeliveryFee: 0,
+                        razorpayOrderId: razorpayOrderId,
+                        orderType: 'subscription',
+                      ),
+                    ),
+                  );
+                },
+                child: const Text("Proceed to Payment"),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}

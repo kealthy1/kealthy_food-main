@@ -51,7 +51,7 @@ class _LocationPageState extends ConsumerState<LocationPage> {
   @override
   Widget build(BuildContext context) {
     final currentPosition = ref.watch(locationProvider);
-    final address = ref.watch(addressProvider);
+    final address = ref.watch(addressProviders);
     ref.watch(suggestionsProvider); // Watch suggestions
     ref.watch(placeSuggestionsProvider);
     bool isBottomSheetOpen = false;
@@ -100,7 +100,7 @@ class _LocationPageState extends ConsumerState<LocationPage> {
                                 targetPosition);
 
                         // Update the address provider with the fetched address
-                        ref.read(addressProvider.notifier).state = address;
+                        ref.read(addressProviders.notifier).state = address;
                       }
                     },
                     myLocationButtonEnabled: false,
@@ -199,7 +199,7 @@ class _LocationPageState extends ConsumerState<LocationPage> {
                                             currentPosition.latitude,
                                             currentPosition.longitude));
 
-                                    ref.read(addressProvider.notifier).state =
+                                    ref.read(addressProviders.notifier).state =
                                         address;
                                   }
                                 },
@@ -400,7 +400,7 @@ class _LocationPageState extends ConsumerState<LocationPage> {
                                             final address = await LocationHelper
                                                 .getAddressFromLatLng(position);
                                             ref
-                                                .read(addressProvider.notifier)
+                                                .read(addressProviders.notifier)
                                                 .state = address;
                                             ref
                                                 .read(selectedPositionProvider

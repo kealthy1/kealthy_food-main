@@ -102,6 +102,7 @@ class PlanCard extends ConsumerWidget {
               baseRate: baseRate,
               durationDays: durationDays,
               selectedQty: selectedQty,
+              productName: 'A2 Mate Milk',
             ),
           ),
         );
@@ -121,11 +122,9 @@ class PlanCard extends ConsumerWidget {
             ),
           ],
         ),
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.17,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,7 +185,7 @@ class PlanCard extends ConsumerWidget {
                         DropdownButton<int>(
                           value: selectedQty,
                           dropdownColor: Colors.white,
-                          items: List.generate(5, (index) {
+                          items: List.generate(2, (index) {
                             final value = index + 1;
                             return DropdownMenuItem<int>(
                               value: value,
@@ -220,7 +219,7 @@ class PlanCard extends ConsumerWidget {
             ],
           ),
         ),
-      ),
-    );
+      );
+  
   }
 }
