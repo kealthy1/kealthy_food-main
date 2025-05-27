@@ -119,6 +119,7 @@ class OrderService {
 
       final orderData = {
         "Name": address.name ?? 'Unknown Name',
+        "type": "Normal",
         "assignedto": "NotAssigned",
         "DA": "Waiting",
         "DAMOBILE": "Waiting",
@@ -154,6 +155,7 @@ class OrderService {
       // Save to Realtime Database
       await database.ref().child('orders').child(orderId).set(orderData);
       print('Order saved successfully with orderId = $orderId');
+      
 
       // Decrement stock
       // await decrementSOHForItems(address);
@@ -227,7 +229,7 @@ class OrderService {
         "productName": productName,
         "startDate": startDate,
         "endDate": endDate,
-        "subscriptionQty": subscriptionQty,
+        "subscriptionQty": "$subscriptionQty L",
       };
 
       await database.ref().child('subscriptions').child(orderId).set(orderData);

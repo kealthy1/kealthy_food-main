@@ -13,6 +13,7 @@ import 'package:kealthy_food/view/Cart/checkout.dart';
 import 'package:kealthy_food/view/Cart/slot.dart';
 import 'package:ntp/ntp.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TimePage extends ConsumerStatefulWidget {
   const TimePage({super.key});
@@ -36,6 +37,8 @@ class _TimePageState extends ConsumerState<TimePage> {
     //     ref.watch(isInstantDeliverySelectedProvider);
     // final isSlotContainerVisible = ref.watch(isSlotContainerVisibleProvider);
     final addressAsyncValue = ref.watch(addressProvider);
+    final isLoading = ref.watch(timePageLoaderProvider);
+    final loaderNotifier = ref.read(timePageLoaderProvider.notifier);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -61,9 +64,9 @@ class _TimePageState extends ConsumerState<TimePage> {
               // Address Container
               addressAsyncValue.when(
                 loading: () => const Center(
-                  child: CupertinoActivityIndicator(
-                                  color:  Colors.black,)
-                ),
+                    child: CupertinoActivityIndicator(
+                  color: Colors.black,
+                )),
                 error: (error, stackTrace) => Center(
                   child: Text(
                     "Failed to load address.",
@@ -266,7 +269,7 @@ class _TimePageState extends ConsumerState<TimePage> {
               // // if (isSlotContainerVisible && isInstantDeliveryVisible)
               //   const SizedBox(height: 20),
               // // Slot Selection Container
-              // if (isSlotContainerVisible) 
+              // if (isSlotContainerVisible)
               const SlotSelectionContainer(),
               const SizedBox(height: 100),
             ],
@@ -301,73 +304,91 @@ class _TimePageState extends ConsumerState<TimePage> {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          onPressed: () async {
-            try {
-              final selectedSlot = ref.read(selectedSlotProvider);
-              final selectedAddress = ref.read(addressProvider).asData?.value;
-              final isInstantDeliverySelected =
-                  ref.read(isInstantDeliverySelectedProvider);
+          onPressed: isLoading
+              ? null
+              : () async {
+                  loaderNotifier.state = true;
+                  try {
+                    final selectedSlot = ref.read(selectedSlotProvider);
+                    final selectedAddress =
+                        ref.read(addressProvider).asData?.value;
+                    final isInstantDeliverySelected =
+                        ref.read(isInstantDeliverySelectedProvider);
 
-              if (selectedAddress == null) {
-                Navigator.push(
-                  context,
-                  CupertinoPageRoute(
-                    builder: (context) => const AddressPage(),
-                  ),
-                );
-                return;
-              }
+                    if (selectedAddress == null) {
+                      Navigator.push(
+                        context,
+                        CupertinoPageRoute(
+                          builder: (context) => const AddressPage(),
+                        ),
+                      );
+                      return;
+                    }
 
-              String deliveryTime = "";
+                    String deliveryTime = "";
 
-              if (isInstantDeliverySelected) {
-                deliveryTime = await calculateEstimatedDeliveryTime();
-              } else if (selectedSlot != null) {
-                DateTime currentTime = await NTP.now();
-                DateTime slotStart =
-                    selectedSlot["start"]!; // ✅ Correctly extracting DateTime
-                DateTime slotEnd = selectedSlot["end"]!;
+                    if (isInstantDeliverySelected) {
+                      deliveryTime = await calculateEstimatedDeliveryTime();
+                    } else if (selectedSlot != null) {
+                      DateTime currentTime = await NTP.now();
+                      DateTime slotStart = selectedSlot[
+                          "start"]!; // ✅ Correctly extracting DateTime
+                      DateTime slotEnd = selectedSlot["end"]!;
 
-                if (slotStart.difference(currentTime).inMinutes < 1) {
-                  ToastHelper.showErrorToast(
-                      'Selected slot is not available. Please select a valid slot.');
-                  return;
-                }
+                      if (slotStart.difference(currentTime).inMinutes < 1) {
+                        ToastHelper.showErrorToast(
+                            'Selected slot is not available. Please select a valid slot.');
+                        return;
+                      }
 
-                deliveryTime =
-                    "${DateFormat('MMM d').format(slotStart)}, ${DateFormat('hh:mm a').format(slotStart)} - ${DateFormat('hh:mm a').format(slotEnd)}";
-              } else {
-                ToastHelper.showErrorToast(
-                    'Please select a delivery slot or instant delivery.');
-                return;
-              }
+                      deliveryTime =
+                          "${DateFormat('MMM d').format(slotStart)}, ${DateFormat('hh:mm a').format(slotStart)} - ${DateFormat('hh:mm a').format(slotEnd)}";
+                    } else {
+                      ToastHelper.showErrorToast(
+                          'Please select a delivery slot or instant delivery.');
+                      return;
+                    }
 
-              final baseTotal = calculateTotalPrice(ref.read(cartProvider));
-              final double instantDeliveryfee =
-                  isInstantDeliverySelected ? 50.0 : 0.0;
-              Navigator.push(
-                context,
-                CupertinoPageRoute(
-                  builder: (context) => CheckoutPage(
-                    itemTotal: baseTotal,
-                    cartItems: ref.read(cartProvider),
-                    deliveryTime: deliveryTime,
-                    instantDeliveryfee: instantDeliveryfee,
+                    final prefs = await SharedPreferences.getInstance();
+                    final phone = prefs.getString('phoneNumber') ?? '';
+
+                    final firstOrderNotifier =
+                        ref.read(firstOrderProvider.notifier);
+                    await firstOrderNotifier.checkFirstOrder(phone);
+
+                    final baseTotal =
+                        calculateTotalPrice(ref.read(cartProvider));
+                    final double instantDeliveryfee =
+                        isInstantDeliverySelected ? 50.0 : 0.0;
+                    Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                        builder: (context) => CheckoutPage(
+                          itemTotal: baseTotal,
+                          cartItems: ref.read(cartProvider),
+                          deliveryTime: deliveryTime,
+                          instantDeliveryfee: instantDeliveryfee,
+                        ),
+                      ),
+                    );
+                  } catch (e) {
+                    print("Error: $e");
+                  } finally {
+                    loaderNotifier.state = false;
+                  }
+                },
+          child: isLoading
+              ? const CupertinoActivityIndicator(
+                  color: Colors.white,
+                )
+              : Text(
+                  'Confirm Time',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              );
-            } catch (e) {
-              print("Error navigating to CheckoutPage: $e");
-            }
-          },
-          child: Text(
-            'Confirm Time',
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
         ),
       ),
     );

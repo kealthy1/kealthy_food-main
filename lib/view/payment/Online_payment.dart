@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kealthy_food/view/payment/dialogue_helper.dart';
@@ -83,8 +82,10 @@ class _OnlinePaymentProcessingState
       );
     }
 
-    // Clear the cart
-    ref.read(cartProvider.notifier).clearCart();
+    // Clear the cart only if not a subscription
+    if (widget.orderType != 'subscription') {
+      ref.read(cartProvider.notifier).clearCart();
+    }
 
     // Show success dialog from the new helper
     PaymentDialogHelper.showPaymentSuccessDialog(context, ref);
@@ -175,10 +176,22 @@ class _OnlinePaymentProcessingState
         backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
-      body: const Center(
-          child: CupertinoActivityIndicator(
-        color: Color.fromARGB(255, 65, 88, 108),
-      )),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              '🔐 Secure • Private • Protected',
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color:  Colors.grey,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/Login/login_page.dart';
 import 'package:kealthy_food/view/profile%20page/provider.dart';
+import 'package:kealthy_food/view/subscription/sub_view_page.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:kealthy_food/view/address/adress.dart';
 import 'package:kealthy_food/view/orders/myorders.dart';
@@ -142,22 +143,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             ),
             const SizedBox(height: 40),
             // 🔹 Tiles
-            _buildTile(
-              context: context,
-              title: 'My Address',
-              icon: Icons.location_on_outlined,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  CupertinoPageRoute(builder: (context) => const AddressPage()),
-                );
-              },
-            ),
-            _divider(),
+
             _buildTile(
               context: context,
               title: 'Orders',
-              icon: Icons.shopping_bag_outlined,
+              icon: CupertinoIcons.bag,
               onTap: () {
                 Navigator.push(
                   context,
@@ -166,6 +156,31 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 );
               },
             ),
+            _divider(),
+            _buildTile(
+              context: context,
+              title: 'Subscriptions',
+              icon: CupertinoIcons.check_mark_circled,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  CupertinoPageRoute(builder: (context) => const SubscriptionOrderDetailsPage()),
+                );
+              },
+            ),
+            _divider(),
+            _buildTile(
+              context: context,
+              title: 'My Address',
+              icon: CupertinoIcons.home,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  CupertinoPageRoute(builder: (context) => const AddressPage()),
+                );
+              },
+            ),
+            
             _divider(),
             _buildTile(
               context: context,
@@ -231,7 +246,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             const SizedBox(height: 20),
             // 🔹 Logout Button
 
-             if (phoneNumber.isNotEmpty) ...[
+            if (phoneNumber.isNotEmpty) ...[
               // 🔹 Logout Button
               SizedBox(
                 width: MediaQuery.of(context).size.width * 0.4,

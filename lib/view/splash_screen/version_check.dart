@@ -13,8 +13,6 @@ class VersionCheckService {
     print("🔍 [VersionCheckService] _fetchLatestVersion() called...");
 
     try {
-      // You can remove "/in/" if you're unsure about the region:
-      // final url = Uri.parse("https://itunes.apple.com/lookup?id=$appStoreId");
       final url = Uri.parse("https://itunes.apple.com/in/lookup?id=$appStoreId");
       print("🌐 [VersionCheckService] GET → $url");
 
@@ -98,12 +96,12 @@ class VersionCheckService {
 
   static Future<void> _showUpdateDialog(BuildContext context, String latestVersion) async {
     await showDialog(
-      barrierDismissible: false, // Prevent accidental dismiss
+      barrierDismissible: false, 
       context: context,
       builder: (context) => WillPopScope(
         onWillPop: () async {
           print("🚫 [VersionCheckService] Back button pressed, ignoring...");
-          return false; // Prevent back button from closing
+          return false; 
         },
         child: AlertDialog(
           shape: RoundedRectangleBorder(

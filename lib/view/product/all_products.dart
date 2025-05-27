@@ -26,6 +26,7 @@ final productTypesProvider = FutureProvider.family<List<String>, String>(
         .where('Subcategory', isEqualTo: subcategory)
         .get();
 
+
     final types = snapshot.docs
         .map((doc) => doc.data()['Type'] as String?)
         .where((type) => type != null)
@@ -392,7 +393,7 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                                               },
                                             ),
                                           ),
-                                          SizedBox(
+                                          const SizedBox(
                                             height: 8,
                                           ),  
                                           const Spacer(),

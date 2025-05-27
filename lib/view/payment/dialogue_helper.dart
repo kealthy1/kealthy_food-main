@@ -16,6 +16,7 @@ class PaymentDialogHelper {
     Timer? timer; // Declare timer to cancel it later
 
     showDialog(
+      barrierColor: Colors.white,
       context: context,
       barrierDismissible: false, // Prevents user from closing manually
       builder: (context) {
@@ -86,9 +87,12 @@ class PaymentDialogHelper {
   /// Shows a dialog indicating the payment/order has failed.
   static void showPaymentFailureDialog(BuildContext context) {
     showDialog(
+
       context: context,
-      barrierDismissible: false, // Prevents tapping outside to dismiss
+      barrierDismissible: false,
+      barrierColor: Colors.white,// Prevents tapping outside to dismiss
       builder: (context) => AlertDialog(
+        
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -106,13 +110,13 @@ class PaymentDialogHelper {
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.red,
+                color: const Color.fromARGB(255, 65, 88, 108),
               ),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+                backgroundColor: const Color.fromARGB(255, 65, 88, 108),
                 padding:
                     const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                 shape: RoundedRectangleBorder(

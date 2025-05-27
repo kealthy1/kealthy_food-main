@@ -66,7 +66,7 @@ class SlotSelectionContainer extends ConsumerWidget {
                       Expanded(
                         child: Text(
                           selectedSlot != null
-                              ? 'Selected Slot : ${DateFormat('MMM d').format(selectedSlot["start"]!)}, ${DateFormat('h:mm a').format(selectedSlot["start"]!)} - ${DateFormat('h:mm a').format(selectedSlot["end"]!)}'
+                              ? 'Slot : ${DateFormat('MMM d').format(selectedSlot["start"]!)}, ${DateFormat('h:mm a').format(selectedSlot["start"]!)} - ${DateFormat('h:mm a').format(selectedSlot["end"]!)}'
                               : 'Preferred Delivery Time',
                           style: GoogleFonts.poppins(
                             color: selectedSlot != null

@@ -42,9 +42,11 @@ class ConfirmationPage extends ConsumerWidget {
     final endDate =
         fromDate?.add(Duration(days: durationDays + additionalDays));
     final endDateText =
-        endDate != null ? DateFormat('MMMM d, y').format(endDate) : '';
-  //  final total = (baseRate * selectedQty * durationDays).toStringAsFixed(0);
-   const total = "1";
+        endDate != null ? DateFormat('d MMMM y').format(endDate) : '';
+    print('📆 Start Date: ${fromDate != null ? DateFormat('d MMMM y').format(fromDate) : 'Not selected'}');
+    print('📆 End Date: $endDateText');
+  //  final total = (baseRate * selectedQty * durationDays).toStringAsFixed(0); 
+   const total = "1"; 
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -144,7 +146,7 @@ class ConfirmationPage extends ConsumerWidget {
                             children: [
                               Text(
                                 fromDate != null
-                                    ? DateFormat('MMMM d, y').format(fromDate)
+                                    ? DateFormat('d MMMM y').format(fromDate)
                                     : 'Select Date',
                                 style: TextStyle(
                                   color: fromDate != null

@@ -35,10 +35,12 @@ class InternetAwareWidget extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
                     'You are offline',
+                    
                     textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: 16,
+                      decoration: TextDecoration.none,
                     ),
                   ),
                 ),

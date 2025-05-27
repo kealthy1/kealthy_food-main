@@ -7,6 +7,7 @@ import 'package:ntp/ntp.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final isInstantDeliveryVisibleProvider = StateProvider<bool>((ref) => true);
+final timePageLoaderProvider = StateProvider<bool>((ref) => false);
 
 Future<void> checkTimeBoundaries(WidgetRef ref) async {
     try {

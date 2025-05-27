@@ -56,7 +56,7 @@ class _LiveOrdersTabState extends ConsumerState<LiveOrdersTab> {
           : ordersList.isEmpty
               ? Center(
                   child: Text(
-                  'No orders found.',
+                  'No orders found',
                   style: GoogleFonts.poppins(),
                 ))
               : ListView.builder(
@@ -77,10 +77,11 @@ class _LiveOrdersTabState extends ConsumerState<LiveOrdersTab> {
                     final totalAmount = order['totalAmountToPay'] ?? '';
 
                     // Calculate subtotal of items
-                    for (var item in orderItems) {
-                      (item['item_quantity'] ?? 1).toDouble();
-                      (item['item_price'] ?? 0).toDouble();
-                    }
+                    final double subtotal = orderItems.fold(0.0, (sum, item) {
+                      final quantity = (item['item_quantity'] ?? 1).toDouble();
+                      final price = (item['item_price'] ?? 0).toDouble();
+                      return sum + (price * quantity);
+                    });
                     // Handling fee
                     const int handlingFee = 5;
 
@@ -331,6 +332,26 @@ class _LiveOrdersTabState extends ConsumerState<LiveOrdersTab> {
                                       }).toList(),
                                     ),
                                     const SizedBox(height: 20),
+                                    Row(
+                                      children: [
+                                        Text('Subtotal:',
+                                            style: GoogleFonts.poppins(
+                                              textStyle: const TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            )),
+                                            const Spacer(),
+                                            Text('₹${subtotal.toStringAsFixed(0)}',
+                                            style: GoogleFonts.poppins(
+                                              textStyle: const TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            )),
+                                      ],
+                                    ),
+                                        const SizedBox(height: 20),
                                     // Handling fee
                                     Row(
                                       children: [
@@ -338,7 +359,7 @@ class _LiveOrdersTabState extends ConsumerState<LiveOrdersTab> {
                                           'Delivery Fee:',
                                           style: GoogleFonts.poppins(
                                             textStyle: const TextStyle(
-                                              fontSize: 12,
+                                              fontSize: 13,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
@@ -348,7 +369,7 @@ class _LiveOrdersTabState extends ConsumerState<LiveOrdersTab> {
                                             ? Text(
                                                 '₹${deliveryfee.toStringAsFixed(0)}',
                                                 style: const TextStyle(
-                                                  fontSize: 12,
+                                                  fontSize: 13,
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                               )
@@ -356,7 +377,7 @@ class _LiveOrdersTabState extends ConsumerState<LiveOrdersTab> {
                                                 'Free',
                                                 style: GoogleFonts.poppins(
                                                   textStyle: const TextStyle(
-                                                    fontSize: 12,
+                                                    fontSize: 13,
                                                     fontWeight: FontWeight.bold,
                                                     color: Colors.green,
                                                   ),
@@ -374,7 +395,7 @@ class _LiveOrdersTabState extends ConsumerState<LiveOrdersTab> {
                                               'Instant Delivery Fee:',
                                               style: GoogleFonts.poppins(
                                                 textStyle: const TextStyle(
-                                                  fontSize: 12,
+                                                  fontSize: 13,
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                               ),
@@ -383,7 +404,7 @@ class _LiveOrdersTabState extends ConsumerState<LiveOrdersTab> {
                                             Text(
                                               '₹${instantDeliveryfee.toStringAsFixed(0)}',
                                               style: const TextStyle(
-                                                fontSize: 12,
+                                                fontSize: 13,
                                                 fontWeight: FontWeight.bold,
                                               ),
                                             ),
@@ -399,7 +420,7 @@ class _LiveOrdersTabState extends ConsumerState<LiveOrdersTab> {
                                           'Handling fee:',
                                           style: GoogleFonts.poppins(
                                             textStyle: const TextStyle(
-                                              fontSize: 12,
+                                              fontSize: 13,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
@@ -408,13 +429,17 @@ class _LiveOrdersTabState extends ConsumerState<LiveOrdersTab> {
                                         const Text(
                                           '₹$handlingFee',
                                           style: TextStyle(
-                                            fontSize: 12,
+                                            fontSize: 13,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 20),
+                                    const SizedBox(height: 10),
+                                    Divider(
+                                      color: Colors.grey.shade300,
+                                      thickness: 1,
+                                    ),
 
                                     // Grand total
                                     Row(

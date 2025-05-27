@@ -6,12 +6,14 @@ class BillDetailsWidget extends StatelessWidget {
   final double itemTotal;
   final double distanceInKm;
   final double instantDeliveryFee;
+  final double offerDiscount;
 
   const BillDetailsWidget({
     super.key,
     required this.itemTotal,
     required this.distanceInKm,
     required this.instantDeliveryFee,
+    this.offerDiscount = 0.0,
   });
 
   @override
@@ -20,7 +22,8 @@ class BillDetailsWidget extends StatelessWidget {
     double discountedFee = _calculateDiscountedFee(itemTotal, distanceInKm);
 
     // Check if free delivery is unlocked
-    bool isFreeDelivery = (discountedFee == 0 && itemTotal >= 199 && distanceInKm <= 7);
+    bool isFreeDelivery =
+        (discountedFee == 0 && itemTotal >= 199 && distanceInKm <= 7);
 
     // Original delivery fee (without discount)
     double originalFee = distanceInKm * 10;
@@ -29,10 +32,14 @@ class BillDetailsWidget extends StatelessWidget {
     double handlingFee = 5;
 
     // Total amount to pay
-    double finalTotalToPay = itemTotal + discountedFee + instantDeliveryFee + handlingFee;
+    double finalTotalToPay = (itemTotal - offerDiscount) +
+        discountedFee +
+        instantDeliveryFee +
+        handlingFee;
 
     // Dynamic delivery message
-    String deliveryMessage = _getDeliveryMessage(itemTotal, distanceInKm, discountedFee, originalFee);
+    String deliveryMessage = _getDeliveryMessage(
+        itemTotal, distanceInKm, discountedFee, originalFee);
     Color messageColor = _getMessageColor(itemTotal, distanceInKm);
 
     return Padding(
@@ -79,7 +86,8 @@ class BillDetailsWidget extends StatelessWidget {
             const SizedBox(height: 10),
 
             // Item Total
-            RowTextWidget(label: "Item Total", value: "₹${itemTotal.toStringAsFixed(0)}"),
+            RowTextWidget(
+                label: "Item Total", value: "₹${itemTotal.toStringAsFixed(0)}"),
             const SizedBox(height: 5),
 
             // Delivery Fee
@@ -133,12 +141,23 @@ class BillDetailsWidget extends StatelessWidget {
             const SizedBox(height: 5),
 
             // Handling Fee
-            RowTextWidget(label: "Handling Fee", value: "₹${handlingFee.toStringAsFixed(0)}"),
+            RowTextWidget(
+                label: "Handling Fee",
+                value: "₹${handlingFee.toStringAsFixed(0)}"),
             const SizedBox(height: 5),
 
             // Instant Delivery Fee
             if (instantDeliveryFee > 0)
-              RowTextWidget(label: "Instant Delivery Fee", value: "₹${instantDeliveryFee.toStringAsFixed(0)}"),
+              RowTextWidget(
+                  label: "Instant Delivery Fee",
+                  value: "₹${instantDeliveryFee.toStringAsFixed(0)}"),
+            if (offerDiscount > 0)
+              RowTextWidget(
+                colr: Colors.green,
+                label: "🎉Saved",
+                value: "₹${offerDiscount.toStringAsFixed(0)}",
+              ),
+
             const Divider(),
             const SizedBox(height: 5),
 
@@ -195,7 +214,8 @@ class BillDetailsWidget extends StatelessWidget {
   }
 
   /// **Generates a message based on order total and distance**
-  String _getDeliveryMessage(double itemTotal, double distanceInKm, double discountedFee, double originalFee) {
+  String _getDeliveryMessage(double itemTotal, double distanceInKm,
+      double discountedFee, double originalFee) {
     double neededForFreeDelivery = 199 - itemTotal;
     if (itemTotal >= 199 && distanceInKm <= 7) {
       return 'You Unlocked A Free Delivery 🎉';

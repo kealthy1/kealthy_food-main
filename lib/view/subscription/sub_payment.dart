@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:kealthy_food/view/payment/Online_payment.dart';
 import 'package:kealthy_food/view/payment/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SubscriptionPaymentPage extends StatelessWidget {
+final subscriptionLoadingProvider = StateProvider<bool>((ref) => false);
+
+class SubscriptionPaymentPage extends ConsumerWidget {
   final String title;
   final DateTime startDate;
   final String endDate;
@@ -27,7 +31,7 @@ class SubscriptionPaymentPage extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(backgroundColor: Colors.white,
       appBar: AppBar(surfaceTintColor: Colors.white,
         title: const Text("Make Payment"),
@@ -96,6 +100,10 @@ class SubscriptionPaymentPage extends StatelessWidget {
                   ),
                 ),
                 onPressed: () async {
+                  final isLoading = ref.read(subscriptionLoadingProvider);
+                  if (isLoading) return;
+                  ref.read(subscriptionLoadingProvider.notifier).state = true;
+
                   print('Subscription Payment Details:');
                   print('Title: $title');
                   print('Product Name: $productName');
@@ -109,11 +117,19 @@ class SubscriptionPaymentPage extends StatelessWidget {
                   final prefs = await SharedPreferences.getInstance();
                   await prefs.setString('subscription_plan_title', title);
                   await prefs.setString('subscription_product_name', productName);
-                  await prefs.setString('subscription_start_date', DateFormat('yyyy-MM-dd').format(startDate));
+                  await prefs.setString('subscription_start_date', DateFormat('d MMMM y').format(startDate));
                   await prefs.setString('subscription_end_date', endDate);
                   await prefs.setString('subscription_qty', quantity.toString());
 
+                  final formattedSlot =
+                      '${DateFormat('h:mm a').format(slot['start']!)} - ${DateFormat('h:mm a').format(slot['end']!)}';
+                  await prefs.setString('subscription_delivery_slot', formattedSlot);
+
                   final razorpayOrderId = await OrderService.createRazorpayOrder(totalAmount);
+                  print(formattedSlot);
+
+                  ref.read(subscriptionLoadingProvider.notifier).state = false;
+
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -122,7 +138,7 @@ class SubscriptionPaymentPage extends StatelessWidget {
                         packingInstructions: '',
                         deliveryInstructions: '',
                         address: address,
-                        deliverytime: slot.toString(),
+                        deliverytime: formattedSlot,
                         deliveryFee: 0,
                         instantDeliveryFee: 0,
                         razorpayOrderId: razorpayOrderId,
@@ -131,9 +147,12 @@ class SubscriptionPaymentPage extends StatelessWidget {
                     ),
                   );
                 },
-                child: const Text("Proceed to Payment"),
+                child: ref.watch(subscriptionLoadingProvider)
+                    ? const CupertinoActivityIndicator(radius: 12.0,color: Colors.white,)
+                    : const Text("Proceed to Payment"),
               ),
-            )
+            ),
+            const SizedBox(height: 12),
           ],
         ),
       ),

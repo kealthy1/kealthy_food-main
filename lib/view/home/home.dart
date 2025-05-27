@@ -13,6 +13,7 @@ import 'package:kealthy_food/view/home/Category.dart';
 import 'package:kealthy_food/view/home/deal_day.dart';
 import 'package:kealthy_food/view/home/deal_week.dart';
 import 'package:kealthy_food/view/notifications/feedback_alert.dart';
+import 'package:kealthy_food/view/notifications/notification_tab.dart';
 import 'package:kealthy_food/view/notifications/rating_alert.dart';
 import 'package:kealthy_food/view/home/kealthy_page.dart';
 import 'package:kealthy_food/view/home/provider.dart';
@@ -432,7 +433,7 @@ class _HomePageState extends ConsumerState<HomePage>
               Navigator.push(
                 context,
                 CupertinoModalPopupRoute(
-                  builder: (context) => const NotificationsScreen(),
+                  builder: (context) => const NotificationTabPage(),
                 ),
               );
             },

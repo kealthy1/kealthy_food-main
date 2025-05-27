@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kealthy_food/view/BottomNavBar/bottom_nav_bar.dart';
 import 'package:kealthy_food/view/Login/login_page.dart';
 import 'package:kealthy_food/view/maintanence/maintanence.dart';
-import 'package:kealthy_food/view/splash_screen/network.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -45,7 +44,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         context,
         CupertinoModalPopupRoute(
           builder: (_) => storedPhone.isNotEmpty
-              ? const InternetAwareWidget(child: BottomNavBar())
+              ? const BottomNavBar()
               : const LoginFields(),
         ),
       );

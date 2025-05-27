@@ -22,10 +22,8 @@ class OrderCard extends ConsumerWidget {
           if (orders == null || orders.isEmpty) {
             return Center(
               child: Text(
-                "No order found.",
+                "No orders found",
                 style: GoogleFonts.poppins(
-                  textStyle: const TextStyle(
-                      fontSize: 14,),
                 ),
               ),
             );

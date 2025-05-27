@@ -70,11 +70,6 @@ class NotificationsScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        title: const Text("Notifications"),
-      ),
       body: notificationsAsync.when(
         loading: () => const Center(
             child: CupertinoActivityIndicator(
