@@ -10,11 +10,11 @@ class SubscriptionDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(backgroundColor: Colors.white,
-      appBar: AppBar(backgroundColor: Colors.white,
-       surfaceTintColor: Colors.white,
-
-
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         title: const Text('Subscription Plans'),
       ),
       body: SingleChildScrollView(
@@ -36,6 +36,10 @@ class SubscriptionDetailsPage extends StatelessWidget {
             const SizedBox(height: 16),
             const Text(
               'A2 Mate Milk 1L',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const Text(
+              "₹ 120/L",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
@@ -125,101 +129,114 @@ class PlanCard extends ConsumerWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 4),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 250),
-                      transitionBuilder: (Widget child, Animation<double> animation) {
-                        return ScaleTransition(scale: animation, child: child);
-                      },
-                      child: Text(
-                        '₹${(baseRate * selectedQty * durationDays).toStringAsFixed(0)} ',
-                        key: ValueKey('${baseRate * selectedQty * durationDays}'),
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                      ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(title,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 4),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    transitionBuilder:
+                        (Widget child, Animation<double> animation) {
+                      return ScaleTransition(scale: animation, child: child);
+                    },
+                    child: Text(
+                      '₹${(baseRate * selectedQty * durationDays).toStringAsFixed(0)} ',
+                      key: ValueKey('${baseRate * selectedQty * durationDays}'),
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.w500),
                     ),
-                    const SizedBox(height: 4),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (description.contains('Plus')) Row(
+                  ),
+                  const SizedBox(height: 4),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (description.contains('Plus'))
+                        Row(
                           children: [
-                            const Icon(CupertinoIcons.gift, size: 16, color: Colors.green),
+                            const Icon(CupertinoIcons.gift,
+                                size: 16, color: Colors.green),
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
-                                description.split('\n').firstWhere((line) => line.contains('Plus')),
-                                style: const TextStyle(fontSize: 13, color: Colors.green),
+                                description.split('\n').firstWhere(
+                                    (line) => line.contains('Plus')),
+                                style: const TextStyle(
+                                    fontSize: 13, color: Colors.green),
                                 overflow: TextOverflow.visible,
                               ),
                             ),
                           ],
                         ),
-                        if (description.contains('Free Delivery')) const Row(
+                      if (description.contains('Free Delivery'))
+                        const Row(
                           children: [
-                            Icon(Icons.local_shipping_outlined, size: 16, color: Colors.green),
+                            Icon(Icons.local_shipping_outlined,
+                                size: 16, color: Colors.green),
                             SizedBox(width: 4),
                             Expanded(
                               child: Text(
                                 'Free Delivery',
-                                style: TextStyle(fontSize: 13, color: Colors.green),
+                                style: TextStyle(
+                                    fontSize: 13, color: Colors.green),
                                 overflow: TextOverflow.visible,
                               ),
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        const Text(
-                          'Select Quantity:',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                        ),
-                        const SizedBox(width: 10),
-                        DropdownButton<int>(
-                          value: selectedQty,
-                          dropdownColor: Colors.white,
-                          items: List.generate(2, (index) {
-                            final value = index + 1;
-                            return DropdownMenuItem<int>(
-                              value: value,
-                              child: Text('$value L'),
-                            );
-                          }),
-                          onChanged: (value) {
-                            if (value != null) {
-                              ref.read(quantityProvider(title).notifier).state = value;
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Align(
-                alignment: Alignment.center,
-                child: Container(
-                  width: 40,
-                  height: 40  ,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Color.fromARGB(255, 65, 88, 108),
+                    ],
                   ),
-                  child: const Icon(Icons.arrow_forward, color: Colors.white, size: 25),
-                ),
+                  Row(
+                    children: [
+                      const Text(
+                        'Select Quantity:',
+                        style: TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(width: 10),
+                      DropdownButton<int>(
+                        value: selectedQty,
+                        dropdownColor: Colors.white,
+                        items: List.generate(2, (index) {
+                          final value = index + 1;
+                          return DropdownMenuItem<int>(
+                            value: value,
+                            child: Text('$value L'),
+                          );
+                        }),
+                        onChanged: (value) {
+                          if (value != null) {
+                            ref.read(quantityProvider(title).notifier).state =
+                                value;
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 12),
+            Align(
+              alignment: Alignment.center,
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color.fromARGB(255, 65, 88, 108),
+                ),
+                child: const Icon(Icons.arrow_forward,
+                    color: Colors.white, size: 25),
+              ),
+            ),
+          ],
         ),
-      );
-  
+      ),
+    );
   }
 }

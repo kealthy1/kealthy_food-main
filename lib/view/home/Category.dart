@@ -117,18 +117,43 @@ class _HomeCategoryState extends ConsumerState<HomeCategory>
           );
         } else {
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Shimmer.fromColors(
-              baseColor: Colors.grey[300]!,
-              highlightColor: Colors.grey[100]!,
-              child: Container(
-                decoration: BoxDecoration(
+  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+  child: Wrap(
+    spacing: 8.0,
+    runSpacing: 8.0,
+    children: List.generate(6, (index) {
+      return SizedBox(
+        width: (MediaQuery.of(context).size.width - 48) / 3,
+        child: Column(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8.0),
+              child: Shimmer.fromColors(
+                baseColor: Colors.grey[300]!,
+                highlightColor: Colors.grey[100]!,
+                child: Container(
+                  width: double.infinity,
+                  height: 100,
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
             ),
-          );
+            const SizedBox(height: 4),
+            Shimmer.fromColors(
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: Container(
+                width: 60,
+                height: 10,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      );
+    }),
+  ),
+);
         }
       },
     );

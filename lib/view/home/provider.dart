@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
@@ -162,3 +163,14 @@ Future<void> checkLocationPermission(WidgetRef ref) async {
       print("⚠️ Unable to determine location permission.");
     }
   }
+
+ // FutureProvider to fetch image URLs
+final homeImageUrlsProvider = FutureProvider<List<String>>((ref) async {
+  final bannerDocs = await FirebaseFirestore.instance.collection('banners').get();
+  final productDocs = await FirebaseFirestore.instance.collection('products').limit(10).get();
+
+  final bannerUrls = bannerDocs.docs.map((doc) => doc['image'] as String);
+  final productUrls = productDocs.docs.map((doc) => doc['image'] as String);
+
+  return [...bannerUrls, ...productUrls];
+});

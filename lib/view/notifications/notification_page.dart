@@ -77,10 +77,10 @@ class NotificationsScreen extends ConsumerWidget {
         )),
         error: (error, stackTrace) {
           print("Error fetching notifications: $error");
-          return _buildNoNotifications();
+          return buildNoNotifications();
         },
         data: (notifications) {
-          if (notifications.isEmpty) return _buildNoNotifications();
+          if (notifications.isEmpty) return buildNoNotifications();
 
           return ListView.builder(
             physics: const BouncingScrollPhysics(),
@@ -137,7 +137,7 @@ class NotificationsScreen extends ConsumerWidget {
 }
 
 /// **No Notifications UI**
-Widget _buildNoNotifications() {
+Widget buildNoNotifications() {
   return Center(
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -207,7 +207,8 @@ Widget _buildNotificationTile(
                   return productImageAsync.when(
                     data: (imageUrl) {
                       if (imageUrl != null) {
-                        precacheImage(CachedNetworkImageProvider(imageUrl), context);
+                        precacheImage(
+                            CachedNetworkImageProvider(imageUrl), context);
                       }
                       return _buildImage(imageUrl);
                     },

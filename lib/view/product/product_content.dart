@@ -38,6 +38,12 @@ class ProductContent extends ConsumerWidget {
         ? docData['Price']
         : int.tryParse(docData['Price']?.toString() ?? '0') ?? 0;
 
+    final offerPrice = (docData['offer_price'] is int || docData['offer_price'] is double)
+        ? docData['offer_price']
+        : double.tryParse(docData['offer_price']?.toString() ?? '0') ?? 0;
+
+    final hasOffer = offerPrice > 0;
+
     // final rawScore = docData['Kealthy Score'] ?? '100';
     // final kealthyScore = int.tryParse(rawScore) ?? 100;
 
@@ -273,18 +279,29 @@ class ProductContent extends ConsumerWidget {
 
                 const SizedBox(height: 20),
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment
-                      .start, // Aligns rupee symbol and price at the top
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Price display with offer logic
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                             if (hasOffer)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 5.0),
+                                child: Text(
+                                  '\u20B9$productPrice',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black54,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                              ),
                             const Baseline(
-                              baseline:
-                                  17, // Adjust this value for proper alignment
+                              baseline: 17,
                               baselineType: TextBaseline.alphabetic,
                               child: Text(
                                 '\u20B9',
@@ -296,34 +313,31 @@ class ProductContent extends ConsumerWidget {
                               ),
                             ),
                             Text(
-                              '$productPrice/-', // Product price
-
+                              hasOffer ? '$offerPrice/-' : '$productPrice/-',
                               style: const TextStyle(
-                                fontSize: 20, // Larger size for the price
+                                fontSize: 20,
                                 color: Colors.black,
                               ),
                             ),
+                           
                           ],
                         ),
                         Text(
-                          '(Inclusive of all taxes)', // Product price
-
+                          '(Inclusive of all taxes)',
                           style: GoogleFonts.poppins(
                             fontSize: 10,
                             color: Colors.black,
                           ),
                         ),
                       ],
-                    ), // Add slight spacing between rupee and price
-
+                    ),
                     const Spacer(),
                     AddToCartSection(
                       productName: productName,
-                      productPrice: productPrice,
+                      productPrice: hasOffer? offerPrice : productPrice,
                       productEAN: productEAN,
                       soh: productSoh,
                       imageurl: productImageUrl,
-                      
                     ),
                   ],
                 ),

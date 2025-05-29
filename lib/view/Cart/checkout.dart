@@ -15,14 +15,14 @@ class CheckoutPage extends ConsumerWidget {
   final double itemTotal;
   final List<CartItem> cartItems;
   final String deliveryTime;
-  final double instantDeliveryfee;
+  // final double instantDeliveryfee;
 
   const CheckoutPage({
     super.key,
     required this.itemTotal,
     required this.cartItems,
     required this.deliveryTime,
-    required this.instantDeliveryfee,
+    // required this.instantDeliveryfee,
   });
 
   @override
@@ -322,7 +322,7 @@ class CheckoutPage extends ConsumerWidget {
                               BillDetailsWidget(
                                 itemTotal: itemTotal,
                                 distanceInKm: distanceInKm,
-                                instantDeliveryFee: instantDeliveryfee,
+                                // instantDeliveryFee: instantDeliveryfee,
                                 offerDiscount: isFirstOrder ? 100.0 : 0.0,
                               ),
 
@@ -385,8 +385,8 @@ class CheckoutPage extends ConsumerWidget {
 
                 final double finalTotalToPay = calculateFinalTotal(
                   itemTotal - offerDiscount,
-                  distanceInKm,
-                  instantDeliveryfee,
+                  distanceInKm
+                  // instantDeliveryfee,
                 );
 
                 Navigator.push(
@@ -399,7 +399,7 @@ class CheckoutPage extends ConsumerWidget {
                       deliverytime: deliveryTime,
                       packingInstructions: packingInstructions,
                       deliveryfee: normalDeliveryFee,
-                      instantDeliveryFee: instantDeliveryfee,
+                      // instantDeliveryFee: instantDeliveryfee,
                     ),
                   ),
                 );

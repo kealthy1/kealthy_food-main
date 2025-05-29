@@ -20,7 +20,7 @@ class BottomNavBar extends ConsumerWidget {
           IndexedStack(
             index: currentIndex, 
             children: const [
-              HomePage(),   // 🚀 Kept alive, does not rebuild when switching tabs
+             HomePage(),   // 🚀 Kept alive, does not rebuild when switching tabs
               ProfilePage(),
             ],
           ),

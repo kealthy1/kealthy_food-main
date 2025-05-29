@@ -28,12 +28,17 @@ void main() async {
 
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+
   runApp(
     ProviderScope(
       child: MyApp(navigatorKey: navigatorKey),
     ),
   );
 }
+  final navigatorKeyProvider = Provider<GlobalKey<NavigatorState>>((ref) {
+  return GlobalKey<NavigatorState>();
+});
+
 
 class MyApp extends ConsumerWidget {
   final GlobalKey<NavigatorState> navigatorKey;
@@ -64,6 +69,8 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+
+    final navigatorKey = ref.watch(navigatorKeyProvider);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,

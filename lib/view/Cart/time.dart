@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart'; // <-- NEW
-import 'package:kealthy_food/view/Cart/cart.dart';
+// import 'package:kealthy_food/view/Cart/cart.dart';
 import 'package:kealthy_food/view/Cart/cart_controller.dart';
 import 'package:kealthy_food/view/Cart/checkout_provider.dart';
 import 'package:kealthy_food/view/Cart/time_provider.dart';
@@ -27,6 +27,12 @@ class _TimePageState extends ConsumerState<TimePage> {
   void initState() {
     super.initState();
     checkTimeBoundaries(ref);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final prefs = await SharedPreferences.getInstance();
+      final phone = prefs.getString('phoneNumber') ?? '';
+      final firstOrderNotifier = ref.read(firstOrderProvider.notifier);
+      await firstOrderNotifier.checkFirstOrder(phone);
+    });
   }
 
   @override
@@ -146,9 +152,7 @@ class _TimePageState extends ConsumerState<TimePage> {
                         Text(
                           "${selectedAddress.name}, ${selectedAddress.selectedRoad}",
                           style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: Colors.black54,
-                              fontWeight: FontWeight.bold),
+                              fontSize: 12, fontWeight: FontWeight.w500),
                         ),
                       ],
                     ),
@@ -312,8 +316,8 @@ class _TimePageState extends ConsumerState<TimePage> {
                     final selectedSlot = ref.read(selectedSlotProvider);
                     final selectedAddress =
                         ref.read(addressProvider).asData?.value;
-                    final isInstantDeliverySelected =
-                        ref.read(isInstantDeliverySelectedProvider);
+                    // final isInstantDeliverySelected =
+                    //     ref.read(isInstantDeliverySelectedProvider);
 
                     if (selectedAddress == null) {
                       Navigator.push(
@@ -327,9 +331,10 @@ class _TimePageState extends ConsumerState<TimePage> {
 
                     String deliveryTime = "";
 
-                    if (isInstantDeliverySelected) {
-                      deliveryTime = await calculateEstimatedDeliveryTime();
-                    } else if (selectedSlot != null) {
+                    // if (isInstantDeliverySelected) {
+                    //   deliveryTime = await calculateEstimatedDeliveryTime();
+                    // } else
+                    if (selectedSlot != null) {
                       DateTime currentTime = await NTP.now();
                       DateTime slotStart = selectedSlot[
                           "start"]!; // ✅ Correctly extracting DateTime
@@ -349,17 +354,12 @@ class _TimePageState extends ConsumerState<TimePage> {
                       return;
                     }
 
-                    final prefs = await SharedPreferences.getInstance();
-                    final phone = prefs.getString('phoneNumber') ?? '';
-
-                    final firstOrderNotifier =
-                        ref.read(firstOrderProvider.notifier);
-                    await firstOrderNotifier.checkFirstOrder(phone);
+                    // The firstOrder check is now handled in initState
 
                     final baseTotal =
                         calculateTotalPrice(ref.read(cartProvider));
-                    final double instantDeliveryfee =
-                        isInstantDeliverySelected ? 50.0 : 0.0;
+                    // final double instantDeliveryfee =
+                    //     isInstantDeliverySelected ? 50.0 : 0.0;
                     Navigator.push(
                       context,
                       CupertinoPageRoute(
@@ -367,7 +367,7 @@ class _TimePageState extends ConsumerState<TimePage> {
                           itemTotal: baseTotal,
                           cartItems: ref.read(cartProvider),
                           deliveryTime: deliveryTime,
-                          instantDeliveryfee: instantDeliveryfee,
+                          // instantDeliveryfee: instantDeliveryfee,
                         ),
                       ),
                     );

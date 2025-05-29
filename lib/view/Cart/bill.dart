@@ -5,14 +5,14 @@ import 'package:kealthy_food/view/Cart/row_text.dart';
 class BillDetailsWidget extends StatelessWidget {
   final double itemTotal;
   final double distanceInKm;
-  final double instantDeliveryFee;
+  // final double instantDeliveryFee;
   final double offerDiscount;
 
   const BillDetailsWidget({
     super.key,
     required this.itemTotal,
     required this.distanceInKm,
-    required this.instantDeliveryFee,
+    // required this.instantDeliveryFee,
     this.offerDiscount = 0.0,
   });
 
@@ -31,11 +31,15 @@ class BillDetailsWidget extends StatelessWidget {
     // Fixed handling fee
     double handlingFee = 5;
 
+    // Product discount logic: Reduce itemTotal by up to ₹100 before applying fees
+    double productDiscount = itemTotal >= 100 ? 100 : itemTotal;
+    double adjustedItemTotal = itemTotal - productDiscount;
+
+    double deliverySavings = originalFee - discountedFee;
+    double totalSavings = productDiscount + deliverySavings;
+
     // Total amount to pay
-    double finalTotalToPay = (itemTotal - offerDiscount) +
-        discountedFee +
-        instantDeliveryFee +
-        handlingFee;
+    double finalTotalToPay = adjustedItemTotal + discountedFee + handlingFee;
 
     // Dynamic delivery message
     String deliveryMessage = _getDeliveryMessage(
@@ -88,6 +92,12 @@ class BillDetailsWidget extends StatelessWidget {
             // Item Total
             RowTextWidget(
                 label: "Item Total", value: "₹${itemTotal.toStringAsFixed(0)}"),
+            const SizedBox(height: 5),
+            RowTextWidget(
+                label:
+                    "FIRST01 Offer | ₹ ${productDiscount.toStringAsFixed(0)}",
+                colr: Colors.green,
+                value: "₹${adjustedItemTotal.toStringAsFixed(0)}"),
             const SizedBox(height: 5),
 
             // Delivery Fee
@@ -147,15 +157,15 @@ class BillDetailsWidget extends StatelessWidget {
             const SizedBox(height: 5),
 
             // Instant Delivery Fee
-            if (instantDeliveryFee > 0)
-              RowTextWidget(
-                  label: "Instant Delivery Fee",
-                  value: "₹${instantDeliveryFee.toStringAsFixed(0)}"),
-            if (offerDiscount > 0)
+            // if (instantDeliveryFee > 0)
+            //   RowTextWidget(
+            //       label: "Instant Delivery Fee",
+            //       value: "₹${instantDeliveryFee.toStringAsFixed(0)}"),
+            if (productDiscount > 0 || offerDiscount > 0)
               RowTextWidget(
                 colr: Colors.green,
                 label: "🎉Saved",
-                value: "₹${offerDiscount.toStringAsFixed(0)}",
+                value: "₹${totalSavings.toStringAsFixed(0)}",
               ),
 
             const Divider(),
@@ -218,11 +228,11 @@ class BillDetailsWidget extends StatelessWidget {
       double discountedFee, double originalFee) {
     double neededForFreeDelivery = 199 - itemTotal;
     if (itemTotal >= 199 && distanceInKm <= 7) {
-      return 'You Unlocked A Free Delivery 🎉';
+      return 'You Unlocked A Free Delivery 🎉 You saved ₹${originalFee.toStringAsFixed(0)} on This Order!' ;
     } else if (itemTotal < 199 && distanceInKm <= 7) {
       return 'Purchase for ₹${neededForFreeDelivery.toStringAsFixed(0)} more to unlock Free Delivery!';
     } else if (itemTotal < 199 && distanceInKm > 7 && distanceInKm <= 15) {
-      return 'Purchase for ₹${neededForFreeDelivery.toStringAsFixed(0)} and pay delivery fee ₹${((distanceInKm - 7) * 8).toStringAsFixed(0)}/- Only';
+      return 'Purchase for ₹${neededForFreeDelivery.toStringAsFixed(0)} more and pay delivery fee ₹${((distanceInKm - 7) * 8).toStringAsFixed(0)}/- Only';
     } else if (itemTotal >= 199 && distanceInKm > 7) {
       double savings = originalFee - discountedFee;
       return 'Unlocked A Discounted Delivery! 🎉 You saved ₹${savings.toStringAsFixed(0)} on This Order!';

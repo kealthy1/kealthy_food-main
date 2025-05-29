@@ -73,7 +73,7 @@ class SlotSelectionContainer extends ConsumerWidget {
                                 ? Colors.black
                                 : Colors.black,
                             fontSize: 13,
-                            fontWeight: FontWeight.w600
+                            fontWeight: FontWeight.w500
                           ),
                           overflow: TextOverflow.visible,
                         ),

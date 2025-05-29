@@ -33,7 +33,19 @@ class OrderService {
               ? 0
               : (currentSOH - quantityPurchased);
 
+          // Check if offer is active (deal_of_the_day or deal_of_the_week)
+          final isOfferActive = docData['deal_of_the_day'] == true || docData['deal_of_the_week'] == true;
+          final currentOfferSOH = docData['offer_soh'] ?? 0;
+          final updatedOfferSOH = (currentOfferSOH - quantityPurchased) < 0
+              ? 0
+              : (currentOfferSOH - quantityPurchased);
+
+          // Always update SOH
           batch.update(docRef, {'SOH': updatedSOH});
+          // If offer is active, also update offer_soh
+          if (isOfferActive) {
+            batch.update(docRef, {'offer_soh': updatedOfferSOH});
+          }
         }
       }
 
@@ -99,7 +111,7 @@ class OrderService {
     required String deliveryInstructions,
     required String deliveryTime,
     required String paymentMethod,
-    required double instantDeliveryFee,
+    // required double instantDeliveryFee,
   }) async {
     try {
       final database = FirebaseDatabase.instanceFor(
@@ -149,7 +161,7 @@ class OrderService {
         "status": "Order Placed",
         "totalAmountToPay": totalAmount,
         "deliveryFee": deliveryFee,
-        "instantDeliveryfee": instantDeliveryFee,
+        // "instantDeliveryfee": instantDeliveryFee,
       };
 
       // Save to Realtime Database
@@ -178,7 +190,7 @@ class OrderService {
     required String deliveryInstructions,
     required String deliveryTime,
     required String paymentMethod,
-    required double instantDeliveryFee,
+    // required double instantDeliveryFee,
   }) async {
     try {
       final database = FirebaseDatabase.instanceFor(
@@ -224,7 +236,7 @@ class OrderService {
         "status": "Order Placed",
         "totalAmountToPay": totalAmount,
         "deliveryFee": deliveryFee,
-        "instantDeliveryfee": instantDeliveryFee,
+        // "instantDeliveryfee": instantDeliveryFee,
         "planTitle": planTitle,
         "productName": productName,
         "startDate": startDate,

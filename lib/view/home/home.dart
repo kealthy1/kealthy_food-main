@@ -14,6 +14,7 @@ import 'package:kealthy_food/view/home/deal_day.dart';
 import 'package:kealthy_food/view/home/deal_week.dart';
 import 'package:kealthy_food/view/notifications/feedback_alert.dart';
 import 'package:kealthy_food/view/notifications/notification_tab.dart';
+import 'package:kealthy_food/view/notifications/offers.dart';
 import 'package:kealthy_food/view/notifications/rating_alert.dart';
 import 'package:kealthy_food/view/home/kealthy_page.dart';
 import 'package:kealthy_food/view/home/provider.dart';
@@ -33,12 +34,14 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage>
-    with WidgetsBindingObserver, AutomaticKeepAliveClientMixin {
+    with WidgetsBindingObserver, AutomaticKeepAliveClientMixin, TickerProviderStateMixin {
   @override
   bool get wantKeepAlive => true;
   bool hasShownDialog = false;
   final bool _hasLocationPermission = false;
   late ScrollController _scrollController;
+  late AnimationController _badgeController;
+  late Animation<double> _badgeAnimation;
 
   @override
   void initState() {
@@ -54,11 +57,22 @@ class _HomePageState extends ConsumerState<HomePage>
 
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
+
+    _badgeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    )..repeat(reverse: true);
+
+    _badgeAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(parent: _badgeController, curve: Curves.easeInOut),
+    );
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+
+    _badgeController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -153,7 +167,8 @@ class _HomePageState extends ConsumerState<HomePage>
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const SubscriptionDetailsPage(),
+                                builder: (context) =>
+                                    const SubscriptionDetailsPage(),
                               ),
                             );
                           },
@@ -171,7 +186,8 @@ class _HomePageState extends ConsumerState<HomePage>
                           ),
                         ),
                       ),
-                      const CenteredTitleWidget(title: "Hot Deals & Exclusive Offers"),
+                      const CenteredTitleWidget(
+                          title: "Hot Deals & Exclusive Offers"),
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Row(
@@ -181,11 +197,15 @@ class _HomePageState extends ConsumerState<HomePage>
                               onTap: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const DealOfTheDayPage()),
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const DealOfTheDayPage()),
                                 );
                               },
                               child: SizedBox(
-                                width: (MediaQuery.of(context).size.width - 48) / 2,
+                                width:
+                                    (MediaQuery.of(context).size.width - 48) /
+                                        2,
                                 child: Column(
                                   children: [
                                     ClipRRect(
@@ -208,11 +228,15 @@ class _HomePageState extends ConsumerState<HomePage>
                               onTap: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const DealOfTheWeekPage()),
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const DealOfTheWeekPage()),
                                 );
                               },
                               child: SizedBox(
-                                width: (MediaQuery.of(context).size.width - 48) / 2,
+                                width:
+                                    (MediaQuery.of(context).size.width - 48) /
+                                        2,
                                 child: Column(
                                   children: [
                                     ClipRRect(
@@ -426,9 +450,6 @@ class _HomePageState extends ConsumerState<HomePage>
             error: (error, stack) => const SizedBox.shrink(),
           ),
           IconButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey.shade300,
-            ),
             onPressed: () {
               Navigator.push(
                 context,
@@ -441,23 +462,22 @@ class _HomePageState extends ConsumerState<HomePage>
               clipBehavior: Clip.none,
               children: [
                 const Icon(
-                  Icons.notifications,
-                  size: 25,
+                  CupertinoIcons.bell,
+                  size: 30,
                   color: Color(0xFF273847),
                 ),
                 Consumer(
                   builder: (context, ref, child) {
-                    final notificationsAsync = ref.watch(notificationProvider);
+                    final ratingAsync = ref.watch(notificationProvider);
+                    final offersAsync = ref.watch(offersNotificationProvider);
 
-                    return notificationsAsync.when(
-                      data: (notifications) {
-                        final filteredNotifications =
-                            notifications.where((notification) {
+                    return ratingAsync.when(
+                      data: (ratingNotifications) {
+                        final filteredRatings =
+                            ratingNotifications.where((notification) {
                           final orderId = notification['order_id'] ?? '';
-
                           final orderExistsAsync =
                               ref.watch(orderExistsProvider(orderId));
-
                           return orderExistsAsync.when(
                             data: (exists) => !exists,
                             loading: () => false,
@@ -465,35 +485,46 @@ class _HomePageState extends ConsumerState<HomePage>
                           );
                         }).toList();
 
-                        final notificationCount = filteredNotifications.length;
+                        return offersAsync.when(
+                          data: (offers) {
+                            final totalCount =
+                                filteredRatings.length + offers.length;
 
-                        if (notificationCount > 0) {
-                          return Positioned(
-                            right: -13,
-                            top: -20,
-                            child: Container(
-                              padding: const EdgeInsets.all(5),
-                              decoration: const BoxDecoration(
-                                color: Colors.red,
-                                shape: BoxShape.circle,
-                              ),
-                              constraints: const BoxConstraints(
-                                minWidth: 18,
-                                minHeight: 18,
-                              ),
-                              child: Text(
-                                notificationCount.toString(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                            if (totalCount > 0) {
+                              return Positioned(
+                                right: -3,
+                                top: -12,
+                                child: ScaleTransition(
+                                  scale: _badgeAnimation,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(5),
+                                    decoration: const BoxDecoration(
+                                      color:Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    constraints: const BoxConstraints(
+                                      minWidth: 18,
+                                      minHeight: 18,
+                                    ),
+                                    child: Text(
+                                      totalCount.toString(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
                                 ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          );
-                        }
-                        return const SizedBox.shrink();
+                              );
+                            } else {
+                              return const SizedBox.shrink();
+                            }
+                          },
+                          loading: () => const SizedBox.shrink(),
+                          error: (_, __) => const SizedBox.shrink(),
+                        );
                       },
                       loading: () => const SizedBox.shrink(),
                       error: (_, __) => const SizedBox.shrink(),
@@ -508,4 +539,3 @@ class _HomePageState extends ConsumerState<HomePage>
     );
   }
 }
-

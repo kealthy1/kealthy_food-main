@@ -16,7 +16,7 @@ class OnlinePaymentProcessing extends ConsumerStatefulWidget {
   final dynamic address;
   final String deliverytime;
   final double deliveryFee;
-  final double instantDeliveryFee;
+  // final double instantDeliveryFee;
   final String razorpayOrderId;
   final String orderType;
 
@@ -28,7 +28,7 @@ class OnlinePaymentProcessing extends ConsumerStatefulWidget {
     required this.address,
     required this.deliverytime,
     required this.deliveryFee,
-    required this.instantDeliveryFee,
+    // required this.instantDeliveryFee,
     required this.razorpayOrderId,
     required this.orderType,
   });
@@ -66,7 +66,7 @@ class _OnlinePaymentProcessingState
         packingInstructions: widget.packingInstructions,
         deliveryInstructions: widget.deliveryInstructions,
         deliveryTime: widget.deliverytime,
-        instantDeliveryFee: widget.instantDeliveryFee,
+        // instantDeliveryFee: widget.instantDeliveryFee,
         paymentMethod: "Online Payment",
       );
     } else {
@@ -77,7 +77,7 @@ class _OnlinePaymentProcessingState
         packingInstructions: widget.packingInstructions,
         deliveryInstructions: widget.deliveryInstructions,
         deliveryTime: widget.deliverytime,
-        instantDeliveryFee: widget.instantDeliveryFee,
+        // instantDeliveryFee: widget.instantDeliveryFee,
         paymentMethod: "Online Payment",
       );
     }

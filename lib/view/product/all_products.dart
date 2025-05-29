@@ -255,6 +255,7 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                         },
                         child: Stack(
                           children: [
+                            // Main product container
                             Container(
                               decoration: BoxDecoration(
                                 color: Colors.white,
@@ -303,99 +304,100 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                                         children: [
                                           SizedBox(
                                             height:
-                                                50, // enough to fit two lines of text
+                                                60, // enough to fit two lines of text
                                             child: Text(
                                               productNameRaw,
-                                              maxLines: 2,
+                                              maxLines: 3,
                                               overflow: TextOverflow.ellipsis,
                                               style: GoogleFonts.poppins(
                                                 textStyle: const TextStyle(
-                                                  fontSize: 16,
+                                                  fontSize: 15,
                                                   color: Colors.black,
                                                 ),
                                               ),
                                             ),
                                           ),
-                                          SizedBox(
-                                            height: 18,
-                                            child: Consumer(
-                                              builder: (context, ref, child) {
-                                                final averageStarsAsync = ref
-                                                    .watch(averageStarsProvider(
-                                                        productNameRaw));
+                                          // SizedBox(
+                                          //   height: 18,
+                                          //   child: Consumer(
+                                          //     builder: (context, ref, child) {
+                                          //       final averageStarsAsync = ref
+                                          //           .watch(averageStarsProvider(
+                                          //               productNameRaw));
 
-                                                return averageStarsAsync.when(
-                                                  data: (rating) {
-                                                    if (rating == 0.0) {
-                                                      return const SizedBox(); // Hide stars if rating is 0
-                                                    }
+                                          //       return averageStarsAsync.when(
+                                          //         data: (rating) {
+                                          //           if (rating == 0.0) {
+                                          //             return const SizedBox(); // Hide stars if rating is 0
+                                          //           }
 
-                                                    int fullStars = rating
-                                                        .floor(); // Get integer part (e.g., 3 from 3.8)
-                                                    bool hasHalfStar = rating -
-                                                            fullStars >=
-                                                        0.5; // Check if it needs a half-star
+                                          //           int fullStars = rating
+                                          //               .floor(); // Get integer part (e.g., 3 from 3.8)
+                                          //           bool hasHalfStar = rating -
+                                          //                   fullStars >=
+                                          //               0.5; // Check if it needs a half-star
 
-                                                    return Row(
-                                                      children: [
-                                                        Text(
-                                                          rating
-                                                              .toStringAsFixed(
-                                                                  1),
-                                                          style: GoogleFonts
-                                                              .poppins(
-                                                            fontSize: 14,
-                                                            color:
-                                                                Colors.black54,
-                                                          ),
-                                                        ),
+                                          //           return Row(
+                                          //             children: [
+                                          //               Text(
+                                          //                 rating
+                                          //                     .toStringAsFixed(
+                                          //                         1),
+                                          //                 style: GoogleFonts
+                                          //                     .poppins(
+                                          //                   fontSize: 14,
+                                          //                   color:
+                                          //                       Colors.black54,
+                                          //                 ),
+                                          //               ),
 
-                                                        // Generate full stars
-                                                        ...List.generate(
-                                                          fullStars,
-                                                          (index) => const Icon(
-                                                              Icons.star,
-                                                              color:
-                                                                  Colors.orange,
-                                                              size: 16),
-                                                        ),
+                                          //               // Generate full stars
+                                          //               ...List.generate(
+                                          //                 fullStars,
+                                          //                 (index) => const Icon(
+                                          //                     Icons.star,
+                                          //                     color:
+                                          //                         Colors.orangeAccent,
+                                          //                     size: 16),
+                                          //               ),
 
-                                                        // Show half-star if needed
-                                                        if (hasHalfStar)
-                                                          const Icon(
-                                                              Icons.star_half,
-                                                              color:
-                                                                  Colors.orange,
-                                                              size: 20),
+                                          //               // Show half-star if needed
+                                          //               if (hasHalfStar)
+                                          //                 const Icon(
+                                          //                     Icons.star_half,
+                                          //                     color:
+                                          //                         Colors.yellowAccent,
+                                          //                     size: 20),
 
-                                                        // Show empty stars to keep alignment
-                                                        ...List.generate(
-                                                          5 -
-                                                              fullStars -
-                                                              (hasHalfStar
-                                                                  ? 1
-                                                                  : 0),
-                                                          (index) => const Icon(
-                                                              Icons.star_border,
-                                                              color:
-                                                                  Colors.orange,
-                                                              size: 20),
-                                                        ),
+                                          //               // Show empty stars to keep alignment
+                                          //               ...List.generate(
+                                          //                 5 -
+                                          //                     fullStars -
+                                          //                     (hasHalfStar
+                                          //                         ? 1
+                                          //                         : 0),
+                                          //                 (index) => const Icon(
+                                          //                     Icons.star_border,
+                                          //                     color:
+                                          //                         Colors.yellowAccent,
+                                          //                     size: 20),
+                                          //               ),
 
-                                                        // Show the numeric rating next to stars
-                                                      ],
-                                                    );
-                                                  },
-                                                  loading: () => Container(),
-                                                  error: (error, _) =>
-                                                      const Text('N/A'),
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                            height: 8,
-                                          ),  
+                                          //               // Show the numeric rating next to stars
+                                          //             ],
+                                          //           );
+                                          //         },
+                                          //         loading: () => Container(),
+                                          //         error: (error, _) =>
+                                          //             const Text('N/A'),
+                                          //       );
+                                          //     },
+                                          //   ),
+                                          // ),
+                                          // const SizedBox(
+                                          //   height: 8,
+                                          // ),
+                                          const SizedBox(height: 10,),
                                           const Spacer(),
                                           Row(
                                             children: [
@@ -427,6 +429,51 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                                     ),
                                   ),
                                 ],
+                              ),
+                            ),
+                            // Rating badge positioned after the main container but before SOH badge
+                            Positioned(
+                              top: 5,
+                              left: 5,
+                              child: Consumer(
+                                builder: (context, ref, child) {
+                                  final averageStarsAsync =
+                                      ref.watch(averageStarsProvider(data['Name'] ?? 'No Name'));
+                                  return averageStarsAsync.when(
+                                    data: (rating) {
+                                      if (rating == 0.0) return const SizedBox(); // Hide badge if rating is 0
+                                      return ClipRRect(
+                                        borderRadius: const BorderRadius.all(
+                                          Radius.circular(5),
+                                        ),
+                                        child: Container(
+                                          height: 30,
+                                          width: 50,
+                                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                          decoration:  BoxDecoration(
+                                            color: Colors.black.withOpacity(0.5),),
+                                          alignment: Alignment.center,
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(Icons.star, size: 14, color: Colors.yellow),
+                                              Text(
+                                                rating.toStringAsFixed(1),
+                                                style: GoogleFonts.poppins(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    loading: () => const SizedBox(),
+                                    error: (error, _) => const SizedBox(),
+                                  );
+                                },
                               ),
                             ),
                             if ((data['SOH'] ?? 1) <= 4)

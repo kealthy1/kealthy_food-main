@@ -19,7 +19,7 @@ class PaymentPage extends ConsumerStatefulWidget {
   final String deliverytime;
   final String packingInstructions;
   final double deliveryfee;
-  final double instantDeliveryFee;
+  // final double instantDeliveryFee;
 
   const PaymentPage(
       {super.key,
@@ -29,7 +29,8 @@ class PaymentPage extends ConsumerStatefulWidget {
       required this.deliverytime,
       required this.packingInstructions,
       required this.deliveryfee,
-      required this.instantDeliveryFee});
+      // required this.instantDeliveryFee
+      });
 
   @override
   _PaymentPageState createState() => _PaymentPageState();
@@ -212,7 +213,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
           packingInstructions: widget.packingInstructions,
           deliveryInstructions: widget.instructions,
           deliveryTime: widget.deliverytime,
-          instantDeliveryFee: widget.instantDeliveryFee,
+          // instantDeliveryFee: widget.instantDeliveryFee,
           paymentMethod: 'Cash on Delivery',
         );
         await ref.read(cartProvider.notifier).clearCart();
@@ -232,7 +233,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
               address: widget.address,
               deliverytime: widget.deliverytime,
               deliveryFee: widget.deliveryfee,
-              instantDeliveryFee: widget.instantDeliveryFee,
+              // instantDeliveryFee: widget.instantDeliveryFee,
               razorpayOrderId: razorpayOrderId, 
               orderType: 'Normal',
             ),

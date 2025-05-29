@@ -63,12 +63,16 @@ class FirstOrderNotifier extends AsyncNotifier<bool> {
 
   /// Calculates the final total with delivery fee, handling fee, and instant delivery.
   double calculateFinalTotal(
-      double itemTotal, double distanceInKm, double instantDeliveryFee) {
+      double itemTotal, double distanceInKm,
+      //  double instantDeliveryFee
+       ) {
     double handlingFee = 5;
     double deliveryFee = calculateDeliveryFee(itemTotal, distanceInKm);
 
 
-    double totalDeliveryFee = deliveryFee + instantDeliveryFee;
+    double totalDeliveryFee = deliveryFee 
+    // + instantDeliveryFee
+    ;
 
     double finalTotal = itemTotal + totalDeliveryFee + handlingFee;
 

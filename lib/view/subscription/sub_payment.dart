@@ -32,8 +32,10 @@ class SubscriptionPaymentPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(backgroundColor: Colors.white,
-      appBar: AppBar(surfaceTintColor: Colors.white,
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        surfaceTintColor: Colors.white,
         title: const Text("Make Payment"),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -61,33 +63,42 @@ class SubscriptionPaymentPage extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Review Your Subscription", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text("Review Your Subscription",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
                   Text("Plan: $title"),
                   Text("Product: $productName"),
-                  Text("Start Date: ${DateFormat('MMMM d, y').format(startDate)}"),
+                  Text(
+                      "Start Date: ${DateFormat('MMMM d, y').format(startDate)}"),
                   Text("End Date: $endDate"),
                   Text("Quantity: $quantity L"),
                   const SizedBox(height: 12),
-                  const Text("Delivery Slot", style: TextStyle(fontWeight: FontWeight.bold)),
-                  Text("${DateFormat('h:mm a').format(slot['start']!)} - ${DateFormat('h:mm a').format(slot['end']!)}"),
+                  const Text("Delivery Slot",
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                      "${DateFormat('h:mm a').format(slot['start']!)} - ${DateFormat('h:mm a').format(slot['end']!)}"),
                   const SizedBox(height: 12),
-                  const Text("Delivery Address", style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text("Delivery Address",
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                   Text(address.type),
                   Text("${address.name}, ${address.selectedRoad}"),
                 ],
               ),
             ),
             const Spacer(),
-           Row(
+            Row(
               children: [
-                const Text("Total Amount: ", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                const Text("Total Amount: ",
+                    style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 const Spacer(),
-                Text("₹${totalAmount.toStringAsFixed(0)}", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                Text("₹${totalAmount.toStringAsFixed(0)}",
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 12),
-            
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -107,25 +118,32 @@ class SubscriptionPaymentPage extends ConsumerWidget {
                   print('Subscription Payment Details:');
                   print('Title: $title');
                   print('Product Name: $productName');
-                  print('Start Date: ${DateFormat('yyyy-MM-dd').format(startDate)}');
+                  print(
+                      'Start Date: ${DateFormat('yyyy-MM-dd').format(startDate)}');
                   print('End Date: $endDate');
                   print('Quantity: $quantity');
                   print('Slot: ${slot['start']} - ${slot['end']}');
-                  print('Address: ${address.name}, ${address.selectedRoad}, Type: ${address.type}');
+                  print(
+                      'Address: ${address.name}, ${address.selectedRoad}, Type: ${address.type}');
                   print('Total Amount: $totalAmount');
 
                   final prefs = await SharedPreferences.getInstance();
                   await prefs.setString('subscription_plan_title', title);
-                  await prefs.setString('subscription_product_name', productName);
-                  await prefs.setString('subscription_start_date', DateFormat('d MMMM y').format(startDate));
+                  await prefs.setString(
+                      'subscription_product_name', productName);
+                  await prefs.setString('subscription_start_date',
+                      DateFormat('d MMMM y').format(startDate));
                   await prefs.setString('subscription_end_date', endDate);
-                  await prefs.setString('subscription_qty', quantity.toString());
+                  await prefs.setString(
+                      'subscription_qty', quantity.toString());
 
                   final formattedSlot =
                       '${DateFormat('h:mm a').format(slot['start']!)} - ${DateFormat('h:mm a').format(slot['end']!)}';
-                  await prefs.setString('subscription_delivery_slot', formattedSlot);
+                  await prefs.setString(
+                      'subscription_delivery_slot', formattedSlot);
 
-                  final razorpayOrderId = await OrderService.createRazorpayOrder(totalAmount);
+                  final razorpayOrderId =
+                      await OrderService.createRazorpayOrder(totalAmount);
                   print(formattedSlot);
 
                   ref.read(subscriptionLoadingProvider.notifier).state = false;
@@ -140,7 +158,7 @@ class SubscriptionPaymentPage extends ConsumerWidget {
                         address: address,
                         deliverytime: formattedSlot,
                         deliveryFee: 0,
-                        instantDeliveryFee: 0,
+                        // instantDeliveryFee: 0,
                         razorpayOrderId: razorpayOrderId,
                         orderType: 'subscription',
                       ),
@@ -148,7 +166,10 @@ class SubscriptionPaymentPage extends ConsumerWidget {
                   );
                 },
                 child: ref.watch(subscriptionLoadingProvider)
-                    ? const CupertinoActivityIndicator(radius: 12.0,color: Colors.white,)
+                    ? const CupertinoActivityIndicator(
+                        radius: 12.0,
+                        color: Colors.white,
+                      )
                     : const Text("Proceed to Payment"),
               ),
             ),
