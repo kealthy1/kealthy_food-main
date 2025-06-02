@@ -305,7 +305,7 @@ class CheckoutPage extends ConsumerWidget {
                                       const SizedBox(width: 10),
                                       Expanded(
                                         child: Text(
-                                          "Congratulations! You get ₹100 off on your first order.",
+                                          "Congratulations! You get ₹${itemTotal >= 100 ? 100 : itemTotal.toStringAsFixed(0)} off on your first order.",
                                           style: GoogleFonts.poppins(
                                             color: Colors.green.shade800,
                                             fontSize: 12,
@@ -383,11 +383,10 @@ class CheckoutPage extends ConsumerWidget {
                     ref.read(firstOrderProvider).value ?? false;
                 final double offerDiscount = isFirstOrder ? 100.0 : 0.0;
 
-                final double finalTotalToPay = calculateFinalTotal(
-                  itemTotal - offerDiscount,
-                  distanceInKm
-                  // instantDeliveryfee,
-                );
+                final double finalTotalToPay =
+                    calculateFinalTotal(itemTotal - offerDiscount, distanceInKm
+                        // instantDeliveryfee,
+                        );
 
                 Navigator.push(
                   context,

@@ -49,14 +49,14 @@ class BottomNavBar extends ConsumerWidget {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(
-              CupertinoIcons.house_fill,
+              CupertinoIcons.home,
               color: Color.fromARGB(255, 65, 88, 108),
             ),
             label: 'Home',
           ),
           BottomNavigationBarItem(
             icon: Icon(
-              CupertinoIcons.person_fill,
+              CupertinoIcons.person,
               color: Color.fromARGB(255, 65, 88, 108),
             ),
             label: 'Profile',

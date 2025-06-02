@@ -7,30 +7,29 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 double calculateDeliveryFee(double itemTotal, double distanceInKm) {
-    // We'll keep everything as doubles—no rounding.
-    double deliveryFee = 0;
+  // We'll keep everything as doubles—no rounding.
+  double deliveryFee = 0;
 
-    if (itemTotal >= 199) {
-      // 0–7 km free if >= 199
-      if (distanceInKm <= 7) {
-        deliveryFee = 0;
-      } else {
-        // e.g. 11.54 - 7 = 4.54 * 8 = 36.32
-        deliveryFee = 8 * (distanceInKm - 7);
-      }
+  if (itemTotal >= 199) {
+    // 0–7 km free if >= 199
+    if (distanceInKm <= 7) {
+      deliveryFee = 0;
     } else {
-      // If < 199
-      if (distanceInKm <= 7) {
-        deliveryFee = 50;
-      } else {
-        // 50 + ((distanceInKm - 7) * 10)
-        deliveryFee = 50 + 10 * (distanceInKm - 7);
-      }
+      // e.g. 11.54 - 7 = 4.54 * 8 = 36.32
+      deliveryFee = 8 * (distanceInKm - 7);
     }
-
-    return deliveryFee.roundToDouble();
+  } else {
+    // If < 199
+    if (distanceInKm <= 7) {
+      deliveryFee = 50;
+    } else {
+      // 50 + ((distanceInKm - 7) * 10)
+      deliveryFee = 50 + 10 * (distanceInKm - 7);
+    }
   }
 
+  return deliveryFee.roundToDouble();
+}
 
 final firstOrderProvider = AsyncNotifierProvider<FirstOrderNotifier, bool>(() {
   return FirstOrderNotifier();
@@ -44,7 +43,8 @@ class FirstOrderNotifier extends AsyncNotifier<bool> {
 
   Future<void> checkFirstOrder(String phoneNumber) async {
     state = const AsyncLoading();
-    final url = Uri.parse('https://api-jfnhkjk4nq-uc.a.run.app/orders/$phoneNumber');
+    final url =
+        Uri.parse('https://api-jfnhkjk4nq-uc.a.run.app/orders/$phoneNumber');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -61,25 +61,25 @@ class FirstOrderNotifier extends AsyncNotifier<bool> {
   }
 }
 
-  /// Calculates the final total with delivery fee, handling fee, and instant delivery.
-  double calculateFinalTotal(
-      double itemTotal, double distanceInKm,
-      //  double instantDeliveryFee
-       ) {
-    double handlingFee = 5;
-    double deliveryFee = calculateDeliveryFee(itemTotal, distanceInKm);
+/// Calculates the final total with delivery fee, handling fee, and instant delivery.
+double calculateFinalTotal(
+  double itemTotal,
+  double distanceInKm,
+  //  double instantDeliveryFee
+) {
+  double handlingFee = 5;
+  double deliveryFee = calculateDeliveryFee(itemTotal, distanceInKm);
 
+  double totalDeliveryFee = deliveryFee
+      // + instantDeliveryFee
+      ;
 
-    double totalDeliveryFee = deliveryFee 
-    // + instantDeliveryFee
-    ;
+  double finalTotal = itemTotal + totalDeliveryFee + handlingFee;
 
-    double finalTotal = itemTotal + totalDeliveryFee + handlingFee;
+  return finalTotal.roundToDouble();
+}
 
-    return finalTotal.roundToDouble();
-  }
-
-  final addressProvider = FutureProvider.autoDispose<Address?>((ref) async {
+final addressProvider = FutureProvider.autoDispose<Address?>((ref) async {
   final prefs = await SharedPreferences.getInstance();
 
   // Fetch cart items
@@ -132,30 +132,30 @@ class FirstOrderNotifier extends AsyncNotifier<bool> {
 });
 
 String getSelectedInstructions(WidgetRef ref) {
-    List<String> instructions = [];
+  List<String> instructions = [];
 
-    if (ref.watch(selectionProvider(1))) {
-      instructions.add("Avoid Ringing Bell");
-    }
-    if (ref.watch(selectionProvider(2))) {
-      instructions.add("Leave at Door");
-    }
-    if (ref.watch(selectionProvider(3))) {
-      instructions.add("Leave with Guard");
-    }
-    if (ref.watch(selectionProvider(4))) {
-      instructions.add("Avoid Calling");
-    }
-    if (ref.watch(selectionProvider(5))) {
-      instructions.add("Pet at home");
-    }
-
-    print("Selected Instruction States:");
-    print("Avoid Ringing Bell: ${ref.watch(selectionProvider(1))}");
-    print("Leave at Door: ${ref.watch(selectionProvider(2))}");
-    print("Leave with Guard: ${ref.watch(selectionProvider(3))}");
-    print("Avoid Calling: ${ref.watch(selectionProvider(4))}");
-    print("Final Selected Delivery Instructions: $instructions");
-
-    return instructions.join(", ");
+  if (ref.watch(selectionProvider(1))) {
+    instructions.add("Avoid Ringing Bell");
   }
+  if (ref.watch(selectionProvider(2))) {
+    instructions.add("Leave at Door");
+  }
+  if (ref.watch(selectionProvider(3))) {
+    instructions.add("Leave with Guard");
+  }
+  if (ref.watch(selectionProvider(4))) {
+    instructions.add("Avoid Calling");
+  }
+  if (ref.watch(selectionProvider(5))) {
+    instructions.add("Pet at home");
+  }
+
+  print("Selected Instruction States:");
+  print("Avoid Ringing Bell: ${ref.watch(selectionProvider(1))}");
+  print("Leave at Door: ${ref.watch(selectionProvider(2))}");
+  print("Leave with Guard: ${ref.watch(selectionProvider(3))}");
+  print("Avoid Calling: ${ref.watch(selectionProvider(4))}");
+  print("Final Selected Delivery Instructions: $instructions");
+
+  return instructions.join(", ");
+}
