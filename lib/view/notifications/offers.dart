@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/notifications/notification_page.dart';
+import 'package:shimmer/shimmer.dart';
 
 final offersNotificationProvider =
     StreamProvider<List<Map<String, dynamic>>>((ref) async* {
@@ -41,7 +42,14 @@ class OffersNotificationPage extends ConsumerWidget {
 
             return GestureDetector(
               onTap: () {
-                Navigator.pop(context);
+                final route = offer['route'] as String?;
+                if (route != null && route.isNotEmpty) {
+                  if (route == "pop") {
+                    Navigator.pop(context);
+                  } else {
+                    Navigator.pushNamed(context, route);
+                  }
+                }
               },
               child: Padding(
                 padding:
@@ -64,6 +72,21 @@ class OffersNotificationPage extends ConsumerWidget {
                             width: double.infinity,
                             height: 160,
                             fit: BoxFit.cover,
+                            placeholder: (context, url) => Shimmer.fromColors(
+                              baseColor: Colors.grey.shade300,
+                              highlightColor: Colors.grey.shade100,
+                              child: Container(
+                                width: double.infinity,
+                                height: 160,
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(12)),
+                                ),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) =>
+                                const Icon(Icons.error),
                           ),
                         ),
                       Padding(
@@ -85,14 +108,6 @@ class OffersNotificationPage extends ConsumerWidget {
                               style: GoogleFonts.poppins(
                                 fontSize: 12.8,
                                 color: Colors.grey.shade800,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Only on Kealthy',
-                              style: GoogleFonts.poppins(
-                                fontSize: 11.5,
-                                color: Colors.grey,
                               ),
                             ),
                             // const SizedBox(height: 8),

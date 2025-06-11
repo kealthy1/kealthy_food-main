@@ -340,7 +340,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
   Widget _divider() => const Padding(
         padding: EdgeInsets.symmetric(horizontal: 20),
-        child: Divider(),
+        child: Divider(thickness: 0.1,),
       );
 
   Widget buildLogoutAlertDialog(BuildContext context) {

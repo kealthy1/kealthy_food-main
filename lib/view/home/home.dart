@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/Cart/cart_controller.dart';
 import 'package:kealthy_food/view/address/adress.dart';
@@ -34,7 +33,10 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage>
-    with WidgetsBindingObserver, AutomaticKeepAliveClientMixin, TickerProviderStateMixin {
+    with
+        WidgetsBindingObserver,
+        AutomaticKeepAliveClientMixin,
+        TickerProviderStateMixin {
   @override
   bool get wantKeepAlive => true;
   bool hasShownDialog = false;
@@ -51,7 +53,7 @@ class _HomePageState extends ConsumerState<HomePage>
       VersionCheckService.checkForUpdate(context);
       ref.read(cartProvider.notifier).loadCartItems();
       checkLocationPermission(ref);
-      getSelectedAddressOrCurrentLocation(ref);
+      ref.read(locationDataProvider);
     });
     WidgetsBinding.instance.addObserver(this);
 
@@ -296,7 +298,6 @@ class _HomePageState extends ConsumerState<HomePage>
 
   Widget _buildHeader(BuildContext context, WidgetRef ref) {
     final liveOrdersAsync = ref.watch(liveOrdersProvider);
-    final locationPermission = ref.watch(locationPermissionProvider);
 
     return GestureDetector(
       onTap: () async {
@@ -313,45 +314,34 @@ class _HomePageState extends ConsumerState<HomePage>
             size: 35,
           ),
           Expanded(
-            child: FutureBuilder<Map<String, String>>(
-              future: getSelectedAddressOrCurrentLocation(ref),
-              builder: (context, snapshot) {
-                String displayText;
-                bool showSubText = false;
-                String subText = "";
+            child: Consumer(
+              builder: (context, ref, child) {
+                final locationData = ref.watch(locationDataProvider);
 
-                if (locationPermission == LocationPermission.denied) {
-                  displayText = "Location Disabled";
-                } else if (snapshot.connectionState ==
-                    ConnectionState.waiting) {
-                  displayText = "Locating...";
-                } else if (snapshot.hasData) {
-                  final data = snapshot.data!;
+                return locationData.when(
+                  data: (data) {
+                    String displayText;
+                    String? subText;
+                    bool showSubText = false;
 
-                  if (data.containsKey('addressType')) {
-                    // ✅ Selected Address: Show both fields
-                    displayText = data['addressType']!;
-                    subText = data['address']!;
-                    showSubText = true;
-                  } else {
-                    // ✅ Current Location: Show only one field
-                    displayText = data['address']!;
-                  }
-                } else {
-                  displayText = "Locating...";
-                }
-
-                return Consumer(
-                  builder: (context, ref, child) {
-                    final liveOrders =
-                        ref.watch(liveOrdersProvider).asData?.value ?? [];
-                    final hasLiveOrders = liveOrders.isNotEmpty;
+                    if (data.isNotEmpty) {
+                      if (data.containsKey('addressType')) {
+                        // ✅ Selected Address: Show both fields
+                        displayText = data['addressType']!;
+                        subText = data['address']!;
+                        showSubText = true;
+                      } else {
+                        // ✅ Current Location: Show only one field
+                        displayText = data['address']!;
+                      }
+                    } else {
+                      displayText = "...";
+                    }
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          overflow: TextOverflow.ellipsis,
                           displayText,
                           style: GoogleFonts.poppins(
                             color: Colors.black,
@@ -359,25 +349,27 @@ class _HomePageState extends ConsumerState<HomePage>
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        if (showSubText)
-                          SizedBox(
-                            width: hasLiveOrders
-                                ? MediaQuery.of(context).size.width * 0.45
-                                : double
-                                    .infinity, // No width limit when no live order
-                            child: Text(
-                              subText,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.poppins(
-                                color: Colors.grey,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
+                        if (showSubText && subText != null)
+                          Text(
+                            subText,
+                            style: GoogleFonts.poppins(
+                              color: Colors.grey,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                       ],
                     );
                   },
+                  loading: () => Text(
+                    "...",
+                    style: GoogleFonts.poppins(
+                      color: Colors.grey,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  error: (error, stack) => Text("Error: $error"),
                 );
               },
             ),
@@ -499,7 +491,7 @@ class _HomePageState extends ConsumerState<HomePage>
                                   child: Container(
                                     padding: const EdgeInsets.all(5),
                                     decoration: const BoxDecoration(
-                                      color:Colors.red,
+                                      color: Colors.red,
                                       shape: BoxShape.circle,
                                     ),
                                     constraints: const BoxConstraints(

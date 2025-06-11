@@ -21,6 +21,8 @@ final locationPermissionProvider =
     StateProvider<LocationPermission>((ref) => LocationPermission.denied);
 final locationPermissionGrantedProvider = StateProvider<bool>((ref) => false);
 final hasLocationPermissionProvider = StateProvider<bool>((ref) => false);
+final cachedLocationProvider = StateProvider<Map<String, String>?>((ref) => null);
+
 
 /// 🔹 **Cart Provider (Shared across all pages)**
 // final cartProvider = StateNotifierProvider<CartNotifier, List<CartItem>>((ref) {
@@ -67,11 +69,25 @@ final liveOrdersProvider = StreamProvider<List<Map<String, dynamic>>>((ref) asyn
   });
 });
 
- Future<Map<String, String>> getSelectedAddressOrCurrentLocation(
-      WidgetRef ref) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+Future<Map<String, String>> getSelectedAddressOrCurrentLocation(
+    FutureProviderRef<Map<String, String>> ref) async {
+  print("Starting location fetch process");
 
-    // 🔹 Get the location permission status
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  // Helper function to cache and return result
+  void cacheAndReturn(Map<String, String> result) {
+    ref.read(cachedLocationProvider.notifier).state = result;
+    print("Caching and returning result: $result");
+  }
+
+  // Retry logic
+  int retryCount = 0;
+  const maxRetries = 3;
+  const retryDuration = Duration(seconds: 3);
+
+  Future<Map<String, String>> fetchLocation() async {
+    // Check for selected address first
     final selectedAddress = ref.read(selectedLocationProvider);
     if (selectedAddress != null && selectedAddress.isNotEmpty) {
       return {
@@ -80,40 +96,22 @@ final liveOrdersProvider = StreamProvider<List<Map<String, dynamic>>>((ref) asyn
       };
     }
 
-    // 🔹 Get the location permission status
-    final locationPermission = ref.read(locationPermissionProvider);
-
-    // 1️⃣ If location is denied AND no selected address, return "Location Disabled"
-    if (locationPermission == LocationPermission.denied ||
-        locationPermission == LocationPermission.deniedForever) {
-      return {
-        "addressType": "Location Disabled",
-        "address": "Enable location for better experience",
-      };
-    }
-
-    final location = ref.read(locationProvider);
-    if (location != null && location.isNotEmpty) {
-      return {
-        "address": location,
-      };
-    }
-
-    // 4️⃣ Try fetching real-time location if no saved address exists
+    // Fetch real-time location
     try {
+      print("Attempting to fetch current position");
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.best,
+        desiredAccuracy: LocationAccuracy.high,
       );
+      print("Position obtained: $position");
 
       List<Placemark> placemarks = await placemarkFromCoordinates(
         position.latitude,
         position.longitude,
       );
+      print("Placemarks obtained: $placemarks");
 
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks.first;
-
-        // Select the most relevant location field
         String userLocation = place.street?.isNotEmpty == true
             ? place.street!
             : place.subLocality?.isNotEmpty == true
@@ -122,25 +120,85 @@ final liveOrdersProvider = StreamProvider<List<Map<String, dynamic>>>((ref) asyn
                     ? place.locality!
                     : "Locating...";
 
-        // ✅ Save location for future reference
         await prefs.setString('user_location', userLocation);
-
-        // ✅ Update provider for UI updates
         ref.read(locationProvider.notifier).state = userLocation;
 
-        return {
-          "address": userLocation,
-        };
+        return {"address": userLocation};
       }
     } catch (e) {
       print("Error fetching location: $e");
     }
 
-    // 5️⃣ Default fallback if everything fails
-    return {
-      "address": "Locating...",
-    };
+    // If no selected address, check cached location
+    final cachedLocation = ref.read(cachedLocationProvider);
+    if (cachedLocation != null) {
+      print("Returning cached location: $cachedLocation");
+      return cachedLocation;
+    }
+
+    // Check location permission
+    LocationPermission permission = await Geolocator.checkPermission();
+    print("Current location permission status: $permission");
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      print("Requested permission, new status: $permission");
+    }
+
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      return {
+        "addressType": "Location Disabled",
+        "address": "Enable location for better experience",
+      };
+    }
+
+    // Check if location service is enabled
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    print("Location service enabled: $serviceEnabled");
+
+    if (!serviceEnabled) {
+      return {
+        "addressType": "Location Service Disabled",
+        "address": "Please enable location services",
+      };
+    }
+
+    // Check for saved location
+    final location = ref.read(locationProvider);
+    if (location != null && location.isNotEmpty) {
+      return {"address": location};
+    }
+
+    // Default fallback
+    return {"address": "Locating..."};
   }
+
+  // Retry loop
+   while (retryCount < maxRetries) {
+    try {
+      final result = await fetchLocation();
+      cacheAndReturn(result);
+      return result;
+    } catch (e) {
+      print("Error fetching location: $e");
+      retryCount++;
+      if (retryCount < maxRetries) {
+        print("Retrying location fetch...");
+        print("${ maxRetries - retryCount } retries remaining");
+        await Future.delayed(retryDuration);
+      } else {
+        print("Maximum retries reached. Returning default location.");
+        return {"address": "Locating..."};
+      }
+    }
+  }
+
+  // If all retries fail, return a default location
+  return {"address": "Locating..."};
+    }
+
+
 Future<void> checkLocationPermission(WidgetRef ref) async {
     LocationPermission permission = await Geolocator.checkPermission();
     ref.read(locationPermissionProvider.notifier).state = permission;
@@ -174,3 +232,9 @@ final homeImageUrlsProvider = FutureProvider<List<String>>((ref) async {
 
   return [...bannerUrls, ...productUrls];
 });
+final locationDataProvider = FutureProvider<Map<String, String>>((ref) async {
+  // This will cause the provider to re-run when selectedLocationProvider changes
+  ref.watch(selectedLocationProvider);
+  return getSelectedAddressOrCurrentLocation(ref);
+});
+

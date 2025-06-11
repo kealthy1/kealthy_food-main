@@ -1,0 +1,1 @@
+ /Users/cotoloreenterprises/Downloads/kealthy_food-main/.dart_tool/flutter_build/e402c9fd2df28425467a3c5a254206a4/native_assets.json: 

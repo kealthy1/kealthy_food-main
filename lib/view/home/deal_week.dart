@@ -7,9 +7,9 @@ import 'package:kealthy_food/view/Toast/toast_helper.dart';
 import 'package:kealthy_food/view/product/product_page.dart';
 import 'package:kealthy_food/view/product/provider.dart';
 import 'package:lottie/lottie.dart';
-import 'package:ntp/ntp.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:ntp/ntp.dart';
 
 class DealOfTheWeekPage extends StatelessWidget {
   const DealOfTheWeekPage({super.key});
@@ -59,13 +59,18 @@ class DealOfTheWeekPage extends StatelessWidget {
             final offerSohRaw = data['offer_soh'];
             final offerEndDate = data['offer_end_date'];
             final offerSoh = int.tryParse(offerSohRaw.toString()) ?? 0;
+
             DateTime? endDate;
             if (offerEndDate is Timestamp) {
               endDate = offerEndDate.toDate();
             } else if (offerEndDate is String) {
               endDate = DateTime.tryParse(offerEndDate);
             }
-            return !(offerSoh == 0 && endDate != null && endDate.isBefore(now));
+
+            // ✅ Show only if BOTH conditions are valid
+            return !(offerSoh == 0 ||
+                endDate != null &&
+                endDate.isBefore(DateTime(now.year, now.month, now.day)));
           }).toList();
           // Update expired/invalid offers in Firestore
           for (final doc in snapshot.data!.docs) {
@@ -79,7 +84,9 @@ class DealOfTheWeekPage extends StatelessWidget {
             } else if (offerEndDate is String) {
               endDate = DateTime.tryParse(offerEndDate);
             }
-            if (offerSoh == 0 && endDate != null && endDate.isBefore(DateTime(now.year, now.month, now.day))) {
+            if (offerSoh == 0 ||
+                endDate != null &&
+                    endDate.isBefore(DateTime(now.year, now.month, now.day))) {
               FirebaseFirestore.instance
                   .collection('Products')
                   .doc(doc.id)
@@ -125,9 +132,10 @@ class DealOfTheWeekPage extends StatelessWidget {
                   }
                   final offerSohRaw = data['offer_soh'];
                   final offerSoh = int.tryParse(offerSohRaw.toString()) ?? 0;
-                  if (offerSoh == 0 &&
+                  if (offerSoh == 0 ||
                       endDate != null &&
-                      endDate.isBefore(now)) {
+                          endDate.isBefore(
+                              DateTime(now.year, now.month, now.day))) {
                     ToastHelper.showErrorToast("Offer has expired.");
                     return;
                   }

@@ -33,7 +33,7 @@ class DealOfTheDayPage extends StatelessWidget {
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return  Center(
+            return Center(
               child: Column(
                 children: [
                   Lottie.asset(
@@ -65,7 +65,9 @@ class DealOfTheDayPage extends StatelessWidget {
             } else if (offerEndDate is String) {
               endDate = DateTime.tryParse(offerEndDate);
             }
-            return !(offerSoh == 0 && endDate != null && endDate.isBefore(DateTime(now.year, now.month, now.day)));
+            return !(offerSoh == 0 &&
+                endDate != null &&
+                endDate.isBefore(DateTime(now.year, now.month, now.day)));
           }).toList();
           // Update expired/invalid offers in Firestore
           for (final doc in snapshot.data!.docs) {
@@ -79,8 +81,13 @@ class DealOfTheDayPage extends StatelessWidget {
             } else if (offerEndDate is String) {
               endDate = DateTime.tryParse(offerEndDate);
             }
-            if (offerSoh == 0 || endDate != null && endDate.isBefore(DateTime(now.year, now.month, now.day))) {
-              FirebaseFirestore.instance.collection('Products').doc(doc.id).update({
+            if (offerSoh == 0 ||
+                endDate != null &&
+                    endDate.isBefore(DateTime(now.year, now.month, now.day))) {
+              FirebaseFirestore.instance
+                  .collection('Products')
+                  .doc(doc.id)
+                  .update({
                 'deal_of_the_day': false,
                 'offer_price': 0,
               });
@@ -122,7 +129,10 @@ class DealOfTheDayPage extends StatelessWidget {
                   }
                   final offerSohRaw = data['offer_soh'];
                   final offerSoh = int.tryParse(offerSohRaw.toString()) ?? 0;
-                  if (offerSoh == 0 && endDate != null && endDate.isBefore(DateTime(now.year, now.month, now.day))) {
+                  if (offerSoh == 0 &&
+                      endDate != null &&
+                      endDate
+                          .isBefore(DateTime(now.year, now.month, now.day))) {
                     ToastHelper.showErrorToast("Offer has expired.");
                     return;
                   }
@@ -228,20 +238,19 @@ class DealOfTheDayPage extends StatelessWidget {
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
-                                       const Spacer(),
-                                  Text(qty,
-                                      maxLines: 2,
-                                      style: GoogleFonts.poppins(
-                                        textStyle: const TextStyle(
-                                          fontSize: 10,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.w400,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      )),
+                                      const Spacer(),
+                                      Text(qty,
+                                          maxLines: 2,
+                                          style: GoogleFonts.poppins(
+                                            textStyle: const TextStyle(
+                                              fontSize: 10,
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.w400,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          )),
                                     ],
                                   ),
-                                 
                                 ],
                               ),
                             ),

@@ -6,8 +6,10 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/firebase_options.dart';
 import 'package:kealthy_food/view/notifications/fcm.dart';
+import 'package:kealthy_food/view/notifications/offers.dart';
 import 'package:kealthy_food/view/splash_screen/network.dart';
 import 'package:kealthy_food/view/splash_screen/splash_screen.dart';
+import 'package:kealthy_food/view/subscription/subscription_details.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,17 +30,16 @@ void main() async {
 
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-
   runApp(
     ProviderScope(
       child: MyApp(navigatorKey: navigatorKey),
     ),
   );
 }
-  final navigatorKeyProvider = Provider<GlobalKey<NavigatorState>>((ref) {
+
+final navigatorKeyProvider = Provider<GlobalKey<NavigatorState>>((ref) {
   return GlobalKey<NavigatorState>();
 });
-
 
 class MyApp extends ConsumerWidget {
   final GlobalKey<NavigatorState> navigatorKey;
@@ -69,9 +70,12 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     final navigatorKey = ref.watch(navigatorKeyProvider);
     return MaterialApp(
+      routes: {// your home or starting page
+        '/offers': (context) => const OffersNotificationPage(),
+        '/subscription': (context) => const SubscriptionDetailsPage(),
+      },
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       theme: ThemeData(
@@ -100,7 +104,7 @@ class MyApp extends ConsumerWidget {
           Theme.of(context).textTheme,
         ),
       ),
-       builder: (context, child) {
+      builder: (context, child) {
         return InternetAwareWidget(child: child ?? const SizedBox());
       },
       home: const SplashScreen(),
