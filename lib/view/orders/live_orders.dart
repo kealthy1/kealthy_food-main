@@ -71,9 +71,8 @@ class _LiveOrdersTabState extends ConsumerState<LiveOrdersTab> {
                     final address = order['selectedRoad'] ?? '';
                     final orderItems = order['orderItems'] ?? [];
                     final selectedSlot = order['selectedSlot'] ?? '';
-                    final instantDeliveryfee =
-                        order['instantDeliveryfee'] ?? '';
-                    final deliveryfee = order['deliveryFee'] ?? '';
+                    final instantDeliveryfee = double.tryParse(order['instantDeliveryfee']?.toString() ?? '0') ?? 0;
+                    final deliveryfee = double.tryParse(order['deliveryFee']?.toString() ?? '0') ?? 0;
                     final totalAmount = order['totalAmountToPay'] ?? '';
 
                     // Calculate subtotal of items
@@ -331,111 +330,111 @@ class _LiveOrdersTabState extends ConsumerState<LiveOrdersTab> {
                                         );
                                       }).toList(),
                                     ),
-                                    const SizedBox(height: 20),
-                                    Row(
-                                      children: [
-                                        Text('Subtotal:',
-                                            style: GoogleFonts.poppins(
-                                              textStyle: const TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            )),
-                                            const Spacer(),
-                                            Text('₹${subtotal.toStringAsFixed(0)}',
-                                            style: GoogleFonts.poppins(
-                                              textStyle: const TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            )),
-                                      ],
-                                    ),
+                                    // const SizedBox(height: 20),
+                                    // Row(
+                                    //   children: [
+                                    //     Text('Subtotal:',
+                                    //         style: GoogleFonts.poppins(
+                                    //           textStyle: const TextStyle(
+                                    //             fontSize: 13,
+                                    //             fontWeight: FontWeight.bold,
+                                    //           ),
+                                    //         )),
+                                    //         const Spacer(),
+                                    //         Text('₹${subtotal.toStringAsFixed(0)}',
+                                    //         style: GoogleFonts.poppins(
+                                    //           textStyle: const TextStyle(
+                                    //             fontSize: 13,
+                                    //             fontWeight: FontWeight.bold,
+                                    //           ),
+                                    //         )),
+                                    //   ],
+                                    // ),
                                         const SizedBox(height: 20),
                                     // Handling fee
-                                    Row(
-                                      children: [
-                                        Text(
-                                          'Delivery Fee:',
-                                          style: GoogleFonts.poppins(
-                                            textStyle: const TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                        const Spacer(),
-                                        deliveryfee > 0
-                                            ? Text(
-                                                '₹${deliveryfee.toStringAsFixed(0)}',
-                                                style: const TextStyle(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              )
-                                            : Text(
-                                                'Free',
-                                                style: GoogleFonts.poppins(
-                                                  textStyle: const TextStyle(
-                                                    fontSize: 13,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.green,
-                                                  ),
-                                                ),
-                                              ),
-                                      ],
-                                    ),
+                                    // Row(
+                                    //   children: [
+                                    //     Text(
+                                    //       'Delivery Fee:',
+                                    //       style: GoogleFonts.poppins(
+                                    //         textStyle: const TextStyle(
+                                    //           fontSize: 13,
+                                    //           fontWeight: FontWeight.bold,
+                                    //         ),
+                                    //       ),
+                                    //     ),
+                                    //     const Spacer(),
+                                    //     deliveryfee > 0
+                                    //         ? Text(
+                                    //             '₹${deliveryfee.toStringAsFixed(0)}',
+                                    //             style: const TextStyle(
+                                    //               fontSize: 13,
+                                    //               fontWeight: FontWeight.bold,
+                                    //             ),
+                                    //           )
+                                    //         : Text(
+                                    //             'Free',
+                                    //             style: GoogleFonts.poppins(
+                                    //               textStyle: const TextStyle(
+                                    //                 fontSize: 13,
+                                    //                 fontWeight: FontWeight.bold,
+                                    //                 color: Colors.green,
+                                    //               ),
+                                    //             ),
+                                    //           ),
+                                    //   ],
+                                    // ),
                                     // Handling fee
-                                    if (instantDeliveryfee > 0)
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 20),
-                                        child: Row(
-                                          children: [
-                                            Text(
-                                              'Instant Delivery Fee:',
-                                              style: GoogleFonts.poppins(
-                                                textStyle: const TextStyle(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                            const Spacer(),
-                                            Text(
-                                              '₹${instantDeliveryfee.toStringAsFixed(0)}',
-                                              style: const TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                                    // if (instantDeliveryfee > 0)
+                                    //   Padding(
+                                    //     padding: const EdgeInsets.only(top: 20),
+                                    //     child: Row(
+                                    //       children: [
+                                    //         Text(
+                                    //           'Instant Delivery Fee:',
+                                    //           style: GoogleFonts.poppins(
+                                    //             textStyle: const TextStyle(
+                                    //               fontSize: 13,
+                                    //               fontWeight: FontWeight.bold,
+                                    //             ),
+                                    //           ),
+                                    //         ),
+                                    //         const Spacer(),
+                                    //         Text(
+                                    //           '₹${instantDeliveryfee.toStringAsFixed(0)}',
+                                    //           style: const TextStyle(
+                                    //             fontSize: 13,
+                                    //             fontWeight: FontWeight.bold,
+                                    //           ),
+                                    //         ),
+                                    //       ],
+                                    //     ),
+                                    //   ),
 
-                                    const SizedBox(height: 20),
-                                    // Handling fee
-                                    Row(
-                                      children: [
-                                        Text(
-                                          'Handling fee:',
-                                          style: GoogleFonts.poppins(
-                                            textStyle: const TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                        const Spacer(),
-                                        const Text(
-                                          '₹$handlingFee',
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 10),
+                                    // const SizedBox(height: 20),
+                                    // // Handling fee
+                                    // Row(
+                                    //   children: [
+                                    //     Text(
+                                    //       'Handling fee:',
+                                    //       style: GoogleFonts.poppins(
+                                    //         textStyle: const TextStyle(
+                                    //           fontSize: 13,
+                                    //           fontWeight: FontWeight.bold,
+                                    //         ),
+                                    //       ),
+                                    //     ),
+                                    //     const Spacer(),
+                                    //     const Text(
+                                    //       '₹$handlingFee',
+                                    //       style: TextStyle(
+                                    //         fontSize: 13,
+                                    //         fontWeight: FontWeight.bold,
+                                    //       ),
+                                    //     ),
+                                    //   ],
+                                    // ),
+                                    // const SizedBox(height: 10),
                                     Divider(
                                       color: Colors.grey.shade300,
                                       thickness: 1,

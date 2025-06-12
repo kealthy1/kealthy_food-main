@@ -9,59 +9,75 @@ class CustomAlertDialog {
     String cancelText = "Cancel",
     String confirmText = "OK",
     VoidCallback? onConfirm,
+    IconData? icon,
   }) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          title: Text(
-            title,
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-              color: Colors.black,
-            ),
-          ),
-          content: Text(
-            message,
-            style: GoogleFonts.poppins(fontSize: 14, color: Colors.black54),
+          icon: icon != null
+              ? Icon(
+                  icon,
+                  size: 60,
+                  color: const Color(0xFF273847),
+                )
+              : null,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.poppins(
+                  color: Colors.black,
+                  fontSize: 20,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                message,
+                textAlign: TextAlign.start,
+                style: GoogleFonts.poppins(
+                  color: Colors.grey,
+                  fontSize: 13,
+                ),
+              ),
+            ],
           ),
           actions: [
-            // Cancel Button
             TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Close the dialog
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 cancelText,
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.red,
-                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[700],
+                  fontSize: 15,
                 ),
               ),
             ),
-            // Confirm Button
-            TextButton(
+            ElevatedButton(
               onPressed: () {
-                Navigator.pop(context); // Close the dialog
+                Navigator.pop(context);
                 if (onConfirm != null) {
-                  onConfirm(); // Execute custom function if provided
+                  onConfirm();
                 }
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF273847),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
               child: Text(
                 confirmText,
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.green,
+                  color: Colors.white,
+                  fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
+            )
           ],
         );
       },

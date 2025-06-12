@@ -13,6 +13,7 @@ import 'package:kealthy_food/view/home/title.dart';
 import 'package:kealthy_food/view/map/location.dart';
 import 'package:kealthy_food/view/Login/login_page.dart';
 import 'package:kealthy_food/view/map/provider.dart';
+
 class AddressPage extends ConsumerStatefulWidget {
   const AddressPage({super.key});
 
@@ -52,12 +53,14 @@ class _LocationPageState extends ConsumerState<AddressPage> {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         child: SingleChildScrollView(
           child: Column(children: [
-            AddAddressButton(onTap: () async {
+            AddAddressButton(
+              onTap: () async {
                 final hasPhoneNumber = await checkPhoneNumber();
                 if (!hasPhoneNumber) {
                   CustomAlertDialog.show(
                     context: context,
                     title: "Login Required",
+                    icon: Icons.login,
                     message:
                         "You need to log in to save your address and use location features.",
                     confirmText: "Login",
@@ -163,7 +166,8 @@ class _LocationPageState extends ConsumerState<AddressPage> {
                     builder: (context) => const LocationPage(),
                   ),
                 );
-              }, ),
+              },
+            ),
             const SizedBox(
               height: 20,
             ),

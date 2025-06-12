@@ -30,6 +30,7 @@ double calculateDeliveryFee(double itemTotal, double distanceInKm) {
 
   return deliveryFee.roundToDouble();
 }
+final finalTotalProvider = StateProvider<double>((ref) => 0.0);
 
 final firstOrderProvider = AsyncNotifierProvider<FirstOrderNotifier, bool>(() {
   return FirstOrderNotifier();

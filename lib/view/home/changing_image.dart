@@ -42,6 +42,13 @@ class _ChangingImageWidgetState extends ConsumerState<ChangingImageWidget> {
     super.initState();
     _pageController = PageController(viewportFraction: 1.0);
     _startAutoScroll();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final imageList = ref.read(imageDataProvider);
+      for (final image in imageList) {
+        precacheImage(CachedNetworkImageProvider(image.imageUrl), context);
+      }
+    });
   }
 
   @override
@@ -138,20 +145,36 @@ class _ChangingImageWidgetState extends ConsumerState<ChangingImageWidget> {
     final imageDataList = ref.watch(imageDataProvider);
 
     if (imageDataList.isEmpty) {
-      // Show shimmer effect while loading images
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Shimmer.fromColors(
-          baseColor: Colors.grey[300]!,
-          highlightColor: Colors.grey[100]!,
-          child: Container(
-            decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(20)),
-            width: MediaQuery.of(context).size.width,
-            height: 180,
+      // Show shimmer and placeholder bubbles
+      return Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Shimmer.fromColors(
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: Container(
+                decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(20)),
+                width: MediaQuery.of(context).size.width,
+                height: 180,
+              ),
+            ),
           ),
-        ),
+          const SizedBox(height: 8.0),
+          SmoothPageIndicator(
+            controller: _pageController,
+            count: 6,
+            effect: const ExpandingDotsEffect(
+              dotHeight: 10,
+              dotWidth: 10,
+              activeDotColor: Color.fromARGB(255, 65, 88, 108),
+              dotColor: Color.fromARGB(255, 120, 142, 162),
+              spacing: 4.0,
+            ),
+          ),
+        ],
       );
     }
 
@@ -232,7 +255,7 @@ class _ChangingImageWidgetState extends ConsumerState<ChangingImageWidget> {
         const SizedBox(height: 8.0),
         SmoothPageIndicator(
           controller: _pageController,
-          count: imageDataList.length,
+          count: imageDataList.isEmpty ? 5 : imageDataList.length,
           effect: const ExpandingDotsEffect(
             dotHeight: 10,
             dotWidth: 10,

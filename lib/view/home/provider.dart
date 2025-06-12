@@ -71,48 +71,57 @@ final liveOrdersProvider = StreamProvider<List<Map<String, dynamic>>>((ref) asyn
 
 Future<Map<String, String>> getSelectedAddressOrCurrentLocation(
     FutureProviderRef<Map<String, String>> ref) async {
-  print("Starting location fetch process");
+  print("🔁 Starting location fetch process");
 
-  SharedPreferences prefs = await SharedPreferences.getInstance();
+  final prefs = await SharedPreferences.getInstance();
 
-  // Helper function to cache and return result
-  void cacheAndReturn(Map<String, String> result) {
-    ref.read(cachedLocationProvider.notifier).state = result;
-    print("Caching and returning result: $result");
+  // Helper: cache if location is valid
+  void cache(Map<String, String> result) {
+    if (result['address'] != 'Locating...') {
+      ref.read(cachedLocationProvider.notifier).state = result;
+      print("📦 Cached location: $result");
+    }
   }
 
   // Retry logic
   int retryCount = 0;
   const maxRetries = 3;
-  const retryDuration = Duration(seconds: 3);
+  const retryDelay = Duration(seconds: 3);
 
   Future<Map<String, String>> fetchLocation() async {
-    // Check for selected address first
     final selectedAddress = ref.read(selectedLocationProvider);
     if (selectedAddress != null && selectedAddress.isNotEmpty) {
-      return {
+      final result = {
         "addressType": prefs.getString('selectedType') ?? "Selected Address",
         "address": selectedAddress,
       };
+      cache(result);
+      return result;
     }
 
-    // Fetch real-time location
     try {
-      print("Attempting to fetch current position");
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-      print("Position obtained: $position");
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        final result = {
+          "addressType": "Location Service Disabled",
+          "address": "Please enable location services",
+        };
+        cache(result);
+        return result;
+      }
 
-      List<Placemark> placemarks = await placemarkFromCoordinates(
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      ).timeout(const Duration(seconds: 6));
+
+      final placemarks = await placemarkFromCoordinates(
         position.latitude,
         position.longitude,
-      );
-      print("Placemarks obtained: $placemarks");
+      ).timeout(const Duration(seconds: 5));
 
       if (placemarks.isNotEmpty) {
-        Placemark place = placemarks.first;
-        String userLocation = place.street?.isNotEmpty == true
+        final place = placemarks.first;
+        final userLocation = place.street?.isNotEmpty == true
             ? place.street!
             : place.subLocality?.isNotEmpty == true
                 ? place.subLocality!
@@ -123,28 +132,21 @@ Future<Map<String, String>> getSelectedAddressOrCurrentLocation(
         await prefs.setString('user_location', userLocation);
         ref.read(locationProvider.notifier).state = userLocation;
 
-        return {"address": userLocation};
+        final result = {"address": userLocation};
+        cache(result);
+        return result;
       }
     } catch (e) {
-      print("Error fetching location: $e");
+      print("❌ Location fetch error: $e");
     }
 
-    // If no selected address, check cached location
-    final cachedLocation = ref.read(cachedLocationProvider);
-    if (cachedLocation != null) {
-      print("Returning cached location: $cachedLocation");
-      return cachedLocation;
+    final cached = ref.read(cachedLocationProvider);
+    if (cached != null) {
+      print("Returning cached location: $cached");
+      return cached;
     }
 
-    // Check location permission
-    LocationPermission permission = await Geolocator.checkPermission();
-    print("Current location permission status: $permission");
-
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      print("Requested permission, new status: $permission");
-    }
-
+    final permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
       return {
@@ -153,51 +155,25 @@ Future<Map<String, String>> getSelectedAddressOrCurrentLocation(
       };
     }
 
-    // Check if location service is enabled
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    print("Location service enabled: $serviceEnabled");
-
-    if (!serviceEnabled) {
-      return {
-        "addressType": "Location Service Disabled",
-        "address": "Please enable location services",
-      };
-    }
-
-    // Check for saved location
-    final location = ref.read(locationProvider);
-    if (location != null && location.isNotEmpty) {
-      return {"address": location};
-    }
-
-    // Default fallback
     return {"address": "Locating..."};
   }
 
   // Retry loop
-   while (retryCount < maxRetries) {
+  while (retryCount < maxRetries) {
     try {
       final result = await fetchLocation();
-      cacheAndReturn(result);
       return result;
     } catch (e) {
-      print("Error fetching location: $e");
+      print("Retry $retryCount failed: $e");
       retryCount++;
       if (retryCount < maxRetries) {
-        print("Retrying location fetch...");
-        print("${ maxRetries - retryCount } retries remaining");
-        await Future.delayed(retryDuration);
-      } else {
-        print("Maximum retries reached. Returning default location.");
-        return {"address": "Locating..."};
+        await Future.delayed(retryDelay);
       }
     }
   }
 
-  // If all retries fail, return a default location
   return {"address": "Locating..."};
-    }
-
+}
 
 Future<void> checkLocationPermission(WidgetRef ref) async {
     LocationPermission permission = await Geolocator.checkPermission();
@@ -206,6 +182,7 @@ Future<void> checkLocationPermission(WidgetRef ref) async {
     if (permission == LocationPermission.always ||
         permission == LocationPermission.whileInUse) {
       ref.read(hasLocationPermissionProvider.notifier).state = true;
+      ref.invalidate(locationDataProvider);
 
       // Fetch the latest location
       await LocationHelper.getCurrentLocation();
@@ -232,9 +209,19 @@ final homeImageUrlsProvider = FutureProvider<List<String>>((ref) async {
 
   return [...bannerUrls, ...productUrls];
 });
-final locationDataProvider = FutureProvider<Map<String, String>>((ref) async {
-  // This will cause the provider to re-run when selectedLocationProvider changes
-  ref.watch(selectedLocationProvider);
-  return getSelectedAddressOrCurrentLocation(ref);
-});
 
+
+final locationDataProvider = FutureProvider<Map<String, String>>((ref) async {
+  ref.watch(selectedLocationProvider); // re-run on address selection change
+
+  final result = await getSelectedAddressOrCurrentLocation(ref);
+
+  // 🧠 Auto-retry if it's still "Locating..."
+  if (result['address'] == 'Locating...') {
+    Future.delayed(const Duration(seconds: 5), () {
+      ref.invalidateSelf(); // ✅ auto-trigger retry
+    });
+  }
+
+  return result;
+});

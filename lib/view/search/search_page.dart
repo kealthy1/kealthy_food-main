@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/product/product_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 /// Product model
 class Product {
@@ -142,10 +143,15 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       }
 
       final products = snapshot.docs.map((doc) {
-        final data = doc.data();
-        print("✅ Firestore Data: ${doc.id} => $data");
+        final product = Product.fromFirestore(doc);
 
-        return Product.fromFirestore(doc); // Use the updated Product model
+        // Preload the first image
+        if (product.imageUrls.isNotEmpty) {
+          final imageUrl = product.imageUrls.first.toString();
+          DefaultCacheManager().getSingleFile(imageUrl);
+        }
+
+        return product;
       }).toList();
 
       print("✅ Loaded ${products.length} products.");
@@ -345,22 +351,19 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                                                     top: Radius.circular(8)),
                                             child: CachedNetworkImage(
                                               imageUrl: imageUrl,
+                                              cacheManager: DefaultCacheManager(),
                                               width: double.infinity,
                                               fit: BoxFit.cover,
-                                              placeholder: (context, url) =>
-                                                  Shimmer.fromColors(
+                                              placeholder: (context, url) => Shimmer.fromColors(
                                                 baseColor: Colors.grey[300]!,
-                                                highlightColor:
-                                                    Colors.grey[100]!,
+                                                highlightColor: Colors.grey[100]!,
                                                 child: Container(
-                                                    color: Colors.white),
+                                                  color: Colors.white,
+                                                ),
                                               ),
-                                              errorWidget:
-                                                  (context, url, error) =>
-                                                      Container(
+                                              errorWidget: (context, url, error) => Container(
                                                 color: Colors.grey.shade200,
-                                                child: const Icon(
-                                                    Icons.broken_image),
+                                                child: const Icon(Icons.broken_image),
                                               ),
                                             ),
                                           ),

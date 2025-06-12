@@ -19,6 +19,7 @@ class PaymentPage extends ConsumerStatefulWidget {
   final String deliverytime;
   final String packingInstructions;
   final double deliveryfee;
+  // final  double offerDiscount;
   // final double instantDeliveryFee;
 
   const PaymentPage(
@@ -29,6 +30,7 @@ class PaymentPage extends ConsumerStatefulWidget {
       required this.deliverytime,
       required this.packingInstructions,
       required this.deliveryfee,
+      // required this.offerDiscount,
       // required this.instantDeliveryFee
       });
 
@@ -154,7 +156,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
         ),
         const Spacer(),
         Text(
-          "₹${widget.totalAmount.toStringAsFixed(2)}",
+          "₹${widget.totalAmount.toStringAsFixed(0)}",
           style: GoogleFonts.poppins(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -213,6 +215,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
           packingInstructions: widget.packingInstructions,
           deliveryInstructions: widget.instructions,
           deliveryTime: widget.deliverytime,
+          // offerDiscount: widget.offerDiscount,
           // instantDeliveryFee: widget.instantDeliveryFee,
           paymentMethod: 'Cash on Delivery',
         );
@@ -227,6 +230,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
           context,
           MaterialPageRoute(
             builder: (context) => OnlinePaymentProcessing(
+              // offerDiscount: widget.offerDiscount,
               totalAmount: widget.totalAmount,
               packingInstructions: widget.packingInstructions,
               deliveryInstructions: widget.instructions,

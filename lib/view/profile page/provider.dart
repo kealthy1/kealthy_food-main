@@ -10,6 +10,7 @@ import 'package:kealthy_food/view/Login/login_page.dart';
 import 'package:kealthy_food/view/Toast/toast_helper.dart';
 import 'package:kealthy_food/view/address/provider.dart';
 import 'package:kealthy_food/view/map/provider.dart';
+import 'package:kealthy_food/view/notifications/offers.dart';
 import 'package:kealthy_food/view/profile%20page/getuserdetails.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -220,6 +221,8 @@ Future<void> deleteAccount(WidgetRef ref, BuildContext context) async {
       ref.invalidate(cartProvider);
       ref.invalidate(addressProviders);
       ref.invalidate(bottomNavProvider);
+      ref.invalidate(dismissedOffersProvider);
+      // Show success toast 
 
       ToastHelper.showSuccessToast('Account deleted successfully.');
 
@@ -288,6 +291,7 @@ Future<void> logoutUser(BuildContext context, WidgetRef ref) async {
   ref.invalidate(cartProvider);
   ref.invalidate(addressProviders);
   ref.invalidate(bottomNavProvider);
+  ref.invalidate(dismissedOffersProvider);
 
   Navigator.pop(context); // close the "Logging out" dialog
 

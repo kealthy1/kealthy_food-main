@@ -16,6 +16,14 @@ class HomeCategory extends ConsumerStatefulWidget {
 
 class _HomeCategoryState extends ConsumerState<HomeCategory>
     with AutomaticKeepAliveClientMixin {
+
+  void preloadCategoryImages(List<Map<String, dynamic>> categories) {
+    for (var category in categories) {
+      final url = category['image'] as String;
+      final provider = CachedNetworkImageProvider(url, cacheKey: category['Categories']);
+      provider.resolve(const ImageConfiguration());
+    }
+  }
   @override
   bool get wantKeepAlive => true;
 
@@ -25,8 +33,9 @@ class _HomeCategoryState extends ConsumerState<HomeCategory>
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
     return FutureBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      future: firestore.collection('categories')
-          .orderBy('Categories') // 👈 Sort alphabetically
+      future: firestore
+          .collection('categories')
+          .orderBy('Categories') 
           .get(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
@@ -38,12 +47,7 @@ class _HomeCategoryState extends ConsumerState<HomeCategory>
           }).toList();
 
           if (categories != null) {
-            for (var category in categories) {
-              precacheImage(
-                CachedNetworkImageProvider(category['image'] as String),
-                context,
-              );
-            }
+            preloadCategoryImages(categories);
           }
 
           return Center(
@@ -77,6 +81,7 @@ class _HomeCategoryState extends ConsumerState<HomeCategory>
                                     // Set your desired background color here
                                     child: CachedNetworkImage(
                                       imageUrl: category['image'] as String,
+                                      cacheKey: category['Categories'],
                                       width: double.infinity,
                                       height: 100,
                                       fit: BoxFit.cover,
@@ -117,43 +122,43 @@ class _HomeCategoryState extends ConsumerState<HomeCategory>
           );
         } else {
           return Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-  child: Wrap(
-    spacing: 8.0,
-    runSpacing: 8.0,
-    children: List.generate(6, (index) {
-      return SizedBox(
-        width: (MediaQuery.of(context).size.width - 48) / 3,
-        child: Column(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8.0),
-              child: Shimmer.fromColors(
-                baseColor: Colors.grey[300]!,
-                highlightColor: Colors.grey[100]!,
-                child: Container(
-                  width: double.infinity,
-                  height: 100,
-                  color: Colors.white,
-                ),
-              ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              children: List.generate(6, (index) {
+                return SizedBox(
+                  width: (MediaQuery.of(context).size.width - 48) / 3,
+                  child: Column(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8.0),
+                        child: Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: Container(
+                            width: double.infinity,
+                            height: 100,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: Container(
+                          width: 60,
+                          height: 10,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
             ),
-            const SizedBox(height: 4),
-            Shimmer.fromColors(
-              baseColor: Colors.grey[300]!,
-              highlightColor: Colors.grey[100]!,
-              child: Container(
-                width: 60,
-                height: 10,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-      );
-    }),
-  ),
-);
+          );
         }
       },
     );

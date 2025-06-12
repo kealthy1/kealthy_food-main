@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/firebase_options.dart';
+import 'package:kealthy_food/view/BottomNavBar/bottom_nav_bar.dart';
 import 'package:kealthy_food/view/notifications/fcm.dart';
 import 'package:kealthy_food/view/notifications/offers.dart';
 import 'package:kealthy_food/view/splash_screen/network.dart';
@@ -72,7 +73,8 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final navigatorKey = ref.watch(navigatorKeyProvider);
     return MaterialApp(
-      routes: {// your home or starting page
+      routes: {
+        // your home or starting page
         '/offers': (context) => const OffersNotificationPage(),
         '/subscription': (context) => const SubscriptionDetailsPage(),
       },
@@ -107,7 +109,7 @@ class MyApp extends ConsumerWidget {
       builder: (context, child) {
         return InternetAwareWidget(child: child ?? const SizedBox());
       },
-      home: const SplashScreen(),
+      home: BottomNavBar(),
     );
   }
 }

@@ -150,7 +150,9 @@ class _HomePageState extends ConsumerState<HomePage>
                     children: [
                       const SizedBox(height: 10),
                       const SearchBarWidget(),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 10),
+                      const CenteredTitleWidget(title: "Fitness & Health"),
+                      const SizedBox(height: 10),
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 10),
                         child: ChangingImageWidget(),
@@ -260,6 +262,9 @@ class _HomePageState extends ConsumerState<HomePage>
                           ],
                         ),
                       ),
+                      const CenteredTitleWidget(
+                          title: "Kealthy blog & Recipes"),
+                      const SizedBox(height: 10),
                       const KealthyPage(),
                       const SizedBox(height: 100),
                     ],
@@ -335,7 +340,7 @@ class _HomePageState extends ConsumerState<HomePage>
                         displayText = data['address']!;
                       }
                     } else {
-                      displayText = "...";
+                      displayText = "Locating...";
                     }
 
                     return Column(
@@ -362,10 +367,10 @@ class _HomePageState extends ConsumerState<HomePage>
                     );
                   },
                   loading: () => Text(
-                    "...",
+                    "Locating...",
                     style: GoogleFonts.poppins(
-                      color: Colors.grey,
-                      fontSize: 30,
+                      color: Colors.black,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -462,6 +467,7 @@ class _HomePageState extends ConsumerState<HomePage>
                   builder: (context, ref, child) {
                     final ratingAsync = ref.watch(notificationProvider);
                     final offersAsync = ref.watch(offersNotificationProvider);
+                    final dismissedOffers = ref.watch(dismissedOffersProvider);
 
                     return ratingAsync.when(
                       data: (ratingNotifications) {
@@ -479,8 +485,8 @@ class _HomePageState extends ConsumerState<HomePage>
 
                         return offersAsync.when(
                           data: (offers) {
-                            final totalCount =
-                                filteredRatings.length + offers.length;
+                            final visibleOffersCount = offers.where((offer) => !dismissedOffers.contains(offer['id'])).length;
+                            final totalCount = filteredRatings.length + visibleOffersCount;
 
                             if (totalCount > 0) {
                               return Positioned(

@@ -73,7 +73,7 @@ class _LoginFieldsState extends ConsumerState<LoginFields> {
                           child: Text(
                             "Skip",
                             style: GoogleFonts.poppins(
-                              fontSize: 14,
+                              fontSize: 13,
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                             ),
@@ -179,60 +179,75 @@ class _LoginFieldsState extends ConsumerState<LoginFields> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          title: Text(
-            "Continue as Guest?",
+        return   AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      backgroundColor: Colors.white,
+      icon: const Icon(
+        CupertinoIcons.person_alt_circle,
+        size: 60,
+        color: Color(0xFF273847),
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Continue as Guest?',
             style: GoogleFonts.poppins(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
               color: Colors.black,
+              fontSize: 20,
             ),
           ),
-          content: Text(
+          const SizedBox(height: 8),
+          Text(
             "You won't be able to save preferences or place orders without logging in.",
-            style: GoogleFonts.poppins(fontSize: 14, color: Colors.black54),
-          ),
-          actions: [
-            // Cancel Button
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Close the dialog
-              },
-              child: Text(
-                "Cancel",
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.red,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+            textAlign: TextAlign.start,
+            style: GoogleFonts.poppins(
+              color: Colors.grey,
+              fontSize: 13,
+              
             ),
-            // Continue as Guest Button
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Close the dialog
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(
+            'Cancel',
+            style: GoogleFonts.poppins(
+              color: Colors.grey[700],
+              fontSize: 15,
+            ),
+          ),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context); // Close the dialog
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
                     builder: (context) => const BottomNavBar(),
                   ),
                 );
-              },
-              child: Text(
-                "Continue",
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.green,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF273847),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+          ),
+          child: Text(
+            'Continue',
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
             ),
-          ],
-        );
+          ),
+        )
+      ],
+    );
+  
+
       },
     );
   }

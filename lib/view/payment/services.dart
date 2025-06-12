@@ -104,6 +104,7 @@ class OrderService {
 
   /// Saves a new order in Firebase (Realtime Database in this example).
   static Future<void> saveOrderToFirebase({
+    // required double offerDiscount,
     required dynamic address,
     required double totalAmount,
     required double deliveryFee,
@@ -161,6 +162,7 @@ class OrderService {
         "status": "Order Placed",
         "totalAmountToPay": totalAmount,
         "deliveryFee": deliveryFee,
+        // "offerDiscount": offerDiscount,
         // "instantDeliveryfee": instantDeliveryFee,
       };
 

@@ -64,6 +64,16 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
                 // 3. We have data
                 final subcategories = snapshot.data!.docs;
 
+                // Preload images
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  for (var doc in subcategories) {
+                    final url = doc['ImageUrl'] ?? '';
+                    if (url.isNotEmpty) {
+                      precacheImage(CachedNetworkImageProvider(url), context);
+                    }
+                  }
+                });
+
                 return ListView.builder(
                   padding: const EdgeInsets.only(bottom: 80),
                   itemCount: subcategories.length,

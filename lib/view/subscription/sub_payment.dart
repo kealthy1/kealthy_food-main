@@ -152,6 +152,7 @@ class SubscriptionPaymentPage extends ConsumerWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => OnlinePaymentProcessing(
+                        // offerDiscount: 0,
                         totalAmount: totalAmount,
                         packingInstructions: '',
                         deliveryInstructions: '',

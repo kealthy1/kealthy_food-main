@@ -28,6 +28,7 @@ class CheckoutPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final firstOrderAsync = ref.watch(firstOrderProvider);
+    double finalToPay = 0.0;
 
 // ignore: dead_code
     // Watch the addressProvider
@@ -322,8 +323,12 @@ class CheckoutPage extends ConsumerWidget {
                               BillDetailsWidget(
                                 itemTotal: itemTotal,
                                 distanceInKm: distanceInKm,
-                                // instantDeliveryFee: instantDeliveryfee,
-                                offerDiscount: isFirstOrder ? 100.0 : 0.0,
+                                offerDiscount: isFirstOrder
+                                    ? (itemTotal >= 100 ? 100.0 : itemTotal)
+                                    : 0.0,
+                                onTotalCalculated: (value) {
+                                  finalToPay = value;
+                                },
                               ),
 
                               const SizedBox(height: 150),
@@ -379,20 +384,13 @@ class CheckoutPage extends ConsumerWidget {
                     calculateDeliveryFee(itemTotal, distanceInKm);
 
                 // 2) Combine Normal + Instant
-                final isFirstOrder =
-                    ref.read(firstOrderProvider).value ?? false;
-                final double offerDiscount = isFirstOrder ? 100.0 : 0.0;
-
-                final double finalTotalToPay =
-                    calculateFinalTotal(itemTotal - offerDiscount, distanceInKm
-                        // instantDeliveryfee,
-                        );
+                // final double offerDiscount = isFirstOrder ? 100.0 : 0.0;
 
                 Navigator.push(
                   context,
                   CupertinoPageRoute(
                     builder: (context) => PaymentPage(
-                      totalAmount: finalTotalToPay,
+                      totalAmount: finalToPay,
                       instructions: instructions,
                       address: selectedAddress,
                       deliverytime: deliveryTime,

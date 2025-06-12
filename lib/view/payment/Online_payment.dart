@@ -19,6 +19,7 @@ class OnlinePaymentProcessing extends ConsumerStatefulWidget {
   // final double instantDeliveryFee;
   final String razorpayOrderId;
   final String orderType;
+  // final double offerDiscount;
 
   const OnlinePaymentProcessing({
     super.key,
@@ -31,6 +32,7 @@ class OnlinePaymentProcessing extends ConsumerStatefulWidget {
     // required this.instantDeliveryFee,
     required this.razorpayOrderId,
     required this.orderType,
+    // required this.offerDiscount,
   });
 
   @override
@@ -71,6 +73,7 @@ class _OnlinePaymentProcessingState
       );
     } else {
       await OrderService.saveOrderToFirebase(
+        // offerDiscount: widget.offerDiscount,
         address: widget.address,
         totalAmount: widget.totalAmount,
         deliveryFee: widget.deliveryFee,
@@ -186,7 +189,7 @@ class _OnlinePaymentProcessingState
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color:  Colors.grey,
+                color: Colors.grey,
               ),
             ),
           ],

@@ -364,6 +364,7 @@ class _TimePageState extends ConsumerState<TimePage> {
                       context,
                       CupertinoPageRoute(
                         builder: (context) => CheckoutPage(
+                          // offerDiscount: 0.0,
                           itemTotal: baseTotal,
                           cartItems: ref.read(cartProvider),
                           deliveryTime: deliveryTime,

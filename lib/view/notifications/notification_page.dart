@@ -17,7 +17,7 @@ final notificationProvider =
   final String? phoneNumber = prefs.getString('phoneNumber');
 
   if (phoneNumber == null || phoneNumber.isEmpty) {
-    yield []; // Return empty list if phone number is not found
+    yield [];
     return;
   }
 
@@ -30,7 +30,7 @@ final notificationProvider =
       .map((snapshot) =>
           snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList());
 });
-// Provider to fetch product images for each product name
+
 final productImageProvider = FutureProvider.family
     .autoDispose<String?, String>((ref, productName) async {
   final querySnapshot = await FirebaseFirestore.instance
@@ -56,8 +56,7 @@ final orderExistsProvider = StreamProvider.family<bool, String>((ref, orderId) {
   ).ref('orders/$orderId');
 
   return orderRef.onValue.map((event) {
-    return event
-        .snapshot.exists; // ✅ Returns true if order exists, false otherwise
+    return event.snapshot.exists;
   });
 });
 

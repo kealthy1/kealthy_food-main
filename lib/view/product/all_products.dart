@@ -211,15 +211,20 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                   );
                 }
 
-                // Pre-cache first image of each product
-                for (final product in filteredProducts) {
-                  final data = product.data();
-                  final imageUrls = data['ImageUrl'] ?? [];
-                  if (imageUrls.isNotEmpty && imageUrls[0] is String) {
-                    precacheImage(
-                        CachedNetworkImageProvider(imageUrls[0]), context);
+                // Preload all product images
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  for (final product in filteredProducts) {
+                    final data = product.data();
+                    final imageUrls = data['ImageUrl'];
+                    if (imageUrls != null && imageUrls is List) {
+                      for (final url in imageUrls) {
+                        if (url is String && url.isNotEmpty) {
+                          precacheImage(CachedNetworkImageProvider(url), context);
+                        }
+                      }
+                    }
                   }
-                }
+                });
 
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -448,7 +453,10 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                                         ),
                                         child: Container(
                                           height: 30,
-                                          width: 50,
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.13, // Adjust width as needed
                                           padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                                           decoration:  BoxDecoration(
                                             color: Colors.black.withOpacity(0.5),),

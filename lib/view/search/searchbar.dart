@@ -172,7 +172,7 @@ class _SearchBarWidgetState extends ConsumerState<SearchBarWidget> {
     return GestureDetector(
       onTap: _navigateToSearchPage,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Container(
           decoration: BoxDecoration(
               color: Colors.white,
