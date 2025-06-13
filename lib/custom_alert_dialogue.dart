@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CustomAlertDialog {
-  static void show({
+  static show({
     required BuildContext context,
     required String title,
     required String message,

@@ -71,18 +71,18 @@ class _LiveOrdersTabState extends ConsumerState<LiveOrdersTab> {
                     final address = order['selectedRoad'] ?? '';
                     final orderItems = order['orderItems'] ?? [];
                     final selectedSlot = order['selectedSlot'] ?? '';
-                    final instantDeliveryfee = double.tryParse(order['instantDeliveryfee']?.toString() ?? '0') ?? 0;
-                    final deliveryfee = double.tryParse(order['deliveryFee']?.toString() ?? '0') ?? 0;
+                    // final instantDeliveryfee = double.tryParse(order['instantDeliveryfee']?.toString() ?? '0') ?? 0;
+                    // final deliveryfee = double.tryParse(order['deliveryFee']?.toString() ?? '0') ?? 0;
                     final totalAmount = order['totalAmountToPay'] ?? '';
 
                     // Calculate subtotal of items
-                    final double subtotal = orderItems.fold(0.0, (sum, item) {
-                      final quantity = (item['item_quantity'] ?? 1).toDouble();
-                      final price = (item['item_price'] ?? 0).toDouble();
-                      return sum + (price * quantity);
-                    });
+                    // final double subtotal = orderItems.fold(0.0, (sum, item) {
+                    //   final quantity = (item['item_quantity'] ?? 1).toDouble();
+                    //   final price = (item['item_price'] ?? 0).toDouble();
+                    //   return sum + (price * quantity);
+                    // });
                     // Handling fee
-                    const int handlingFee = 5;
+                    // const int handlingFee = 5;
 
                     final expanded = expandedStates[index];
 

@@ -5,7 +5,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/firebase_options.dart';
-import 'package:kealthy_food/view/BottomNavBar/bottom_nav_bar.dart';
 import 'package:kealthy_food/view/notifications/fcm.dart';
 import 'package:kealthy_food/view/notifications/offers.dart';
 import 'package:kealthy_food/view/splash_screen/network.dart';
@@ -109,7 +108,7 @@ class MyApp extends ConsumerWidget {
       builder: (context, child) {
         return InternetAwareWidget(child: child ?? const SizedBox());
       },
-      home: BottomNavBar(),
+      home: const SplashScreen(),
     );
   }
 }

@@ -19,9 +19,17 @@ class DealOfTheWeekPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: const Color(0xFFE3F2FD),
           surfaceTintColor: Colors.white,
-          title: const Text('Deal of the Week')),
+          title: Text(
+            'Deal of the Week',
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+      ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('Products')
@@ -70,7 +78,7 @@ class DealOfTheWeekPage extends StatelessWidget {
             // ✅ Show only if BOTH conditions are valid
             return !(offerSoh == 0 ||
                 endDate != null &&
-                endDate.isBefore(DateTime(now.year, now.month, now.day)));
+                    endDate.isBefore(DateTime(now.year, now.month, now.day)));
           }).toList();
           // Update expired/invalid offers in Firestore
           for (final doc in snapshot.data!.docs) {
@@ -225,7 +233,7 @@ class DealOfTheWeekPage extends StatelessWidget {
                                           '\u20B9$price',
                                           style: const TextStyle(
                                             fontSize: 13,
-                                            color: Colors.grey,
+                                            color: Colors.red,
                                             decoration:
                                                 TextDecoration.lineThrough,
                                           ),

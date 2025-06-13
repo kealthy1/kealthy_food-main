@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -54,6 +55,101 @@ class _HomePageState extends ConsumerState<HomePage>
       ref.read(cartProvider.notifier).loadCartItems();
       checkLocationPermission(ref);
       ref.read(locationDataProvider);
+
+      // Show combined deal alert dialog for deal of the day and week
+      // ignore: use_build_context_synchronously
+      FirebaseFirestore.instance.collection('Products').get().then((snapshot) {
+        final docs = snapshot.docs;
+        final dealDay = docs.where((doc) => (doc.data())['deal_of_the_day'] == true);
+        final dealWeek = docs.where((doc) => (doc.data())['deal_of_the_week'] == true);
+
+        if (dealDay.isEmpty && dealWeek.isEmpty) return;
+
+        showDialog(
+          context: context,
+          builder: (ctx) => Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text("Hot Deals Available!",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
+                  if (dealDay.isNotEmpty)
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const DealOfTheDayPage()),
+                        );
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.only(bottom: 10),
+                        decoration: BoxDecoration(
+                          color: Color(0xFFFFF3E0),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.orange),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Image.asset(
+                              'lib/assets/images/deal day.png',
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
+                            const SizedBox(height: 8),
+                            const Text("🔥 Deal of the Day",
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                            const Text("Tap to check today’s offer"),
+                          ],
+                        ),
+                      ),
+                    ),
+                  if (dealWeek.isNotEmpty)
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const DealOfTheWeekPage()),
+                        );
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE3F2FD),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.lightBlue),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Image.asset(
+                              'lib/assets/images/deal week.png',
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
+                            const SizedBox(height: 8),
+                            const Text("🎉 Deal of the Week",
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                            const Text("Tap to explore this week’s deal"),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      });
     });
     WidgetsBinding.instance.addObserver(this);
 
@@ -150,9 +246,9 @@ class _HomePageState extends ConsumerState<HomePage>
                     children: [
                       const SizedBox(height: 10),
                       const SearchBarWidget(),
-                      const SizedBox(height: 10),
-                      const CenteredTitleWidget(title: "Fitness & Health"),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 20),
+                      // const CenteredTitleWidget(title: "Fitness & Health"),
+                      // const SizedBox(height: 10),
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 10),
                         child: ChangingImageWidget(),
@@ -163,7 +259,6 @@ class _HomePageState extends ConsumerState<HomePage>
                       const HomeCategory(),
                       const SizedBox(height: 10),
                       const CenteredTitleWidget(title: "Subscribe & Save"),
-                      // Subscription box padding inserted here
                       Padding(
                         padding: const EdgeInsets.all(16),
                         child: GestureDetector(
@@ -262,9 +357,9 @@ class _HomePageState extends ConsumerState<HomePage>
                           ],
                         ),
                       ),
-                      const CenteredTitleWidget(
-                          title: "Kealthy blog & Recipes"),
-                      const SizedBox(height: 10),
+                      // const CenteredTitleWidget(
+                      //     title: "Kealthy blog & Recipes"),
+                      // const SizedBox(height: 10),
                       const KealthyPage(),
                       const SizedBox(height: 100),
                     ],

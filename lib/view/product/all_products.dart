@@ -26,7 +26,6 @@ final productTypesProvider = FutureProvider.family<List<String>, String>(
         .where('Subcategory', isEqualTo: subcategory)
         .get();
 
-
     final types = snapshot.docs
         .map((doc) => doc.data()['Type'] as String?)
         .where((type) => type != null)
@@ -219,7 +218,8 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                     if (imageUrls != null && imageUrls is List) {
                       for (final url in imageUrls) {
                         if (url is String && url.isNotEmpty) {
-                          precacheImage(CachedNetworkImageProvider(url), context);
+                          precacheImage(
+                              CachedNetworkImageProvider(url), context);
                         }
                       }
                     }
@@ -402,17 +402,65 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                                           // const SizedBox(
                                           //   height: 8,
                                           // ),
-                                          const SizedBox(height: 10,),
+                                          const SizedBox(
+                                            height: 10,
+                                          ),
                                           const Spacer(),
                                           Row(
                                             children: [
-                                              Text(
-                                                '\u20B9$price/-',
-                                                style: TextStyle(
-                                                  fontSize: 15,
-                                                  color: Colors.green.shade800,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
+                                              Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  if (data['offer_price'] !=
+                                                          null &&
+                                                      double.tryParse(data[
+                                                                  'offer_price']
+                                                              .toString()) !=
+                                                          null &&
+                                                      double.parse(data[
+                                                                  'offer_price']
+                                                              .toString()) >
+                                                          0)
+                                                    Row(
+                                                      children: [
+                                                        Text(
+                                                          '\u20B9$price',
+                                                          style:
+                                                              const TextStyle(
+                                                            fontSize: 12,
+                                                            color: Colors.red,
+                                                            decoration:
+                                                                TextDecoration
+                                                                    .lineThrough,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            width: 5),
+                                                        Text(
+                                                          '\u20B9${data['offer_price']}/-',
+                                                          style: TextStyle(
+                                                            fontSize: 15,
+                                                            color: Colors
+                                                                .green.shade800,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    )
+                                                  else
+                                                    Text(
+                                                      '\u20B9$price/-',
+                                                      style: TextStyle(
+                                                        fontSize: 15,
+                                                        color: Colors
+                                                            .green.shade800,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                ],
                                               ),
                                               const Spacer(),
                                               Text(productqty,
@@ -442,11 +490,14 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                               left: 5,
                               child: Consumer(
                                 builder: (context, ref, child) {
-                                  final averageStarsAsync =
-                                      ref.watch(averageStarsProvider(data['Name'] ?? 'No Name'));
+                                  final averageStarsAsync = ref.watch(
+                                      averageStarsProvider(
+                                          data['Name'] ?? 'No Name'));
                                   return averageStarsAsync.when(
                                     data: (rating) {
-                                      if (rating == 0.0) return const SizedBox(); // Hide badge if rating is 0
+                                      if (rating == 0.0) {
+                                        return const SizedBox(); // Hide badge if rating is 0
+                                      }
                                       return ClipRRect(
                                         borderRadius: const BorderRadius.all(
                                           Radius.circular(5),
@@ -456,15 +507,20 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                                           width: MediaQuery.of(context)
                                                   .size
                                                   .width *
-                                              0.13, // Adjust width as needed
-                                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                                          decoration:  BoxDecoration(
-                                            color: Colors.black.withOpacity(0.5),),
+                                              0.15, // Adjust width as needed
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8.0, vertical: 4.0),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                Colors.black.withOpacity(0.5),
+                                          ),
                                           alignment: Alignment.center,
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              const Icon(Icons.star, size: 14, color: Colors.yellow),
+                                              const Icon(Icons.star,
+                                                  size: 14,
+                                                  color: Colors.yellow),
                                               Text(
                                                 rating.toStringAsFixed(1),
                                                 style: GoogleFonts.poppins(

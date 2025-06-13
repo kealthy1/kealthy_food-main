@@ -19,9 +19,15 @@ class DealOfTheDayPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.white,
-          title: const Text('Deal of the Day')),
+        backgroundColor: const Color(0xFFFFF3E0),
+        surfaceTintColor: Colors.white,
+        title: Text('Deal of the Day',
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            )),
+      ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('Products')
@@ -222,7 +228,7 @@ class DealOfTheDayPage extends StatelessWidget {
                                           '\u20B9$price',
                                           style: const TextStyle(
                                             fontSize: 13,
-                                            color: Colors.grey,
+                                            color: Colors.red,
                                             decoration:
                                                 TextDecoration.lineThrough,
                                           ),

@@ -238,16 +238,14 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 context: context,
                 title: 'Delete Account',
                 icon: CupertinoIcons.delete,
-                onTap: () => deleteAccount(ref, context), // Call the function
+                onTap: () => deleteAccount(ref, context), 
               ),
               _divider(),
             ],
 
             const SizedBox(height: 20),
-            // 🔹 Logout Button
-
+           
             if (phoneNumber.isNotEmpty) ...[
-              // 🔹 Logout Button
               SizedBox(
                 width: MediaQuery.of(context).size.width * 0.4,
                 height: 50,

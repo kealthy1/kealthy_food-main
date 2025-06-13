@@ -300,8 +300,8 @@ class ProductContent extends ConsumerWidget {
                                 child: Text(
                                   '\u20B9$productPrice',
                                   style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black54,
+                                    fontSize: 20,
+                                    color: Colors.red,
                                     decoration: TextDecoration.lineThrough,
                                   ),
                                 ),
@@ -312,17 +312,18 @@ class ProductContent extends ConsumerWidget {
                               child: Text(
                                 '\u20B9',
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 13,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black,
+                                  color: Colors.green,
                                 ),
                               ),
                             ),
                             Text(
                               hasOffer ? '$offerPrice/-' : '$productPrice/-',
                               style: const TextStyle(
-                                fontSize: 20,
-                                color: Colors.black,
+                                fontSize: 23,
+                                color: Colors.green,
+                                fontWeight: FontWeight.bold
                               ),
                             ),
                            

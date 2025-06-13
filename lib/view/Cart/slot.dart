@@ -233,14 +233,14 @@ class SlotSelectionContainer extends ConsumerWidget {
                         child: Text(
                             "Today’s Slots - ${DateFormat('MMM d, yyyy').format(today)}",
                             style: GoogleFonts.poppins(
-                                fontSize: 13,fontWeight: FontWeight.w600)),
+                                fontSize: 13,fontWeight: FontWeight.w500,color: const Color.fromARGB(255, 0, 124, 4))),
                       )
                     else
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: Text("No slots for today. Book for tomorrow!",
                             style: GoogleFonts.poppins(
-                                fontSize: 13,fontWeight: FontWeight.w600,)),
+                                fontSize: 13,fontWeight: FontWeight.w500,color: Colors.red)),
                       ),
                     if (todaySlots.isNotEmpty) buildSlotButtons(todaySlots),
                     if (tomorrowSlots.isNotEmpty)
@@ -250,7 +250,7 @@ class SlotSelectionContainer extends ConsumerWidget {
                         child: Text(
                             "Tomorrow’s Slots - ${DateFormat('MMM d, yyyy').format(tomorrow)}",
                             style: GoogleFonts.poppins(
-                                fontSize: 13,fontWeight: FontWeight.w600)),
+                                fontSize: 13,fontWeight: FontWeight.w500,color: const Color.fromARGB(255, 0, 124, 4))),
                       ),
                     if (tomorrowSlots.isNotEmpty) buildSlotButtons(tomorrowSlots),
                   ],

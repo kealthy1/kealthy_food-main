@@ -328,7 +328,8 @@ Future<bool> _showConfirmationDialog(
     BuildContext context, String title, String content) async {
   return await showDialog<bool>(
         context: context,
-        builder: (context) => AlertDialog(
+        builder: (context) => AlertDialog(shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10)),
           title: Text(title,
               style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
           content: Text(content, style: GoogleFonts.poppins(fontSize: 14)),

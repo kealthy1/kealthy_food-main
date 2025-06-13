@@ -121,18 +121,23 @@ class _ReviewCardState extends ConsumerState<ReviewCard> {
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 5),
-                        Row(
-                          children: List.generate(5, (index) {
-                            return Icon(
-                              index < averageStars
-                                  ? Icons.star
-                                  : Icons.star_border,
-                              color: Colors.amber,
-                              size: 18,
-                            );
-                          }),
-                        ),
+                        averageStars == 0.0
+                            ? const SizedBox()
+                            : Row(
+                                children: List.generate(5, (index) {
+                                  return Icon(
+                                    index < averageStars
+                                        ? Icons.star
+                                        : Icons.star_border,
+                                    color: Colors.amber,
+                                    size: 18,
+                                  );
+                                }),
+                              ),
                         const SizedBox(height: 5),
+                        averageStars == 0.0
+                            ? const SizedBox()
+                            :
                         Text(
                           averageStars.toStringAsFixed(1),
                           style: GoogleFonts.poppins(fontSize: 14),
