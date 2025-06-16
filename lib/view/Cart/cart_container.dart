@@ -27,14 +27,15 @@ class CartContainer extends ConsumerWidget {
       height: 85,
       padding: const EdgeInsets.all(16),
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Color.fromARGB(255, 255, 255, 255), // Light blue
-            Color.fromARGB(255, 244, 235, 235), // Lighter blue
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
+        color: Colors.white,
+        // gradient: LinearGradient(
+        //   colors: [
+        //     Color.fromARGB(255, 255, 255, 255), // Light blue
+        //     Color.fromARGB(255, 244, 235, 235), // Lighter blue
+        //   ],
+        //   begin: Alignment.topCenter,
+        //   end: Alignment.bottomCenter,
+        // ),
         boxShadow: [
           BoxShadow(
             color: Colors.black12,
@@ -42,8 +43,8 @@ class CartContainer extends ConsumerWidget {
             spreadRadius: 5,
           ),
         ],
-        color: Color.fromARGB(
-            255, 243, 240, 240), // This will be overridden by the gradient
+        // color: Color.fromARGB(
+        //     255, 243, 240, 240), // This will be overridden by the gradient
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(10),
           topRight: Radius.circular(10),

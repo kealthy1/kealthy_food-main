@@ -112,54 +112,51 @@ class _SearchBarWidgetState extends ConsumerState<SearchBarWidget> {
   Widget _buildSearchFieldWithAnimation(String hintText) {
     return GestureDetector(
       onTap: _navigateToSearchPage,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Container(
-          decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8.0),
-              border: Border.all(color: Colors.grey.shade300)),
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            switchInCurve: Curves.easeIn,
-            transitionBuilder: (Widget child, Animation<double> animation) {
-              return FadeTransition(
-                opacity: animation,
-                child: SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(0, 0.5), // Start below
-                    end: Offset.zero, // End at original position
-                  ).animate(animation),
-                  child: child,
+      child: Container(
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8.0),
+            border: Border.all(color: Colors.grey.shade300)),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          switchInCurve: Curves.easeIn,
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 0.5), // Start below
+                  end: Offset.zero, // End at original position
+                ).animate(animation),
+                child: child,
+              ),
+            );
+          },
+          child: TextField(
+            key: ValueKey<String>(hintText), // Ensure a unique key
+            enabled: false,
+            focusNode: _focusNode,
+            cursorHeight: 15,
+            decoration: InputDecoration(
+              constraints: const BoxConstraints(maxHeight: 40.0),
+              hintText: hintText,
+              hintStyle: GoogleFonts.poppins(
+                textStyle: const TextStyle(
+                  fontSize: 13,
+                  color: Colors.black54,
+                  fontWeight: FontWeight.bold,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              );
-            },
-            child: TextField(
-              key: ValueKey<String>(hintText), // Ensure a unique key
-              enabled: false,
-              focusNode: _focusNode,
-              cursorHeight: 15,
-              decoration: InputDecoration(
-                constraints: const BoxConstraints(maxHeight: 40.0),
-                hintText: hintText,
-                hintStyle: GoogleFonts.poppins(
-                  textStyle: const TextStyle(
-                    fontSize: 13,
-                    color: Colors.black54,
-                    fontWeight: FontWeight.bold,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                prefixIcon:
-                    const Icon(CupertinoIcons.search, color: Colors.green),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
+              ),
+              prefixIcon:
+                  const Icon(CupertinoIcons.search, color: Colors.green),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
               ),
             ),
           ),

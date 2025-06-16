@@ -1,4 +1,9 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kealthy_food/view/blog/blog.dart';
+import 'package:kealthy_food/view/blog/blogs_tile.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -56,99 +61,152 @@ class _HomePageState extends ConsumerState<HomePage>
       checkLocationPermission(ref);
       ref.read(locationDataProvider);
 
-      // Show combined deal alert dialog for deal of the day and week
-      // ignore: use_build_context_synchronously
-      FirebaseFirestore.instance.collection('Products').get().then((snapshot) {
-        final docs = snapshot.docs;
-        final dealDay = docs.where((doc) => (doc.data())['deal_of_the_day'] == true);
-        final dealWeek = docs.where((doc) => (doc.data())['deal_of_the_week'] == true);
+      // Show combined deal alert dialog for deal of the day and week, up to two times per day
+      SharedPreferences.getInstance().then((prefs) {
+        final today = DateTime.now();
+        final todayString = "${today.year}-${today.month}-${today.day}";
 
-        if (dealDay.isEmpty && dealWeek.isEmpty) return;
+        final jsonString = prefs.getString('lastOfferDialogRecord');
+        Map<String, dynamic> record = {};
+        if (jsonString != null) {
+          record = Map<String, dynamic>.from(json.decode(jsonString));
+        }
 
-        showDialog(
-          context: context,
-          builder: (ctx) => Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text("Hot Deals Available!",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 16),
-                  if (dealDay.isNotEmpty)
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const DealOfTheDayPage()),
-                        );
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12),
-                        margin: const EdgeInsets.only(bottom: 10),
-                        decoration: BoxDecoration(
-                          color: Color(0xFFFFF3E0),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.orange),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Image.asset(
-                              'lib/assets/images/deal day.png',
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                            ),
-                            const SizedBox(height: 8),
-                            const Text("🔥 Deal of the Day",
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                            const Text("Tap to check today’s offer"),
-                          ],
+        final count =
+            (record['date'] == todayString) ? (record['count'] ?? 0) : 0;
+
+        if (count < 2) {
+          record = {'date': todayString, 'count': count + 1};
+          prefs.setString('lastOfferDialogRecord', json.encode(record));
+
+          FirebaseFirestore.instance
+              .collection('Products')
+              .get()
+              .then((snapshot) {
+            final docs = snapshot.docs;
+            final dealDay =
+                docs.where((doc) => (doc.data())['deal_of_the_day'] == true);
+            final dealWeek =
+                docs.where((doc) => (doc.data())['deal_of_the_week'] == true);
+
+            if (dealDay.isEmpty && dealWeek.isEmpty) return;
+
+            Future.delayed(const Duration(milliseconds: 500), () {
+              showGeneralDialog(
+                context: context,
+                barrierDismissible: true,
+                barrierLabel: "Deal Dialog",
+                transitionDuration: const Duration(milliseconds: 400),
+                pageBuilder: (context, anim1, anim2) => const SizedBox.shrink(),
+                transitionBuilder: (context, animation, secondaryAnimation, _) {
+                  final curvedValue =
+                      Curves.easeInOut.transform(animation.value) - 1.0;
+                  return Transform.translate(
+                    offset: Offset(0, curvedValue * -50),
+                    child: Opacity(
+                      opacity: animation.value,
+                      child: Dialog(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text("Hot Deals Available!",
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 16),
+                              if (dealDay.isNotEmpty)
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) =>
+                                              const DealOfTheDayPage()),
+                                    );
+                                  },
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(12),
+                                    margin: const EdgeInsets.only(bottom: 10),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFF3E0),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(color: Colors.orange),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Image.asset(
+                                          'lib/assets/images/deal day.png',
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        const Text("🔥 Deal of the Day",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold)),
+                                        const Text(
+                                            "Tap to check today’s offer"),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              if (dealWeek.isNotEmpty)
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) =>
+                                              const DealOfTheWeekPage()),
+                                    );
+                                  },
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFE3F2FD),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border:
+                                          Border.all(color: Colors.lightBlue),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Image.asset(
+                                          'lib/assets/images/deal week.png',
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        const Text("🎉 Deal of the Week",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold)),
+                                        const Text(
+                                            "Tap to explore this week’s deal"),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  if (dealWeek.isNotEmpty)
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const DealOfTheWeekPage()),
-                        );
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE3F2FD),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.lightBlue),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Image.asset(
-                              'lib/assets/images/deal week.png',
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                            ),
-                            const SizedBox(height: 8),
-                            const Text("🎉 Deal of the Week",
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                            const Text("Tap to explore this week’s deal"),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        );
+                  );
+                },
+              );
+            });
+          });
+        }
       });
     });
     WidgetsBinding.instance.addObserver(this);
@@ -226,12 +284,26 @@ class _HomePageState extends ConsumerState<HomePage>
 
     return Scaffold(
       appBar: AppBar(
-          automaticallyImplyLeading: false,
-          surfaceTintColor: Colors.white,
-          backgroundColor: Colors.white,
-          title: Column(
-            children: [_buildHeader(context, ref)],
-          )),
+        automaticallyImplyLeading: false,
+        toolbarHeight: MediaQuery.of(context).size.height * 0.15,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color.fromARGB(255, 255, 255, 255), // Light blue
+                Color.fromARGB(255, 244, 235, 235),
+
+                Color.fromARGB(255, 223, 207, 207), // Lighter blue// Pink shade
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+        ),
+        title: Column(
+          children: [_buildHeader(context, ref)],
+        ),
+      ),
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Stack(
@@ -244,18 +316,17 @@ class _HomePageState extends ConsumerState<HomePage>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 10),
-                      const SearchBarWidget(),
+
                       const SizedBox(height: 20),
-                      // const CenteredTitleWidget(title: "Fitness & Health"),
-                      // const SizedBox(height: 10),
+                      const CenteredTitleWidget(title: "Fitness & Health"),
+                      const SizedBox(height: 20),
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 10),
                         child: ChangingImageWidget(),
                       ),
                       const SizedBox(height: 20),
                       const CenteredTitleWidget(title: "Categories"),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 20),
                       const HomeCategory(),
                       const SizedBox(height: 10),
                       const CenteredTitleWidget(title: "Subscribe & Save"),
@@ -357,9 +428,55 @@ class _HomePageState extends ConsumerState<HomePage>
                           ],
                         ),
                       ),
-                      // const CenteredTitleWidget(
-                      //     title: "Kealthy blog & Recipes"),
-                      // const SizedBox(height: 10),
+                      const CenteredTitleWidget(title: "Kealthy blogs"),
+                      const SizedBox(height: 10),
+                      // --- Begin: Blog Pagination Section ---
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final blogPagination =
+                              ref.watch(blogPaginationProvider);
+                          // final blogNotifier = ref.read(blogPaginationProvider.notifier);
+
+                          return Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(
+                                height: 260,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                  itemCount: blogPagination.length,
+                                  itemBuilder: (context, index) {
+                                    final blog = blogPagination[index];
+                                    return SizedBox(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.4,
+                                      child: BlogListTile(
+                                        blog: blog,
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            CupertinoPageRoute(
+                                              builder: (context) =>
+                                                  BlogDetailsPage(blog: blog),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                      // --- End: Blog Pagination Section ---
+// --- Begin: Blog Pagination Provider ---
+
+// --- End: Blog Pagination Provider ---
                       const KealthyPage(),
                       const SizedBox(height: 100),
                     ],
@@ -406,227 +523,239 @@ class _HomePageState extends ConsumerState<HomePage>
           MaterialPageRoute(builder: (context) => const AddressPage()),
         );
       },
-      child: Row(
+      child: Column(
         children: [
-          const Icon(
-            CupertinoIcons.location_solid,
-            color: Colors.red,
-            size: 35,
-          ),
-          Expanded(
-            child: Consumer(
-              builder: (context, ref, child) {
-                final locationData = ref.watch(locationDataProvider);
+          Row(
+            children: [
+              const Icon(
+                CupertinoIcons.location_solid,
+                color: Colors.red,
+                size: 35,
+              ),
+              Expanded(
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    final locationData = ref.watch(locationDataProvider);
 
-                return locationData.when(
-                  data: (data) {
-                    String displayText;
-                    String? subText;
-                    bool showSubText = false;
+                    return locationData.when(
+                      data: (data) {
+                        String displayText;
+                        String? subText;
+                        bool showSubText = false;
 
-                    if (data.isNotEmpty) {
-                      if (data.containsKey('addressType')) {
-                        // ✅ Selected Address: Show both fields
-                        displayText = data['addressType']!;
-                        subText = data['address']!;
-                        showSubText = true;
-                      } else {
-                        // ✅ Current Location: Show only one field
-                        displayText = data['address']!;
-                      }
-                    } else {
-                      displayText = "Locating...";
-                    }
+                        if (data.isNotEmpty) {
+                          if (data.containsKey('addressType')) {
+                            // ✅ Selected Address: Show both fields
+                            displayText = data['addressType']!;
+                            subText = data['address']!;
+                            showSubText = true;
+                          } else {
+                            // ✅ Current Location: Show only one field
+                            displayText = data['address']!;
+                          }
+                        } else {
+                          displayText = "Locating...";
+                        }
 
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          displayText,
-                          style: GoogleFonts.poppins(
-                            color: Colors.black,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        if (showSubText && subText != null)
-                          Text(
-                            subText,
-                            style: GoogleFonts.poppins(
-                              color: Colors.grey,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                      ],
-                    );
-                  },
-                  loading: () => Text(
-                    "Locating...",
-                    style: GoogleFonts.poppins(
-                      color: Colors.black,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  error: (error, stack) => Text("Error: $error"),
-                );
-              },
-            ),
-          ),
-          const SizedBox(
-            width: 20,
-          ),
-          liveOrdersAsync.when(
-            data: (liveOrders) {
-              final hasLiveOrders = liveOrders.isNotEmpty;
-
-              if (hasLiveOrders) {
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      CupertinoPageRoute(
-                        builder: (context) => const MyOrdersPage(),
-                      ),
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        ClipOval(
-                          child: Container(
-                            color: Colors.white,
-                            width: 50,
-                            height: 50,
-                            child: Lottie.asset(
-                              'lib/assets/animations/Delivery Boy.json',
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          top: 0,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              'Live',
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              displayText,
                               style: GoogleFonts.poppins(
-                                fontSize: 10,
+                                color: Colors.black,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
                               ),
                             ),
-                          ),
+                            if (showSubText && subText != null)
+                              Text(
+                                subText,
+                                style: GoogleFonts.poppins(
+                                  color: Colors.black,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                      loading: () => Text(
+                        "Locating...",
+                        style: GoogleFonts.poppins(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                      ],
-                    ),
-                  ),
-                );
-              } else {
-                return const SizedBox.shrink();
-              }
-            },
-            loading: () => const CupertinoActivityIndicator(
-              color: Colors.white,
-            ),
-            error: (error, stack) => const SizedBox.shrink(),
-          ),
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                CupertinoModalPopupRoute(
-                  builder: (context) => const NotificationTabPage(),
+                      ),
+                      error: (error, stack) => Text("Error: $error"),
+                    );
+                  },
                 ),
-              );
-            },
-            icon: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                const Icon(
-                  CupertinoIcons.bell,
-                  size: 30,
-                  color: Color(0xFF273847),
-                ),
-                Consumer(
-                  builder: (context, ref, child) {
-                    final ratingAsync = ref.watch(notificationProvider);
-                    final offersAsync = ref.watch(offersNotificationProvider);
-                    final dismissedOffers = ref.watch(dismissedOffersProvider);
+              ),
+              const SizedBox(
+                width: 20,
+              ),
+              liveOrdersAsync.when(
+                data: (liveOrders) {
+                  final hasLiveOrders = liveOrders.isNotEmpty;
 
-                    return ratingAsync.when(
-                      data: (ratingNotifications) {
-                        final filteredRatings =
-                            ratingNotifications.where((notification) {
-                          final orderId = notification['order_id'] ?? '';
-                          final orderExistsAsync =
-                              ref.watch(orderExistsProvider(orderId));
-                          return orderExistsAsync.when(
-                            data: (exists) => !exists,
-                            loading: () => false,
-                            error: (_, __) => false,
-                          );
-                        }).toList();
-
-                        return offersAsync.when(
-                          data: (offers) {
-                            final visibleOffersCount = offers.where((offer) => !dismissedOffers.contains(offer['id'])).length;
-                            final totalCount = filteredRatings.length + visibleOffersCount;
-
-                            if (totalCount > 0) {
-                              return Positioned(
-                                right: -3,
-                                top: -12,
-                                child: ScaleTransition(
-                                  scale: _badgeAnimation,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(5),
-                                    decoration: const BoxDecoration(
-                                      color: Colors.red,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    constraints: const BoxConstraints(
-                                      minWidth: 18,
-                                      minHeight: 18,
-                                    ),
-                                    child: Text(
-                                      totalCount.toString(),
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
+                  if (hasLiveOrders) {
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          CupertinoPageRoute(
+                            builder: (context) => const MyOrdersPage(),
+                          ),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            ClipOval(
+                              child: Container(
+                                color: Colors.white,
+                                width: 50,
+                                height: 50,
+                                child: Lottie.asset(
+                                  'lib/assets/animations/Delivery Boy.json',
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 0,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  'Live',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
                                   ),
                                 ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  } else {
+                    return const SizedBox.shrink();
+                  }
+                },
+                loading: () => const CupertinoActivityIndicator(
+                  color: Colors.black,
+                ),
+                error: (error, stack) => const SizedBox.shrink(),
+              ),
+              IconButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    CupertinoModalPopupRoute(
+                      builder: (context) => const NotificationTabPage(),
+                    ),
+                  );
+                },
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Icon(
+                      CupertinoIcons.bell,
+                      size: 30,
+                      color: Colors.black,
+                    ),
+                    Consumer(
+                      builder: (context, ref, child) {
+                        final ratingAsync = ref.watch(notificationProvider);
+                        final offersAsync =
+                            ref.watch(offersNotificationProvider);
+                        final dismissedOffers =
+                            ref.watch(dismissedOffersProvider);
+
+                        return ratingAsync.when(
+                          data: (ratingNotifications) {
+                            final filteredRatings =
+                                ratingNotifications.where((notification) {
+                              final orderId = notification['order_id'] ?? '';
+                              final orderExistsAsync =
+                                  ref.watch(orderExistsProvider(orderId));
+                              return orderExistsAsync.when(
+                                data: (exists) => !exists,
+                                loading: () => false,
+                                error: (_, __) => false,
                               );
-                            } else {
-                              return const SizedBox.shrink();
-                            }
+                            }).toList();
+
+                            return offersAsync.when(
+                              data: (offers) {
+                                final visibleOffersCount = offers
+                                    .where((offer) =>
+                                        !dismissedOffers.contains(offer['id']))
+                                    .length;
+                                final totalCount =
+                                    filteredRatings.length + visibleOffersCount;
+
+                                if (totalCount > 0) {
+                                  return Positioned(
+                                    right: -3,
+                                    top: -12,
+                                    child: ScaleTransition(
+                                      scale: _badgeAnimation,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(5),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.red,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        constraints: const BoxConstraints(
+                                          minWidth: 18,
+                                          minHeight: 18,
+                                        ),
+                                        child: Text(
+                                          totalCount.toString(),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  return const SizedBox.shrink();
+                                }
+                              },
+                              loading: () => const SizedBox.shrink(),
+                              error: (_, __) => const SizedBox.shrink(),
+                            );
                           },
                           loading: () => const SizedBox.shrink(),
                           error: (_, __) => const SizedBox.shrink(),
                         );
                       },
-                      loading: () => const SizedBox.shrink(),
-                      error: (_, __) => const SizedBox.shrink(),
-                    );
-                  },
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
+          const SizedBox(height: 10),
+          const SearchBarWidget(),
+          const SizedBox(height: 10),
         ],
       ),
     );

@@ -4,11 +4,16 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
+// import 'package:intl/intl.dart';
 import 'package:kealthy_food/custom_alert_dialogue.dart';
 import 'package:kealthy_food/view/Login/login_page.dart';
 import 'package:kealthy_food/view/blog/blog1.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+final blogPaginationProvider =
+    StateNotifierProvider<BlogPaginationNotifier, List<Blog>>((ref) {
+  return BlogPaginationNotifier();
+});
 
 // Define the LikesState with likesCount and isLiked
 class LikesState {
@@ -71,6 +76,8 @@ class BlogLikesNotifier extends StateNotifier<LikesState> {
       state = LikesState(likesCount: 0, isLiked: false);
     }
   }
+
+  
 
   // Toggle like status using Firestore transactions
   // Toggle like status using Firestore transactions
@@ -169,127 +176,100 @@ class BlogListTile extends ConsumerWidget {
 
     // Assuming 'createdAt' is a Timestamp, convert to DateTime
     // ignore: unnecessary_null_comparison
-    final dateFormatted = blog.createdAt != null
-        ? DateFormat('d MMM').format(blog.createdAt)
-        : 'Unknown date';
+    // final dateFormatted = blog.createdAt != null
+    //     ? DateFormat('d MMM').format(blog.createdAt)
+    //     : 'Unknown date';
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       child: GestureDetector(
         onTap: onTap,
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: CachedNetworkImage(
-                    imageUrl: blog.imageUrls.isNotEmpty
-                        ? blog.imageUrls[0]
-                        : 'https://via.placeholder.com/150',
-                    width: screenWidth * 0.35,
-                    height: screenWidth * 0.25,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: Colors.grey[200],
-                    ),
-                    errorWidget: (context, url, error) =>
-                        const Icon(Icons.error),
-                  ),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: CachedNetworkImage(
+                imageUrl: blog.imageUrls.isNotEmpty
+                    ? blog.imageUrls[0]
+                    : 'https://via.placeholder.com/150',
+                width: double.infinity,
+                height: screenWidth * 0.2,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  color: Colors.grey[200],
                 ),
-                Positioned(
-                  left: 8,
-                  top: 8,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.black54,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      dateFormatted,
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    blog.title,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: Colors.black,
-                    ),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          CupertinoIcons.hand_thumbsup_fill,
-                          color: likesState.isLiked
-                              ? const Color(0xFF273847) // Liked color
-                              : Colors.grey, // Default color
-                        ),
-                        onPressed: () async {
-                          try {
-                            await blogNotifier.toggleLikeAsync();
-                          } catch (e) {
-                            if (e
-                                .toString()
-                                .contains("User phone number not found")) {
-                              CustomAlertDialog.show(
-                                context: context,
-                                title: "Login Required",
-                                message:
-                                    "You need to log in to like this blog and save your preferences.",
-                                confirmText: "Login",
-                                onConfirm: () {
-                                  Navigator.pushAndRemoveUntil(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const LoginFields()),
-                                    (route) =>
-                                        false, // Remove all previous routes
-                                  );
-                                },
-                              );
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('An error occurred: $e'),
-                                ),
-                              );
-                            }
-                          }
-                        },
-                      ),
-                      if (likesState.likesCount > 0)
-                        Text(
-                          '${blogNotifier.formatLikesCount(likesState.likesCount)} Likes',
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: Colors.black87,
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
+                errorWidget: (context, url, error) => const Icon(Icons.error),
               ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              blog.title,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Colors.black,
+              ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 4),
+            Row(crossAxisAlignment: CrossAxisAlignment.end  ,
+              children: [
+                 GestureDetector(
+                   onTap: () async {
+                    try {
+                      await blogNotifier.toggleLikeAsync();
+                    } catch (e) {
+                      if (e.toString().contains("User phone number not found")) {
+                        CustomAlertDialog.show(
+                          context: context,
+                          title: "Login Required",
+                          message:
+                              "You need to log in to like this blog and save your preferences.",
+                          confirmText: "Login",
+                          onConfirm: () {
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const LoginFields()),
+                              (route) => false,
+                            );
+                          },
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('An error occurred: $e'),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                   child: Icon(
+                      CupertinoIcons.hand_thumbsup_fill,
+                      color: likesState.isLiked
+                          ? const Color(0xFF273847)
+                          : Colors.grey,
+                    ),
+                 ),
+                 
+                const SizedBox(
+                  width: 4,
+                ),
+                if (likesState.likesCount > 0)
+                  Text(
+                    blogNotifier.formatLikesCount(likesState.likesCount),
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: likesState.isLiked
+                          ? const Color(0xFF273847)
+                          : Colors.grey,
+                    ),
+                  )
+                else
+                  const SizedBox.shrink(),
+              ],
             ),
           ],
         ),
@@ -297,4 +277,44 @@ class BlogListTile extends ConsumerWidget {
     );
   }
 
+}
+
+class BlogPaginationNotifier extends StateNotifier<List<Blog>> {
+  BlogPaginationNotifier() : super([]) {
+    fetchMoreBlogs();
+  }
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  DocumentSnapshot? _lastDocument;
+  final bool _hasMore = true;
+  bool _isLoading = false;
+
+  Future<void> fetchMoreBlogs() async {
+    if (_isLoading || !_hasMore) return;
+    _isLoading = true;
+
+    Query query = _firestore
+        .collection('blogs')
+        .orderBy('createdAt', descending: true);
+      
+
+    if (_lastDocument != null) {
+      query = query.startAfterDocument(_lastDocument!);
+    }
+
+    final snapshot = await query.get();
+
+    if (snapshot.docs.isNotEmpty) {
+      _lastDocument = snapshot.docs.last;
+      final newBlogs = snapshot.docs
+          .map((doc) => Blog.fromFirestore(doc))
+          .toList();
+      state = [...state, ...newBlogs];
+    }
+
+  
+    _isLoading = false;
+  }
+
+  bool get hasMore => _hasMore;
 }
