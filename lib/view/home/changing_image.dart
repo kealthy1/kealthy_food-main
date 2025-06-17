@@ -5,11 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/home/Calorie.dart';
-import 'package:kealthy_food/view/blog/blog.dart';
 import 'package:kealthy_food/view/home/bmi_calculator.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class ImageData {
   final String imageUrl;
@@ -98,36 +96,11 @@ class _ChangingImageWidgetState extends ConsumerState<ChangingImageWidget> {
       case 0:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const BlogListPage()),
-        );
-        break;
-      case 1:
-        final instagramUrl = Uri.parse(
-            'https://www.instagram.com/kealthy.life?igsh=MXVqa2hicG4ydzB5cQ==');
-        if (await canLaunchUrl(instagramUrl)) {
-          await launchUrl(instagramUrl);
-        }
-        break;
-      case 2:
-        final twitterUrl = Uri.parse('https://x.com/Kealthy_life/');
-        if (await canLaunchUrl(twitterUrl)) {
-          await launchUrl(twitterUrl);
-        }
-        break;
-      case 3:
-        final facebookUrl = Uri.parse(
-            'https://www.facebook.com/profile.php?id=61571096468965&mibextid=ZbWKwL');
-        if (await canLaunchUrl(facebookUrl)) {
-          await launchUrl(facebookUrl);
-        }
-        break;
-      case 4:
-        Navigator.push(
-          context,
           MaterialPageRoute(builder: (context) => const BmiTrackerPage()),
         );
         break;
-      case 5:
+   
+      case 1:
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const CalorieIntakePage()),
@@ -165,10 +138,10 @@ class _ChangingImageWidgetState extends ConsumerState<ChangingImageWidget> {
           const SizedBox(height: 8.0),
           SmoothPageIndicator(
             controller: _pageController,
-            count: 6,
+            count: 2,
             effect: const ExpandingDotsEffect(
-              dotHeight: 10,
-              dotWidth: 10,
+              dotHeight: 5,
+              dotWidth: 5,
               activeDotColor: Color.fromARGB(255, 65, 88, 108),
               dotColor: Color.fromARGB(255, 120, 142, 162),
               spacing: 4.0,
@@ -257,8 +230,8 @@ class _ChangingImageWidgetState extends ConsumerState<ChangingImageWidget> {
           controller: _pageController,
           count: imageDataList.isEmpty ? 5 : imageDataList.length,
           effect: const ExpandingDotsEffect(
-            dotHeight: 10,
-            dotWidth: 10,
+            dotHeight: 5,
+            dotWidth: 5,
             activeDotColor: Color.fromARGB(255, 65, 88, 108),
             dotColor: Color.fromARGB(255, 120, 142, 162),
             spacing: 4.0,

@@ -405,6 +405,23 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                                           const SizedBox(
                                             height: 10,
                                           ),
+                                          // Discount percentage row (arrow and percent) above price/qty row
+                                          if (data['offer_price'] != null &&
+                                              double.tryParse(data['offer_price'].toString()) != null &&
+                                              double.parse(data['offer_price'].toString()) > 0)
+                                            Row(
+                                              children: [
+                                                Icon(Icons.arrow_downward, size: 16, color: Colors.red.shade700),
+                                                Text(
+                                                  '${(((double.parse(price.toString()) - double.parse(data['offer_price'].toString())) / double.parse(price.toString())) * 100).round()}% off',
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    color: Colors.red.shade700,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           const Spacer(),
                                           Row(
                                             children: [
@@ -414,37 +431,27 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                                                 children: [
                                                   if (data['offer_price'] !=
                                                           null &&
-                                                      double.tryParse(data[
-                                                                  'offer_price']
-                                                              .toString()) !=
+                                                      double.tryParse(data['offer_price'].toString()) !=
                                                           null &&
-                                                      double.parse(data[
-                                                                  'offer_price']
-                                                              .toString()) >
+                                                      double.parse(data['offer_price'].toString()) >
                                                           0)
                                                     Row(
                                                       children: [
                                                         Text(
                                                           '\u20B9$price',
-                                                          style:
-                                                              const TextStyle(
+                                                          style: const TextStyle(
                                                             fontSize: 12,
                                                             color: Colors.red,
-                                                            decoration:
-                                                                TextDecoration
-                                                                    .lineThrough,
+                                                            decoration: TextDecoration.lineThrough,
                                                           ),
                                                         ),
-                                                        const SizedBox(
-                                                            width: 5),
+                                                        const SizedBox(width: 5),
                                                         Text(
                                                           '\u20B9${data['offer_price']}/-',
                                                           style: TextStyle(
                                                             fontSize: 15,
-                                                            color: Colors
-                                                                .green.shade800,
-                                                            fontWeight:
-                                                                FontWeight.w600,
+                                                            color: Colors.green.shade800,
+                                                            fontWeight: FontWeight.w600,
                                                           ),
                                                         ),
                                                       ],

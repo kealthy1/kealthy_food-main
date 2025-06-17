@@ -143,33 +143,37 @@ class BlogCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: SingleChildScrollView(
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.2),
-                blurRadius: 4,
-                spreadRadius: 2,
-                offset: const Offset(0, 2),
-              ),
-            ],
+    return SingleChildScrollView(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFE0F7FA), Color(0xFFE8F5E9)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (blog.imageUrls.isNotEmpty)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.25),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (blog.imageUrls.isNotEmpty)
+              Hero(
+                tag: blog.id,
+                child: ClipRRect(
                   child: CachedNetworkImage(
                     cacheManager: DefaultCacheManager(),
                     imageUrl: blog.imageUrls[0],
                     fit: BoxFit.cover,
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.width * 0.56,
                     placeholder: (context, url) => Container(
                       color: Colors.grey[200],
                       height: 200,
@@ -178,82 +182,60 @@ class BlogCard extends StatelessWidget {
                         const Icon(Icons.error),
                   ),
                 ),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+              ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [Color(0xFF8E24AA), Color(0xFF3949AB)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ).createShader(bounds),
                 child: Text(
                   blog.title,
                   style: GoogleFonts.poppins(
-                      fontSize: 25,
-                      color: Colors.black,
-                      fontWeight: FontWeight.w600),
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ),
-              if (blog.imageUrls.length > 1)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(5),
-                    child: CachedNetworkImage(
-                      cacheManager: DefaultCacheManager(),
-                      imageUrl: blog.imageUrls[1],
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        color: Colors.grey[200],
-                        height: 200,
-                      ),
-                      errorWidget: (context, url, error) =>
-                          const Icon(Icons.error),
-                    ),
-                  ),
-                ),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            ),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: AnimatedOpacity(
+                opacity: 1.0,
+                duration: const Duration(milliseconds: 800),
                 child: Text(
-                  textAlign: TextAlign.justify,
                   blog.content,
                   style: GoogleFonts.poppins(
                     fontSize: 16,
-                    color: Colors.black54,
+                    color: Colors.black87,
+                    height: 1.7,
+                    letterSpacing: 0.3,
+                    fontStyle: FontStyle.italic,
                   ),
+                  textAlign: TextAlign.justify,
                 ),
               ),
-              const SizedBox(height: 8),
-              if (blog.imageUrls.length > 2)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(5),
-                    child: CachedNetworkImage(
-                      cacheManager: DefaultCacheManager(),
-                      imageUrl: blog.imageUrls[2],
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        color: Colors.grey[200],
-                        height: 200,
-                      ),
-                      errorWidget: (context, url, error) =>
-                          const Icon(Icons.error),
-                    ),
-                  ),
-                ),
-              const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerRight,
-                child: Text(
-                  "By Kealthy",
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.center,
+              child: Text(
+                "By Kealthy",
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.teal.shade700,
                 ),
               ),
-              const SizedBox(height: 16),
-            ],
-          ),
+            ),
+            const SizedBox(height: 12),
+          ],
         ),
       ),
     );

@@ -19,16 +19,16 @@ class DealOfTheWeekPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-          backgroundColor: const Color(0xFFE3F2FD),
-          surfaceTintColor: Colors.white,
-          title: Text(
-            'Deal of the Week',
-            style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
+        backgroundColor: const Color(0xFFE3F2FD),
+        surfaceTintColor: Colors.white,
+        title: Text(
+          'Deal of the Week',
+          style: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
           ),
+        ),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -228,27 +228,57 @@ class DealOfTheWeekPage extends StatelessWidget {
                                   ),
                                   const Spacer(),
                                   const SizedBox(width: 5),
-                                  offerPrice != null && offerPrice < price
-                                      ? Text(
-                                          '\u20B9$price',
-                                          style: const TextStyle(
-                                            fontSize: 13,
-                                            color: Colors.red,
-                                            decoration:
-                                                TextDecoration.lineThrough,
-                                          ),
-                                        )
-                                      : const SizedBox(),
                                   Row(
                                     children: [
-                                      Text(
-                                        '\u20B9$offerPrice/-',
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          color: Colors.green.shade800,
-                                          fontWeight: FontWeight.w600,
+                                      offerPrice != null && offerPrice < price
+                                          ? Text(
+                                              '\u20B9$price',
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                                color: Colors.red,
+                                                decoration:
+                                                    TextDecoration.lineThrough,
+                                              ),
+                                            )
+                                          : const SizedBox(),
+                                      if (offerPrice != null &&
+                                          offerPrice < price)
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 6.0),
+                                          child: Row(
+                                            children: [
+                                              Icon(Icons.arrow_downward,
+                                                  size: 16,
+                                                  color: Colors.red.shade700),
+                                              Text(
+                                                '${(((price - offerPrice) / price) * 100).round()}% off',
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  color: Colors.red.shade700,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            '\u20B9$offerPrice/-',
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              color: Colors.green.shade800,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
                                       ),
+                                      // Discount percentage
                                       const Spacer(),
                                       Text(qty,
                                           maxLines: 2,
