@@ -248,9 +248,7 @@ class DealOfTheWeekPage extends StatelessWidget {
                                               const EdgeInsets.only(left: 6.0),
                                           child: Row(
                                             children: [
-                                              Icon(Icons.arrow_downward,
-                                                  size: 16,
-                                                  color: Colors.red.shade700),
+                                              
                                               Text(
                                                 '${(((price - offerPrice) / price) * 100).round()}% off',
                                                 style: TextStyle(
@@ -259,6 +257,9 @@ class DealOfTheWeekPage extends StatelessWidget {
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                               ),
+                                              Icon(Icons.arrow_downward,
+                                                  size: 16,
+                                                  color: Colors.red.shade700),
                                             ],
                                           ),
                                         ),

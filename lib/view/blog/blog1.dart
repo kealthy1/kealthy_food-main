@@ -215,8 +215,6 @@ class BlogCard extends StatelessWidget {
                     fontSize: 16,
                     color: Colors.black87,
                     height: 1.7,
-                    letterSpacing: 0.3,
-                    fontStyle: FontStyle.italic,
                   ),
                   textAlign: TextAlign.justify,
                 ),

@@ -536,7 +536,7 @@ class _HomePageState extends ConsumerState<HomePage>
                             GestureDetector(
                               onTap: () async {
                                 final url =
-                                    Uri.parse('https://twitter.com/yourpage');
+                                    Uri.parse('https://chat.whatsapp.com/BxNSEDXO6jfKmUl0EuZ6qt');
                                 if (await canLaunchUrl(url)) {
                                   await launchUrl(url,
                                       mode: LaunchMode.externalApplication);

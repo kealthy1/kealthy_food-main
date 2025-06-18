@@ -89,7 +89,7 @@ class SubscriptionPaymentPage extends ConsumerWidget {
             const Spacer(),
             Row(
               children: [
-                const Text("Total Amount: ",
+                const Text("To Pay : ",
                     style:
                         TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 const Spacer(),

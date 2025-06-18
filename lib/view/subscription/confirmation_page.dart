@@ -44,7 +44,8 @@ class ConfirmationPage extends ConsumerWidget {
     print(
         '📆 Start Date: ${fromDate != null ? DateFormat('d MMMM y').format(fromDate) : 'Not selected'}');
     print('📆 End Date: $endDateText');
-    final total = (baseRate * selectedQty * durationDays).toStringAsFixed(0);
+    const double handlingCharge = 5;
+    final total = ((baseRate + handlingCharge) * selectedQty * durationDays).toStringAsFixed(0);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -518,12 +519,30 @@ class ConfirmationPage extends ConsumerWidget {
             Row(
               children: [
                 const Text("Total Amount :",
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                const Spacer(),
+                Text("₹${(baseRate * selectedQty * durationDays).toStringAsFixed(0)}",
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                const Text("Handling Charge :",
+                    style: TextStyle(fontSize: 14, color: Colors.black54)),
+                const Spacer(),
+                Text("₹${(5 * selectedQty * durationDays).toStringAsFixed(0)}",
+                    style: const TextStyle(fontSize: 14, color: Colors.black54)),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children:  [
+                const Text("To Pay :",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 const Spacer(),
                 Text("₹$total",
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold)),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 12),

@@ -38,9 +38,10 @@ class ProductContent extends ConsumerWidget {
         ? docData['Price']
         : int.tryParse(docData['Price']?.toString() ?? '0') ?? 0;
 
-    final offerPrice = (docData['offer_price'] is int || docData['offer_price'] is double)
-        ? docData['offer_price']
-        : double.tryParse(docData['offer_price']?.toString() ?? '0') ?? 0;
+    final offerPrice =
+        (docData['offer_price'] is int || docData['offer_price'] is double)
+            ? docData['offer_price']
+            : double.tryParse(docData['offer_price']?.toString() ?? '0') ?? 0;
 
     final hasOffer = offerPrice > 0;
 
@@ -50,10 +51,10 @@ class ProductContent extends ConsumerWidget {
     final productWhatIs = docData['What is it?'] ?? '';
     final productUseFor = docData['What is it used for?'] ?? '';
     final productEAN = docData['EAN'] ?? '';
-    final productImageUrl =
-        (docData['ImageUrl'] is List<dynamic> && (docData['ImageUrl'] as List).isNotEmpty)
-            ? docData['ImageUrl'][0]
-            : '';
+    final productImageUrl = (docData['ImageUrl'] is List<dynamic> &&
+            (docData['ImageUrl'] as List).isNotEmpty)
+        ? docData['ImageUrl'][0]
+        : '';
     // final productSource = docData['Imported&Marketed By'] ?? '';
     final productOrigin = docData['Orgin'] ?? '';
     final productBestBefore = docData['Best Before'] ?? '';
@@ -214,11 +215,13 @@ class ProductContent extends ConsumerWidget {
                     /// Wrap the long text with `Expanded` or `Flexible`
                     Expanded(
                       child: Text(
-                        productName.contains(productQty) ? productName : '$productName $productQty',
+                        productName.contains(productQty)
+                            ? productName
+                            : '$productName $productQty',
                         overflow: TextOverflow.visible,
                         style: GoogleFonts.poppins(
                           textStyle: const TextStyle(
-                            fontSize: 20,
+                            fontSize: 19.5,
                             color: Colors.black,
                           ),
                         ),
@@ -291,10 +294,29 @@ class ProductContent extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Price display with offer logic
+                         if (hasOffer)
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 8.0, top: 2),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      '${(((productPrice - offerPrice) / productPrice) * 100).round()}% ',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.redAccent,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const Icon(Icons.arrow_downward,
+                                        color: Colors.redAccent, size: 16),
+                                  ],
+                                ),
+                              ),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                             if (hasOffer)
+                            if (hasOffer)
                               Padding(
                                 padding: const EdgeInsets.only(right: 5.0),
                                 child: Text(
@@ -321,10 +343,9 @@ class ProductContent extends ConsumerWidget {
                             Text(
                               hasOffer ? '$offerPrice/-' : '$productPrice/-',
                               style: const TextStyle(
-                                fontSize: 23,
-                                color: Colors.green,
-                                fontWeight: FontWeight.bold
-                              ),
+                                  fontSize: 23,
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.bold),
                             ),
                            
                           ],
@@ -341,7 +362,7 @@ class ProductContent extends ConsumerWidget {
                     const Spacer(),
                     AddToCartSection(
                       productName: productName,
-                      productPrice: hasOffer? offerPrice : productPrice,
+                      productPrice: hasOffer ? offerPrice : productPrice,
                       productEAN: productEAN,
                       soh: productSoh,
                       imageurl: productImageUrl,
@@ -438,7 +459,8 @@ class ProductContent extends ConsumerWidget {
                     StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                       stream: FirebaseFirestore.instance
                           .collection('Products')
-                          .where('Name', isGreaterThanOrEqualTo: baseProductName)
+                          .where('Name',
+                              isGreaterThanOrEqualTo: baseProductName)
                           .where('Name', isLessThan: baseProductName + 'z')
                           .where('Qty', isNotEqualTo: productQty)
                           .snapshots(),
@@ -480,7 +502,8 @@ class ProductContent extends ConsumerWidget {
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) => ProductPage(
-                                            productId: relatedProducts[index].id),
+                                            productId:
+                                                relatedProducts[index].id),
                                       ),
                                     );
                                   }
@@ -509,7 +532,8 @@ class ProductContent extends ConsumerWidget {
                                       decoration: BoxDecoration(
                                         color: Colors.white,
                                         borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(color: Colors.grey.shade400),
+                                        border: Border.all(
+                                            color: Colors.grey.shade400),
                                       ),
                                       child: Text(
                                         '$qty',
@@ -607,7 +631,8 @@ class ProductContent extends ConsumerWidget {
                         const Align(
                           alignment: Alignment.centerLeft,
                           child: ReusableText(
-                            text: 'Sourced & Marketed by: Cotolore Enterprises LLP, 15/293 - C, Muriyankara-Pinarmunda Milma Road, Peringala (PO), Ernakulam, 683565, Kerala, India.',
+                            text:
+                                'Sourced & Marketed by: Cotolore Enterprises LLP, 15/293 - C, Muriyankara-Pinarmunda Milma Road, Peringala (PO), Ernakulam, 683565, Kerala, India.',
                             fontSize: 14,
                           ),
                         ),

@@ -411,7 +411,7 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                                               double.parse(data['offer_price'].toString()) > 0)
                                             Row(
                                               children: [
-                                                Icon(Icons.arrow_downward, size: 16, color: Colors.red.shade700),
+                                              
                                                 Text(
                                                   '${(((double.parse(price.toString()) - double.parse(data['offer_price'].toString())) / double.parse(price.toString())) * 100).round()}% off',
                                                   style: TextStyle(
@@ -420,6 +420,7 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
+                                                  Icon(Icons.arrow_downward, size: 16, color: Colors.red.shade700),
                                               ],
                                             ),
                                           const Spacer(),

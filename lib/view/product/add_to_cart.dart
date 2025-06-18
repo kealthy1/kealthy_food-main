@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/Cart/cart_controller.dart';
 
 
-class AddToCartSection extends ConsumerWidget {
+class AddToCartSection extends ConsumerStatefulWidget {
   final String productName;
   final int productPrice;
   final String productEAN;
@@ -21,13 +21,40 @@ class AddToCartSection extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AddToCartSection> createState() => _AddToCartSectionState();
+}
+
+class _AddToCartSectionState extends ConsumerState<AddToCartSection> with TickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _animation = Tween<double>(begin: 1.0, end: 1.05).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final cartNotifier = ref.watch(cartProvider.notifier);
     final cartItem = ref
         .watch(cartProvider)
-        .firstWhereOrNull((item) => item.name == productName);
+        .firstWhereOrNull((item) => item.name == widget.productName);
 
-    if (soh == 0) {
+    if (widget.soh == 0) {
       return Column(
         children: [
           Container(
@@ -55,60 +82,69 @@ class AddToCartSection extends ConsumerWidget {
     }
 
     if (cartItem == null) {
-      final loading = cartNotifier.isLoading(productName);
-      return GestureDetector(
-        onTap: loading
-            ? null
-            : () async {
-                await cartNotifier.addItem(
-                  CartItem(
-                    name: productName,
-                    price: productPrice,
-                    ean: productEAN,
-                    imageUrl: imageurl
-                  ),
-                );
-              },
-        child: Stack(
-          children: [
-            Container(
-              height: 40,
-              width: MediaQuery.of(context).size.width * 0.30,
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 65, 88, 108),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Center(
-                child: Text(
-                  'ADD',
-                  style: GoogleFonts.poppins(
-                    textStyle: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+      final loading = cartNotifier.isLoading(widget.productName);
+      return AnimatedBuilder(
+        animation: _animation,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _animation.value,
+            child: child,
+          );
+        },
+        child: GestureDetector(
+          onTap: loading
+              ? null
+              : () async {
+                  await cartNotifier.addItem(
+                    CartItem(
+                      name: widget.productName,
+                      price: widget.productPrice,
+                      ean: widget.productEAN,
+                      imageUrl: widget.imageurl
+                    ),
+                  );
+                },
+          child: Stack(
+            children: [
+              Container(
+                height: 40,
+                width: MediaQuery.of(context).size.width * 0.30,
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 65, 88, 108),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Center(
+                  child: Text(
+                    'BUY NOW',
+                    style: GoogleFonts.poppins(
+                      textStyle: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            if (loading)
-              const Positioned.fill(
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                    child: LinearProgressIndicator(
-                      minHeight: 2,
-                      color: Colors.black,
-                      backgroundColor: Colors.transparent,
+              if (loading)
+                const Positioned.fill(
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                      child: LinearProgressIndicator(
+                        minHeight: 2,
+                        color: Colors.black,
+                        backgroundColor: Colors.transparent,
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       );
     } else {
-      final loading = cartNotifier.isLoading(productName);
+      final loading = cartNotifier.isLoading(widget.productName);
       return Stack(
         children: [
           Container(
@@ -128,7 +164,7 @@ class AddToCartSection extends ConsumerWidget {
                   icon: const Icon(Icons.remove, color: Colors.white),
                   onPressed: loading
                       ? null
-                      : () => cartNotifier.decrementItem(productName),
+                      : () => cartNotifier.decrementItem(widget.productName),
                 ),
                 Text(
                   '${cartItem.quantity}',
@@ -141,7 +177,7 @@ class AddToCartSection extends ConsumerWidget {
                   icon: const Icon(Icons.add, color: Colors.white),
                   onPressed: loading
                       ? null
-                      : () => cartNotifier.incrementItem(productName),
+                      : () => cartNotifier.incrementItem(widget.productName),
                 ),
               ],
             ),
