@@ -239,7 +239,6 @@ class OrderService {
         "totalAmountToPay": totalAmount,
         "deliveryFee": deliveryFee,
         "item_ean": "8908024418004",
-        // "instantDeliveryfee": instantDeliveryFee,
         "planTitle": planTitle,
         "productName": productName,
         "startDate": startDate,

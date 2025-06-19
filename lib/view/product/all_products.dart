@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:kealthy_food/view/Cart/cart_container.dart';
+import 'package:kealthy_food/view/Cart/cart_controller.dart';
 import 'package:kealthy_food/view/product/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:kealthy_food/view/product/product_page.dart';
@@ -115,6 +115,49 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
         backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: Colors.black),
         elevation: 0,
+        actions: [
+          Consumer(
+            builder: (context, ref, _) {
+              final cartItems = ref.watch(cartProvider);
+              final itemCount = cartItems.length;
+
+              return Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Stack(
+                  children: [
+                    IconButton(
+                      icon: const Icon(CupertinoIcons.cart, size: 30),
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/cart');
+                      },
+                    ),
+                    if (itemCount > 0)
+                      Positioned(
+                        right: 3,
+                        top: -2,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                          child: Text(
+                            '$itemCount',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
       ),
       backgroundColor: Colors.white,
       body: Column(
@@ -626,7 +669,7 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
           ),
         ],
       ),
-      bottomSheet: const CartContainer(),
+      // Removed CartContainer from bottomSheet as per instructions
     );
   }
 }

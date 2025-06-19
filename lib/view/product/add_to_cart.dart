@@ -32,7 +32,7 @@ class _AddToCartSectionState extends ConsumerState<AddToCartSection> with Ticker
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 600),
       vsync: this,
     )..repeat(reverse: true);
 
@@ -110,15 +110,18 @@ class _AddToCartSectionState extends ConsumerState<AddToCartSection> with Ticker
                 height: 40,
                 width: MediaQuery.of(context).size.width * 0.30,
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 65, 88, 108),
+                  color:    Colors.white,
                   borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: Colors.green,
+                  ),
                 ),
                 child: Center(
                   child: Text(
                     'BUY NOW',
                     style: GoogleFonts.poppins(
                       textStyle: const TextStyle(
-                        color: Colors.white,
+                        color: Colors.green,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -151,17 +154,17 @@ class _AddToCartSectionState extends ConsumerState<AddToCartSection> with Ticker
             height: 40,
             width: MediaQuery.of(context).size.width * 0.30,
             decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 65, 88, 108),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: const Color.fromARGB(255, 65, 88, 108),
+                color:  Colors.green,
               ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.remove, color: Colors.white),
+                  icon: const Icon(Icons.remove, color: Colors.green),
                   onPressed: loading
                       ? null
                       : () => cartNotifier.decrementItem(widget.productName),
@@ -171,10 +174,10 @@ class _AddToCartSectionState extends ConsumerState<AddToCartSection> with Ticker
                   style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white),
+                      color: Colors.green),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.add, color: Colors.white),
+                  icon: const Icon(Icons.add, color: Colors.green),
                   onPressed: loading
                       ? null
                       : () => cartNotifier.incrementItem(widget.productName),

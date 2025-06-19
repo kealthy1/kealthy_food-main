@@ -94,11 +94,13 @@ class _ReviewTile extends StatelessWidget {
       );
     }
 
+    final reviewDate = review.createdAt;
+
     return Column(
       children: [
         const Divider(), // a horizontal line above each review
         Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Circle avatar with the first letter of the customer's name
             CircleAvatar(
@@ -118,6 +120,14 @@ class _ReviewTile extends StatelessWidget {
                 children: [
                   // Customer Name
                   Text(
+                    reviewDate != null ? "${reviewDate.day}/${reviewDate.month}/${reviewDate.year} ${reviewDate.hour}:${reviewDate.minute.toString().padLeft(2, '0')}" : "",
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
                     review.customerName,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
@@ -128,13 +138,17 @@ class _ReviewTile extends StatelessWidget {
                   buildStars(review.starCount),
                   const SizedBox(height: 6),
                   // Feedback
-                  Text(
-                    review.feedback,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: Colors.grey[800],
+                  if (review.feedback.trim().isNotEmpty)
+                    Text(
+                      review.feedback,
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: Colors.grey[800],
+                      ),
                     ),
-                  ),
+                  if (review.feedback.trim().isNotEmpty)
+                    const SizedBox(height: 4),
+                  
                 ],
               ),
             ),

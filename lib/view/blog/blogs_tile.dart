@@ -214,11 +214,21 @@ class BlogListTile extends ConsumerWidget {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
-            Row(crossAxisAlignment: CrossAxisAlignment.end  ,
+            Row(crossAxisAlignment: CrossAxisAlignment.center ,
               children: [
-                 GestureDetector(
-                   onTap: () async {
-                    try {
+                //  GestureDetector(
+                //    onTap: () async {
+                    
+                //   },
+                //    child: Icon(
+                //       CupertinoIcons.hand_thumbsup_fill,
+                //       color: likesState.isLiked
+                //           ? const Color(0xFF273847)
+                //           : Colors.grey,
+                //     ),
+                //  ),
+                 IconButton(onPressed: () async {
+                  try {
                       await blogNotifier.toggleLikeAsync();
                     } catch (e) {
                       if (e.toString().contains("User phone number not found")) {
@@ -245,18 +255,15 @@ class BlogListTile extends ConsumerWidget {
                         );
                       }
                     }
-                  },
-                   child: Icon(
-                      CupertinoIcons.hand_thumbsup_fill,
-                      color: likesState.isLiked
-                          ? const Color(0xFF273847)
-                          : Colors.grey,
-                    ),
-                 ),
-                 
-                const SizedBox(
-                  width: 4,
-                ),
+
+                 }, icon: Icon(
+                    likesState.isLiked
+                        ? CupertinoIcons.hand_thumbsup_fill
+                        : CupertinoIcons.hand_thumbsup,
+                    color: likesState.isLiked
+                        ? const Color(0xFF273847)
+                        : Colors.grey,
+                  )),
                 if (likesState.likesCount > 0)
                   Text(
                     blogNotifier.formatLikesCount(likesState.likesCount),

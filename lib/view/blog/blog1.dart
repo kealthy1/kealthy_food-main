@@ -148,7 +148,7 @@ class BlogCard extends StatelessWidget {
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             colors: [Color(0xFFE0F7FA), Color(0xFFE8F5E9)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,

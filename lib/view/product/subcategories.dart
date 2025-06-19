@@ -2,11 +2,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kealthy_food/view/Cart/cart_controller.dart';
 import 'package:shimmer/shimmer.dart';
 
 import 'package:kealthy_food/view/product/all_products.dart';
-import 'package:kealthy_food/view/Cart/cart_container.dart';
 
 class SubCategoryPage extends StatefulWidget {
   final String categoryName; // e.g., "Personal Care"
@@ -27,8 +28,8 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
           appBar: AppBar(
             surfaceTintColor: Colors.white,
             title: Text(
-              widget.categoryName, // Displays "Personal Care" (the parent category)
-
+              widget
+                  .categoryName, // Displays "Personal Care" (the parent category)
               style: GoogleFonts.poppins(
                 color: Colors.black,
               ),
@@ -36,6 +37,50 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
             backgroundColor: Colors.white,
             iconTheme: const IconThemeData(color: Colors.black),
             elevation: 0,
+            actions: [
+              Consumer(
+                builder: (context, ref, _) {
+                  final cartItems = ref.watch(cartProvider);
+                  final itemCount = cartItems.length;
+
+                  return Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Stack(
+                      children: [
+                        IconButton(
+                          icon: const Icon(CupertinoIcons.cart, size: 30),
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/cart');
+                          },
+                        ),
+                        if (itemCount > 0)
+                          Positioned(
+                            right: 3,
+                            top: -2,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                              constraints: const BoxConstraints(
+                                  minWidth: 18, minHeight: 18),
+                              child: Text(
+                                '$itemCount',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
           backgroundColor: Colors.white,
           body: Padding(
@@ -97,8 +142,8 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
                         );
                       },
                       child: Padding(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 3, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 3, vertical: 2),
                         child: Container(
                           margin: const EdgeInsets.only(bottom: 16),
                           padding: const EdgeInsets.all(12),
@@ -168,7 +213,7 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
                                       title,
                                       style: GoogleFonts.poppins(
                                         color: Colors.black45,
-                                        fontSize: 13  ,
+                                        fontSize: 13,
                                       ),
                                     ),
                                     const SizedBox(height: 8),
@@ -185,18 +230,14 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
                         ),
                       ),
                     );
-                    
                   },
-
                 );
               },
             ),
           ),
-          
-          bottomSheet: const CartContainer(),
+          // floatingActionButton removed
         ),
         // ignore: prefer_const_constructors
-       
       ],
     );
   }

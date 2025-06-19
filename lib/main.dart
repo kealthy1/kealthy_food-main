@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/firebase_options.dart';
+import 'package:kealthy_food/view/Cart/cart.dart';
 import 'package:kealthy_food/view/notifications/fcm.dart';
 import 'package:kealthy_food/view/notifications/offers.dart';
 import 'package:kealthy_food/view/splash_screen/network.dart';
@@ -76,6 +77,7 @@ class MyApp extends ConsumerWidget {
         // your home or starting page
         '/offers': (context) => const OffersNotificationPage(),
         '/subscription': (context) => const SubscriptionDetailsPage(),
+        '/cart': (context) => const CartPage(),
       },
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,

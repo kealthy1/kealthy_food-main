@@ -388,14 +388,18 @@ class ConfirmationPage extends ConsumerWidget {
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const AddressPage(),
-                                          ),
-                                        );
+                                      onTap: () async {
+                                        final result =
+                                                await Navigator.pushReplacement(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    const AddressPage(),
+                                              ),
+                                            );
+                                            if (result == true) {
+                                              ref.invalidate(addressProvider);
+                                            }
                                       },
                                       child: Row(
                                         children: [

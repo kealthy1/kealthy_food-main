@@ -261,6 +261,7 @@ class _HomePageState extends ConsumerState<HomePage>
     final selectedAddress = ref.watch(selectedLocationProvider);
     final totalItems =
         cartItems.fold<int>(0, (sum, item) => sum + item.quantity);
+    final liveOrdersAsync = ref.watch(liveOrdersProvider);
 
     final hasCartItems = totalItems > 0;
 
@@ -317,6 +318,62 @@ class _HomePageState extends ConsumerState<HomePage>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      liveOrdersAsync.when(
+                        data: (liveOrders) {
+                          final hasLiveOrders = liveOrders.isNotEmpty;
+
+                          if (hasLiveOrders) {
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  CupertinoPageRoute(
+                                    builder: (context) => const MyOrdersPage(),
+                                  ),
+                                );
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        ClipOval(
+                                          child: Container(
+                                            color: Colors.white,
+                                            width: 60,
+                                            height: 60,
+                                            child: Lottie.asset(
+                                              'lib/assets/animations/Delivery Boy.json',
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        ),
+                                        
+                                      ],
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      "${liveOrders.first['status']}",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          } else {
+                            return const SizedBox.shrink();
+                          }
+                        },
+                        loading: () => const SizedBox.shrink(),
+                        error: (error, stack) => const SizedBox.shrink(),
+                      ),
                       const CenteredTitleWidget(title: "Fitness & Health"),
                       const SizedBox(height: 20),
                       const Padding(
@@ -440,7 +497,7 @@ class _HomePageState extends ConsumerState<HomePage>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               SizedBox(
-                                height: 200,
+                                height: 210,
                                 child: NotificationListener<ScrollNotification>(
                                   onNotification:
                                       (ScrollNotification scrollInfo) {
@@ -535,8 +592,8 @@ class _HomePageState extends ConsumerState<HomePage>
                             const SizedBox(width: 20),
                             GestureDetector(
                               onTap: () async {
-                                final url =
-                                    Uri.parse('https://chat.whatsapp.com/BxNSEDXO6jfKmUl0EuZ6qt');
+                                final url = Uri.parse(
+                                    'https://chat.whatsapp.com/BxNSEDXO6jfKmUl0EuZ6qt');
                                 if (await canLaunchUrl(url)) {
                                   await launchUrl(url,
                                       mode: LaunchMode.externalApplication);
@@ -588,8 +645,6 @@ class _HomePageState extends ConsumerState<HomePage>
   }
 
   Widget _buildHeader(BuildContext context, WidgetRef ref) {
-    final liveOrdersAsync = ref.watch(liveOrdersProvider);
-
     return GestureDetector(
       onTap: () async {
         await Navigator.push(
@@ -668,70 +723,6 @@ class _HomePageState extends ConsumerState<HomePage>
               ),
               const SizedBox(
                 width: 20,
-              ),
-              liveOrdersAsync.when(
-                data: (liveOrders) {
-                  final hasLiveOrders = liveOrders.isNotEmpty;
-
-                  if (hasLiveOrders) {
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          CupertinoPageRoute(
-                            builder: (context) => const MyOrdersPage(),
-                          ),
-                        );
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            ClipOval(
-                              child: Container(
-                                color: Colors.white,
-                                width: 50,
-                                height: 50,
-                                child: Lottie.asset(
-                                  'lib/assets/animations/Delivery Boy.json',
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              top: 0,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.red,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  'Live',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  } else {
-                    return const SizedBox.shrink();
-                  }
-                },
-                loading: () => const CupertinoActivityIndicator(
-                  color: Colors.black,
-                ),
-                error: (error, stack) => const SizedBox.shrink(),
               ),
               IconButton(
                 onPressed: () {

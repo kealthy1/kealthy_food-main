@@ -23,92 +23,81 @@ class CartContainer extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    return Container(
-      height: 85,
-      padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        // gradient: LinearGradient(
-        //   colors: [
-        //     Color.fromARGB(255, 255, 255, 255), // Light blue
-        //     Color.fromARGB(255, 244, 235, 235), // Lighter blue
-        //   ],
-        //   begin: Alignment.topCenter,
-        //   end: Alignment.bottomCenter,
-        // ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 3,
-            spreadRadius: 5,
+    return GestureDetector(
+      onTap: () {
+        // Navigate to Cart page when tapped
+        Navigator.push(
+          context,
+          CupertinoPageRoute(
+            builder: (context) => const CartPage(),
           ),
-        ],
-        // color: Color.fromARGB(
-        //     255, 243, 240, 240), // This will be overridden by the gradient
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(10),
-          topRight: Radius.circular(10),
-        ),
-      ),
-      child: Row(
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Cart',
-                style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: const Color.fromARGB(255, 65, 88, 108),
-                ),
-              ),
-              Text(
-                '$totalItems item(s) selected',
-                
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: const Color.fromARGB(255, 65, 88, 108),
-                ),
-              ),
+        );
+      },
+      child: Container(
+        height: 70,
+        padding: const EdgeInsets.all(16),
+        decoration: const BoxDecoration(
+          // color: Colors.white,
+          gradient: LinearGradient(
+            colors: [
+              Color.fromARGB(255, 255, 255, 255), // Light blue
+              Color.fromARGB(255, 244, 235, 235), // Lighter blue
             ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
-          const Spacer(),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                CupertinoPageRoute(
-                  builder: (context) => const CartPage(),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 65, 88, 108),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 3,
+              spreadRadius: 5,
             ),
-            child:  Text(
-              'Go to Cart',
-              
-
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-            ),
+          ],
+          // color: Color.fromARGB(
+          //     255, 243, 240, 240), // This will be overridden by the gradient
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(10),
+            topRight: Radius.circular(10),
           ),
-          IconButton(
-              icon: const Icon(CupertinoIcons.delete,
-                  color: Color.fromARGB(255, 65, 88, 108)),
-              onPressed: () {
-                for (var item in cartItems) {
-                  ref.read(cartProvider.notifier).removeItem(item.name);
-                }
-              }),
-        ],
+        ),
+        child: Row(
+          children: [
+            Image.asset(
+              'lib/assets/images/bag.png',
+              width: 30,
+              color: const Color.fromARGB(255, 65, 88, 108),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Cart',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: const Color.fromARGB(255, 65, 88, 108),
+                  ),
+                ),
+                Text(
+                  '$totalItems item(s) selected',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: const Color.fromARGB(255, 65, 88, 108),
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            const SizedBox(width: 10),
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: Color.fromARGB(255, 65, 88, 108),
+              size: 25,
+            ),
+          ],
+        ),
       ),
     );
   }
