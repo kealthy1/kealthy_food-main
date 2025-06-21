@@ -88,6 +88,7 @@ class _ProductPageState extends State<ProductPage>
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 12,
+                              fontWeight: FontWeight.bold,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -147,7 +148,7 @@ class _ProductPageState extends State<ProductPage>
                   productId: widget.productId,
                 );
               },
-            ),
+            ),  
           ),
         ],
       ),

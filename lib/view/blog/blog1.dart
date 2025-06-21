@@ -88,8 +88,10 @@ class BlogPage extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child:CupertinoActivityIndicator(
-                                  color: Color(0xFF273847),)),
+        loading: () => const Center(
+            child: CupertinoActivityIndicator(
+          color: Color(0xFF273847),
+        )),
         error: (error, stackTrace) => Center(
           child: Text('Error: $error'),
         ),

@@ -52,11 +52,35 @@ class ChatNotifier extends StateNotifier<List<ChatMessage>> {
       state = [...state, ChatMessage(message: "Error: $e", isUser: false)];
     }
   }
+
+  Future<String> fetchHealthTip() async {
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'prompt': 'Give me a short, interesting health tip in one sentence.'}),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        return responseData['generatedText'] ?? 'Stay hydrated and eat well!';
+      } else {
+        return 'Health tip currently unavailable.';
+      }
+    } catch (e) {
+      return 'Error: $e';
+    }
+  }
 }
 
 final chatProvider = StateNotifierProvider<ChatNotifier, List<ChatMessage>>(
   (ref) => ChatNotifier(ref),
 );
+
+final healthTipProvider = FutureProvider<String>((ref) async {
+  final notifier = ref.read(chatProvider.notifier);
+  return await notifier.fetchHealthTip();
+});
 
 class PromptNotifier extends StateNotifier<List<String>> {
   PromptNotifier() : super(_generateRandomPrompts());
@@ -141,6 +165,40 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           backgroundColor: Colors.white,
         ),
         body: Column(children: [
+          Consumer(
+            builder: (context, ref, _) {
+              final tipAsync = ref.watch(healthTipProvider);
+              return tipAsync.when(
+                data: (tip) => Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.green),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          '💡 Did You Know?',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(tip),
+                      ],
+                    ),
+                  ),
+                ),
+                loading: () => const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: LinearProgressIndicator(),
+                ),
+                error: (e, _) => const SizedBox.shrink(),
+              );
+            },
+          ),
           Expanded(
             child: ListView.builder(
               controller: _scrollController,

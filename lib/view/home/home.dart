@@ -1,8 +1,13 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kealthy_food/view/Login/login_page.dart';
 import 'package:kealthy_food/view/blog/blog.dart';
+import 'package:kealthy_food/view/blog/blog_list.dart';
 import 'package:kealthy_food/view/blog/blogs_tile.dart';
+import 'package:kealthy_food/view/home/category_tab.dart';
+import 'package:kealthy_food/view/profile%20page/edit_profile.dart';
+import 'package:kealthy_food/view/profile%20page/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +20,6 @@ import 'package:kealthy_food/view/address/provider.dart';
 import 'package:kealthy_food/view/Cart/cart_container.dart';
 import 'package:kealthy_food/view/home/changing_image.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:kealthy_food/view/home/Category.dart';
 import 'package:kealthy_food/view/home/deal_day.dart';
 import 'package:kealthy_food/view/home/deal_week.dart';
 import 'package:kealthy_food/view/notifications/feedback_alert.dart';
@@ -262,6 +266,8 @@ class _HomePageState extends ConsumerState<HomePage>
     final totalItems =
         cartItems.fold<int>(0, (sum, item) => sum + item.quantity);
     final liveOrdersAsync = ref.watch(liveOrdersProvider);
+    final profile = ref.watch(profileProvider);
+    final phoneNumber = ref.watch(phoneNumberProvider);
 
     final hasCartItems = totalItems > 0;
 
@@ -333,7 +339,8 @@ class _HomePageState extends ConsumerState<HomePage>
                                 );
                               },
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 20),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
@@ -351,7 +358,6 @@ class _HomePageState extends ConsumerState<HomePage>
                                             ),
                                           ),
                                         ),
-                                        
                                       ],
                                     ),
                                     const SizedBox(width: 10),
@@ -382,8 +388,10 @@ class _HomePageState extends ConsumerState<HomePage>
                       ),
                       const SizedBox(height: 20),
                       const CenteredTitleWidget(title: "Categories"),
-                      const SizedBox(height: 20),
-                      const HomeCategory(),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8.0),
+                        child: CategoryTabPage(),
+                      ),
                       const SizedBox(height: 10),
                       const CenteredTitleWidget(title: "Subscribe & Save"),
                       Padding(
@@ -491,52 +499,136 @@ class _HomePageState extends ConsumerState<HomePage>
                         builder: (context, ref, _) {
                           final blogPagination =
                               ref.watch(blogPaginationProvider);
-                          // Infinite scroll with NotificationListener
+                          // Show only 6 recent blogs
+                          final limitedBlogs = blogPagination.take(6).toList();
+                          final tileWidth =
+                              MediaQuery.of(context).size.width * 0.4;
+                          const tileHeight = 210.0;
                           return Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               SizedBox(
-                                height: 210,
-                                child: NotificationListener<ScrollNotification>(
-                                  onNotification:
-                                      (ScrollNotification scrollInfo) {
-                                    if (scrollInfo.metrics.pixels ==
-                                        scrollInfo.metrics.maxScrollExtent) {
-                                      ref
-                                          .read(blogPaginationProvider.notifier)
-                                          .fetchMoreBlogs();
-                                    }
-                                    return false;
-                                  },
-                                  child: ListView.builder(
-                                    scrollDirection: Axis.horizontal,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16),
-                                    itemCount: blogPagination.length,
-                                    itemBuilder: (context, index) {
-                                      final blog = blogPagination[index];
-                                      return SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.4,
-                                        child: BlogListTile(
-                                          blog: blog,
-                                          onTap: () {
-                                            Navigator.push(
-                                              context,
-                                              CupertinoPageRoute(
-                                                builder: (context) =>
-                                                    BlogDetailsPage(blog: blog),
+                                height: tileHeight,
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10),
+                                  child: Row(
+                                    children: [
+                                      ...limitedBlogs.map((blog) => SizedBox(
+                                            width: tileWidth,
+                                            child: BlogListTile(
+                                              blog: blog,
+                                              onTap: () {
+                                                Navigator.push(
+                                                  context,
+                                                  CupertinoPageRoute(
+                                                    builder: (context) =>
+                                                        BlogDetailsPage(
+                                                            blog: blog),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          )),
+                                      // "See More" tile
+                                      SizedBox(
+                                        width: tileWidth,
+                                        child: Container(
+                                          height:
+                                              tileHeight, // match BlogListTile height
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      const BlogVerticalListPage(),
+                                                ),
+                                              );
+                                            },
+                                            child: Center(
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    "See More",
+                                                    style: TextStyle(
+                                                      color: Theme.of(context)
+                                                          .primaryColor,
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                  Icon(Icons.arrow_forward_ios,
+                                                      size: 15,
+                                                      color: Theme.of(context)
+                                                          .primaryColor),
+                                                ],
                                               ),
-                                            );
-                                          },
+                                            ),
+                                          ),
                                         ),
-                                      );
-                                    },
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
+                              if (phoneNumber.isNotEmpty &&
+                                  profile.name.isEmpty &&
+                                  profile.email.isEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0, vertical: 10),
+                                  child: Center(
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Text(
+                                          "Subscribe to our newsletter",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Color.fromRGBO(0, 0, 0, 0.4),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 5),
+                                        GestureDetector(
+                                          onTap: () async {
+                                            final result = await Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    EditProfilePage(
+                                                        name: profile.name,
+                                                        email: profile.email),
+                                              ),
+                                            );
+                                            if (result == true) {
+                                              ref
+                                                  .read(
+                                                      newsletterSubscribedProvider
+                                                          .notifier)
+                                                  .state = true;
+                                            }
+                                          },
+                                          child: Text(
+                                            'click here',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.blue.shade400,
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                ),
                             ],
                           );
                         },
@@ -712,7 +804,6 @@ class _HomePageState extends ConsumerState<HomePage>
                         "Locating...",
                         style: GoogleFonts.poppins(
                           color: Colors.black,
-                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

@@ -37,18 +37,18 @@ class CartContainer extends ConsumerWidget {
         height: 70,
         padding: const EdgeInsets.all(16),
         decoration: const BoxDecoration(
-          // color: Colors.white,
-          gradient: LinearGradient(
+          // color:  Color.fromARGB(255, 249, 227, 201),
+           gradient: LinearGradient(
             colors: [
               Color.fromARGB(255, 255, 255, 255), // Light blue
-              Color.fromARGB(255, 244, 235, 235), // Lighter blue
+              Color.fromARGB(255, 255, 239, 221), // Lighter blue
             ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black12,
+              color: Color.fromARGB(31, 173, 170, 170),
               blurRadius: 3,
               spreadRadius: 5,
             ),
@@ -62,11 +62,8 @@ class CartContainer extends ConsumerWidget {
         ),
         child: Row(
           children: [
-            Image.asset(
-              'lib/assets/images/bag.png',
-              width: 30,
-              color: const Color.fromARGB(255, 65, 88, 108),
-            ),
+            Image.asset('lib/assets/images/bag.png',
+                width: 30, color: Colors.black),
             const SizedBox(width: 10),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -74,27 +71,40 @@ class CartContainer extends ConsumerWidget {
                 Text(
                   'Cart',
                   style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: const Color.fromARGB(255, 65, 88, 108),
-                  ),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black),
                 ),
                 Text(
                   '$totalItems item(s) selected',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: const Color.fromARGB(255, 65, 88, 108),
-                  ),
+                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.black),
                 ),
               ],
             ),
             const Spacer(),
             const SizedBox(width: 10),
-            const Icon(
-              Icons.arrow_forward_ios,
-              color: Color.fromARGB(255, 65, 88, 108),
-              size: 25,
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color.fromARGB(255, 255, 255, 255),
+                    Color.fromARGB(255, 255, 255, 255),
+                    // Lighter blue
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                shape: BoxShape.circle,
+                color: Colors
+                    .grey.shade200, // Change if you want a different background
+              ),
+              child: const Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.black,
+                size: 18, // slightly smaller inside circle
+              ),
             ),
           ],
         ),

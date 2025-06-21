@@ -100,7 +100,7 @@ class _OnlinePaymentProcessingState
     await OrderService.removeRazorpayOrderId();
 
     // Show failure dialog from the new helper
-    PaymentDialogHelper.showPaymentFailureDialog(context);
+    PaymentDialogHelper.showPaymentFailureDialog(context,);
   }
 
   Future<void> _handleExternalWallet(ExternalWalletResponse response) async {
@@ -184,12 +184,14 @@ class _OnlinePaymentProcessingState
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            Image.asset('lib/assets/images/shield.png',width: 50,),
+            const SizedBox(height: 20),
             Text(
               '🔐 Secure • Private • Protected',
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey,
+                color: Colors.black,
               ),
             ),
           ],

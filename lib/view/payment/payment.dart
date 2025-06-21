@@ -246,7 +246,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
       }
     } catch (e) {
       print('Error placing order: $e');
-      PaymentDialogHelper.showPaymentFailureDialog(context);
+      PaymentDialogHelper.showPaymentFailureDialog(context,);
     } finally {
       ref.read(isOrderSavingProvider.notifier).state = false;
     }

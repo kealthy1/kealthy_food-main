@@ -134,8 +134,8 @@ class SubscriptionPaymentPage extends ConsumerWidget {
                   await prefs.setString('subscription_start_date',
                       DateFormat('d MMMM y').format(startDate));
                   await prefs.setString('subscription_end_date', endDate);
-                  await prefs.setString(
-                      'subscription_qty', quantity.toString());
+                  await prefs.setDouble(
+                      'subscription_qty', quantity.toDouble());
 
                   final formattedSlot =
                       '${DateFormat('h:mm a').format(slot['start']!)} - ${DateFormat('h:mm a').format(slot['end']!)}';

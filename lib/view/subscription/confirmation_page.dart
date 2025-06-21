@@ -47,6 +47,7 @@ class ConfirmationPage extends ConsumerWidget {
     const double handlingCharge = 5;
     final total = ((baseRate + handlingCharge) * selectedQty * durationDays).toStringAsFixed(0);
 
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -540,7 +541,7 @@ class ConfirmationPage extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 6),
-            Row(
+        Row(
               children:  [
                 const Text("To Pay :",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),

@@ -109,16 +109,6 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
                 // 3. We have data
                 final subcategories = snapshot.data!.docs;
 
-                // Preload images
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  for (var doc in subcategories) {
-                    final url = doc['ImageUrl'] ?? '';
-                    if (url.isNotEmpty) {
-                      precacheImage(CachedNetworkImageProvider(url), context);
-                    }
-                  }
-                });
-
                 return ListView.builder(
                   padding: const EdgeInsets.only(bottom: 80),
                   itemCount: subcategories.length,
@@ -171,27 +161,37 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
                                     padding: const EdgeInsets.all(8.0),
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(10),
-                                      child: CachedNetworkImage(
-                                        imageUrl: imageUrl,
-                                        width: 80,
-                                        height: 80,
-                                        fit: BoxFit.cover,
-                                        placeholder: (context, url) =>
-                                            Shimmer.fromColors(
-                                          baseColor: Colors.grey[300]!,
-                                          highlightColor: Colors.grey[100]!,
-                                          child: Container(
-                                            width: 80,
-                                            height: 80,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                        errorWidget: (context, url, error) =>
-                                            const Icon(
-                                          Icons.error,
-                                          color: Colors.red,
-                                        ),
-                                      ),
+                                      child: imageUrl.isNotEmpty &&
+                                              Uri.tryParse(imageUrl)
+                                                      ?.hasAbsolutePath ==
+                                                  true
+                                          ? CachedNetworkImage(
+                                              imageUrl: imageUrl,
+                                              width: 80,
+                                              height: 80,
+                                              fit: BoxFit.cover,
+                                              placeholder: (context, url) =>
+                                                  Shimmer.fromColors(
+                                                baseColor: Colors.grey[300]!,
+                                                highlightColor:
+                                                    Colors.grey[100]!,
+                                                child: Container(
+                                                  width: 80,
+                                                  height: 80,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              errorWidget:
+                                                  (context, url, error) =>
+                                                      const Icon(
+                                                Icons.error,
+                                                color: Colors.red,
+                                              ),
+                                            )
+                                          : const Icon(
+                                              Icons.image_not_supported,
+                                              size: 40,
+                                              color: Colors.grey),
                                     ),
                                   ),
                                 ),

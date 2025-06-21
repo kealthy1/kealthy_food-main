@@ -34,7 +34,8 @@ class OrderService {
               : (currentSOH - quantityPurchased);
 
           // Check if offer is active (deal_of_the_day or deal_of_the_week)
-          final isOfferActive = docData['deal_of_the_day'] == true || docData['deal_of_the_week'] == true;
+          final isOfferActive = docData['deal_of_the_day'] == true ||
+              docData['deal_of_the_week'] == true;
           final currentOfferSOH = docData['offer_soh'] ?? 0;
           final updatedOfferSOH = (currentOfferSOH - quantityPurchased) < 0
               ? 0
@@ -85,7 +86,8 @@ class OrderService {
             "🔒 Saved Razorpay Order ID to SharedPreferences: $razorpayOrderId");
         return razorpayOrderId;
       } else {
-        ToastHelper.showErrorToast('Failed to create Razorpay order. Please try again.');
+        ToastHelper.showErrorToast(
+            'Failed to create Razorpay order. Please try again.');
         throw Exception('Failed to create order: ${response.body}');
       }
     } catch (e) {
@@ -169,7 +171,6 @@ class OrderService {
       // Save to Realtime Database
       await database.ref().child('orders').child(orderId).set(orderData);
       print('Order saved successfully with orderId = $orderId');
-      
 
       // Decrement stock
       await decrementSOHForItems(address);
@@ -211,10 +212,11 @@ class OrderService {
       await prefs.setString('order_completed_time', orderTime);
 
       final String planTitle = prefs.getString('subscription_plan_title') ?? '';
-      final String productName = prefs.getString('subscription_product_name') ?? '';
+      final String productName =
+          prefs.getString('subscription_product_name') ?? '';
       final String startDate = prefs.getString('subscription_start_date') ?? '';
       final String endDate = prefs.getString('subscription_end_date') ?? '';
-      final String subscriptionQty = prefs.getString('subscription_qty') ?? '';
+      final double subscriptionQty = prefs.getDouble('subscription_qty') ?? 0.0;
 
       final orderData = {
         "Name": address.name ?? 'Unknown Name',
@@ -243,12 +245,11 @@ class OrderService {
         "productName": productName,
         "startDate": startDate,
         "endDate": endDate,
-        "subscriptionQty": "$subscriptionQty L",
+        "subscriptionQty": subscriptionQty,
       };
 
       await database.ref().child('subscriptions').child(orderId).set(orderData);
       print('Subscription order saved successfully with orderId = $orderId');
-
     } catch (error, stackTrace) {
       print('Error saving subscription order: $error');
       print('StackTrace: $stackTrace');

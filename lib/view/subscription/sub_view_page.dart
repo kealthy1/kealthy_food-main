@@ -80,7 +80,7 @@ class SubscriptionOrderDetailsPage extends ConsumerWidget {
                       buildRow('Order ID', orderData['orderId'] ?? ''),
                       buildRow('Plan Title', orderData['planTitle'] ?? ''),
                       buildRow('Product', orderData['productName'] ?? ''),
-                      buildRow('Qty', orderData['subscriptionQty'] ?? ''),
+                      buildRow('Qty', "${orderData['subscriptionQty']} L"),
                       buildRow('Start Date', orderData['startDate'] ?? ''),
                       buildRow('End Date', orderData['endDate'] ?? ''),
                       buildRow('Slot', orderData['selectedSlot'] ?? ''),

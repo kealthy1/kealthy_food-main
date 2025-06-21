@@ -39,38 +39,64 @@ class DetailsDialog extends StatelessWidget {
             0: IntrinsicColumnWidth(),
             1: FlexColumnWidth(),
           },
-          children: lines.asMap().entries.map((entry) {
-            final index = entry.key;
-            final line = entry.value;
-            return TableRow(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    "${index + 1}.",
-                    style: GoogleFonts.poppins(
-                      textStyle: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.black87,
+          children: label == "Ingredients"
+              ? lines.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final line = entry.value.trim();
+                  return TableRow(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          '${index + 1}.',
+                          style: GoogleFonts.poppins(
+                            textStyle: const TextStyle(
+                                fontSize: 14, color: Colors.black87),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    line,
-                    style: GoogleFonts.poppins(
-                      textStyle: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.black87,
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          line,
+                          style: GoogleFonts.poppins(
+                            textStyle: const TextStyle(
+                                fontSize: 14, color: Colors.black87),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          }).toList(),
+                    ],
+                  );
+                }).toList()
+              : lines.map((line) {
+                  final parts = line.split(':');
+                  return TableRow(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          parts.first.trim(),
+                          style: GoogleFonts.poppins(
+                            textStyle: const TextStyle(
+                                fontSize: 14, color: Colors.black87),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          parts.length > 1
+                              ? parts.sublist(1).join(':').trim()
+                              : '',
+                          style: GoogleFonts.poppins(
+                            textStyle: const TextStyle(
+                                fontSize: 14, color: Colors.black87),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
         ),
       ),
       actions: [

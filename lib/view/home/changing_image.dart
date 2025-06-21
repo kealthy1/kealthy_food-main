@@ -10,9 +10,16 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class ImageData {
   final String imageUrl;
-  final String title; // Add title to ImageData
+  final String title;
+  final String? data;
+  final String? productName; // Optional product name for "Did You Know?"
 
-  ImageData({required this.imageUrl, required this.title});
+  ImageData({
+    required this.imageUrl,
+    required this.title,
+    this.data,
+    this.productName,
+  });
 }
 
 // Riverpod provider for list of image data
@@ -43,7 +50,9 @@ class _ChangingImageWidgetState extends ConsumerState<ChangingImageWidget> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final imageList = ref.read(imageDataProvider);
       for (final image in imageList) {
-        precacheImage(CachedNetworkImageProvider(image.imageUrl), context);
+        if (image.imageUrl.isNotEmpty) {
+          precacheImage(CachedNetworkImageProvider(image.imageUrl), context);
+        }
       }
     });
   }
@@ -53,13 +62,15 @@ class _ChangingImageWidgetState extends ConsumerState<ChangingImageWidget> {
     super.didChangeDependencies();
     final imageList = ref.read(imageDataProvider);
     for (final image in imageList) {
-      precacheImage(CachedNetworkImageProvider(image.imageUrl), context);
+      if (image.imageUrl.isNotEmpty) {
+        precacheImage(CachedNetworkImageProvider(image.imageUrl), context);
+      }
     }
   }
 
   void _startAutoScroll() {
     _timer?.cancel(); // Ensure any existing timer is canceled
-    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
       final currentIndex = ref.read(carouselIndexProvider);
       final imageList = ref.read(imageDataProvider);
       if (imageList.isNotEmpty) {
@@ -92,14 +103,14 @@ class _ChangingImageWidgetState extends ConsumerState<ChangingImageWidget> {
     _stopAutoScroll(); // Stop auto-scrolling when user interacts
 
     switch (index) {
-      case 0:
+      case 1:
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const BmiTrackerPage()),
         );
         break;
-   
-      case 1:
+
+      case 2:
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const CalorieIntakePage()),
@@ -155,10 +166,8 @@ class _ChangingImageWidgetState extends ConsumerState<ChangingImageWidget> {
         SizedBox(
           height: 180,
           child: GestureDetector(
-            onPanDown: (_) =>
-                _stopAutoScroll(), // Stop auto-scroll when user interacts
-            onPanCancel: () =>
-                _restartAutoScroll(), // Restart auto-scroll after interaction
+            onPanDown: (_) => _stopAutoScroll(),
+            onPanCancel: () => _restartAutoScroll(),
             child: PageView.builder(
               controller: _pageController,
               itemCount: imageDataList.length,
@@ -167,10 +176,9 @@ class _ChangingImageWidgetState extends ConsumerState<ChangingImageWidget> {
               },
               itemBuilder: (context, index) {
                 final imageData = imageDataList[index];
-
                 return GestureDetector(
                   onTap: () {
-                    _stopAutoScroll(); // Stop auto-scroll when user taps
+                    _stopAutoScroll();
                     _navigateBasedOnImageIndex(context, index);
                     _restartAutoScroll();
                   },
@@ -178,28 +186,72 @@ class _ChangingImageWidgetState extends ConsumerState<ChangingImageWidget> {
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Container(
                       decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.grey.shade300,
+                          width: 1,
+                        ),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(20),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            CachedNetworkImage(
-                              imageUrl: imageData.imageUrl,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              height: double.infinity,
-                              placeholder: (context, url) => Shimmer.fromColors(
-                                baseColor: Colors.grey[300]!,
-                                highlightColor: Colors.grey[100]!,
-                                child: Container(color: Colors.grey[300]),
+                        child: imageData.imageUrl.isEmpty
+                            ? Container(
+                                height: 180,
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        imageData.title,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      if (imageData.productName != null &&
+                                          imageData
+                                              .productName!.isNotEmpty) ...[
+                                        Text(
+                                          imageData.productName!,
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      ],
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        imageData.data ?? '',
+                                        style: const TextStyle(fontSize: 12),
+                                        textAlign: TextAlign.start,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : CachedNetworkImage(
+                                imageUrl: imageData.imageUrl,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                height: double.infinity,
+                                placeholder: (context, url) =>
+                                    Shimmer.fromColors(
+                                  baseColor: Colors.grey[300]!,
+                                  highlightColor: Colors.grey[100]!,
+                                  child: Container(color: Colors.grey[300]),
+                                ),
+                                errorWidget: (context, url, error) =>
+                                    const Icon(Icons.error, color: Colors.red),
                               ),
-                              errorWidget: (context, url, error) =>
-                                  const Icon(Icons.error, color: Colors.red),
-                            ),
-                          ],
-                        ),
                       ),
                     ),
                   ),
@@ -239,24 +291,30 @@ class ImageNotifier extends StateNotifier<List<ImageData>> {
 
   Future<void> _loadImagesAndTitlesFromFirestore() async {
     try {
-      // Fetching both image URLs and titles from Firestore collection 'Carousel'
+      List<ImageData> loadedImages = [];
+
+      // Fetch random "What is it?" from Products collection, and also get product name
+      final productSnapshot =
+          await FirebaseFirestore.instance.collection('Products').get();
+      final whatIsItEntries = productSnapshot.docs
+          .where((doc) =>
+              doc.data()['What is it?'] != null &&
+              (doc.data()['What is it?'] as String).trim().isNotEmpty)
+          .map((doc) => {
+                'whatIsIt': doc.data()['What is it?'] as String,
+                'productName': doc.data()['Name'] as String?,
+              })
+          .toList();
+
+      // Load carousel images from 'Carousel' collection
       final snapshot =
           await FirebaseFirestore.instance.collection('Carousel').get();
 
-      List<ImageData> loadedImages = [];
-
-      // Loop through all documents in the collection and get image URLs and titles
       for (var doc in snapshot.docs) {
-        // Fetch the image array and title array
-        final imageUrls = List<String>.from(
-            doc['Image']); // Assuming 'image' is an array of strings
-        final titles = List<String>.from(
-            doc['Title']); // Assuming 'title' is an array of strings
-
-        // Ensure both arrays are of the same length
+        final imageUrls = List<String>.from(doc['Image']);
+        final titles = List<String>.from(doc['Title']);
         if (imageUrls.length == titles.length) {
           for (int i = 0; i < imageUrls.length; i++) {
-            // Create ImageData for each image and title pair
             loadedImages.add(ImageData(
               imageUrl: imageUrls[i],
               title: titles[i],
@@ -267,10 +325,24 @@ class ImageNotifier extends StateNotifier<List<ImageData>> {
         }
       }
 
-      // Debugging: Print the number of images and titles loaded
-      print('Total images loaded: ${loadedImages.length}');
+      // Prepend "Did You Know?" card if available
+      if (whatIsItEntries.isNotEmpty) {
+        whatIsItEntries.shuffle();
+        final entry = whatIsItEntries.first;
+        loadedImages.insert(
+          0,
+          ImageData(
+            imageUrl: '',
+            title: 'Did You Know?',
+            data: entry['whatIsIt'],
+            productName: entry['productName'],
+          ),
+        );
+      }
 
-      state = loadedImages; // Update the state with loaded images and titles
+      print(
+          'Total images loaded (including Did You Know): ${loadedImages.length}');
+      state = loadedImages;
     } catch (e) {
       print("Error loading images and titles from Firestore: $e");
     }

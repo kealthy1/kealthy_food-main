@@ -389,7 +389,7 @@ class ProductContent extends ConsumerWidget {
                               context: context,
                               label: 'Macros',
                               details: detailsString,
-                              backgroundColor: Colors.blue.shade50,
+                              backgroundColor: Colors.white,
                             );
                           },
                         ),
@@ -410,7 +410,7 @@ class ProductContent extends ConsumerWidget {
                               context: context,
                               label: 'Micronutrients',
                               details: detailsString,
-                              backgroundColor: Colors.green.shade50,
+                              backgroundColor: Colors.white,
                             );
                           },
                         ),
@@ -430,7 +430,7 @@ class ProductContent extends ConsumerWidget {
                               context: context,
                               label: 'Ingredients',
                               details: detailsString,
-                              backgroundColor: Colors.yellow.shade50,
+                              backgroundColor: Colors.white,
                             );
                           },
                         ),
