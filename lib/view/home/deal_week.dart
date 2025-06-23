@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kealthy_food/view/Toast/toast_helper.dart';
+import 'package:kealthy_food/view/product/all_products.dart';
 import 'package:kealthy_food/view/product/product_page.dart';
 import 'package:kealthy_food/view/product/provider.dart';
 import 'package:lottie/lottie.dart';
@@ -241,28 +242,6 @@ class DealOfTheWeekPage extends StatelessWidget {
                                               ),
                                             )
                                           : const SizedBox(),
-                                      if (offerPrice != null &&
-                                          offerPrice < price)
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 6.0),
-                                          child: Row(
-                                            children: [
-                                              
-                                              Text(
-                                                '${(((price - offerPrice) / price) * 100).round()}% off',
-                                                style: TextStyle(
-                                                  fontSize: 11,
-                                                  color: Colors.red.shade700,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              Icon(Icons.arrow_downward,
-                                                  size: 16,
-                                                  color: Colors.red.shade700),
-                                            ],
-                                          ),
-                                        ),
                                     ],
                                   ),
                                   Row(
@@ -301,8 +280,8 @@ class DealOfTheWeekPage extends StatelessWidget {
                       ),
                     ),
                     Positioned(
-                      top: 5,
-                      left: 5,
+                      top: 0,
+                      left: 0,
                       child: Consumer(
                         builder: (context, ref, child) {
                           final averageStarsAsync = ref.watch(
@@ -312,17 +291,13 @@ class DealOfTheWeekPage extends StatelessWidget {
                               if (rating == 0.0) {
                                 return const SizedBox(); // Hide badge if rating is 0
                               }
-                              return ClipRRect(
-                                borderRadius: const BorderRadius.all(
-                                  Radius.circular(10),
-                                ),
+                              return ClipPath(
+                                clipper: LeftRibbonClipper(),
                                 child: Container(
-                                  height: 30,
-                                  width: 50,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0, vertical: 4.0),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.5),
+                                  height: 25,
+                                  width: MediaQuery.of(context).size.width * 0.13,
+                                  decoration: const BoxDecoration(
+                                    color: Color.fromARGB(255, 67, 168, 70),
                                   ),
                                   alignment: Alignment.center,
                                   child: Row(
@@ -349,6 +324,25 @@ class DealOfTheWeekPage extends StatelessWidget {
                         },
                       ),
                     ),
+                    if (offerPrice != null && offerPrice < price)
+                      Positioned(
+                        bottom: 115,
+                                right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration:  BoxDecoration(
+                            color: Colors.red.shade700,
+                          ),
+                          child: Text(
+                            '${(((price - offerPrice) / price) * 100).round()}% off',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               );

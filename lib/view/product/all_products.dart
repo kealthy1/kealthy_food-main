@@ -1,3 +1,4 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,10 +9,12 @@ import 'package:kealthy_food/view/Cart/cart_controller.dart';
 import 'package:kealthy_food/view/product/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:kealthy_food/view/product/product_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 // Provider for toggling cart container visibility.
-final cartVisibilityProvider = StateProvider<bool>((ref) => true);
-// Provider for the selected type, scoped by subcategoryName.
+final cartVisibilityProvider = StateProvider<bool>((ref) => true);  
+final ratingsMapProvider = StateProvider.family<Map<String, double>, String>((ref, subcategoryName) => {});
 final selectedTypeProvider =
     StateProvider.family<String?, String>((ref, subcategory) => null);
 
@@ -75,6 +78,40 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(searchQueryProvider.notifier).state = "";
     });
+
+    Future.delayed(Duration.zero, () async {
+      final prefs = await SharedPreferences.getInstance();
+      final cacheKey = 'ratings_${widget.subcategoryName}';
+
+      // Try loading from cache first
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final cachedMap = json.decode(cachedData) as Map<String, dynamic>;
+        final mapped = cachedMap.map((k, v) => MapEntry(k, (v as num).toDouble()));
+        ref.read(ratingsMapProvider(widget.subcategoryName).notifier).state = mapped;
+      }
+
+      // Always fetch fresh data in background
+      final snapshot = await FirebaseFirestore.instance
+          .collection('Products')
+          .where('Subcategory', isEqualTo: widget.subcategoryName)
+          .get();
+
+      final names = snapshot.docs.map((doc) => doc.data()['Name']?.toString() ?? '').toList();
+      final updatedRatings = <String, double>{};
+
+      for (final name in names) {
+        final rating = await ref.read(averageStarsProvider(name).future);
+        updatedRatings[name] = rating;
+      }
+
+      // Save to SharedPreferences
+      await prefs.setString(cacheKey, json.encode(updatedRatings));
+
+      if (mounted) {
+        ref.read(ratingsMapProvider(widget.subcategoryName).notifier).state = updatedRatings;
+      }
+    });
   }
 
   @override
@@ -88,6 +125,7 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
     //     ref.watch(productTypesProvider(widget.subcategoryName));
     final selectedType =
         ref.watch(selectedTypeProvider(widget.subcategoryName));
+    final ratingsMap = ref.watch(ratingsMapProvider(widget.subcategoryName));
 
     // Reset the search query when the page is rebuilt
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -141,7 +179,8 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                             color: Colors.red,
                             shape: BoxShape.circle,
                           ),
-                          constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                          constraints:
+                              const BoxConstraints(minWidth: 18, minHeight: 18),
                           child: Text(
                             '$itemCount',
                             style: const TextStyle(
@@ -448,24 +487,6 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                                           const SizedBox(
                                             height: 10,
                                           ),
-                                          // Discount percentage row (arrow and percent) above price/qty row
-                                          if (data['offer_price'] != null &&
-                                              double.tryParse(data['offer_price'].toString()) != null &&
-                                              double.parse(data['offer_price'].toString()) > 0)
-                                            Row(
-                                              children: [
-                                              
-                                                Text(
-                                                  '${(((double.parse(price.toString()) - double.parse(data['offer_price'].toString())) / double.parse(price.toString())) * 100).round()}% off',
-                                                  style: TextStyle(
-                                                    fontSize: 11,
-                                                    color: Colors.red.shade700,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                  Icon(Icons.arrow_downward, size: 16, color: Colors.red.shade700),
-                                              ],
-                                            ),
                                           const Spacer(),
                                           Row(
                                             children: [
@@ -475,27 +496,37 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                                                 children: [
                                                   if (data['offer_price'] !=
                                                           null &&
-                                                      double.tryParse(data['offer_price'].toString()) !=
+                                                      double.tryParse(data[
+                                                                  'offer_price']
+                                                              .toString()) !=
                                                           null &&
-                                                      double.parse(data['offer_price'].toString()) >
+                                                      double.parse(data[
+                                                                  'offer_price']
+                                                              .toString()) >
                                                           0)
                                                     Row(
                                                       children: [
                                                         Text(
                                                           '\u20B9$price',
-                                                          style: const TextStyle(
+                                                          style:
+                                                              const TextStyle(
                                                             fontSize: 12,
                                                             color: Colors.red,
-                                                            decoration: TextDecoration.lineThrough,
+                                                            decoration:
+                                                                TextDecoration
+                                                                    .lineThrough,
                                                           ),
                                                         ),
-                                                        const SizedBox(width: 5),
+                                                        const SizedBox(
+                                                            width: 5),
                                                         Text(
                                                           '\u20B9${data['offer_price']}/-',
                                                           style: TextStyle(
                                                             fontSize: 15,
-                                                            color: Colors.green.shade800,
-                                                            fontWeight: FontWeight.w600,
+                                                            color: Colors
+                                                                .green.shade800,
+                                                            fontWeight:
+                                                                FontWeight.w600,
                                                           ),
                                                         ),
                                                       ],
@@ -535,62 +566,63 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                                 ],
                               ),
                             ),
-                            // Rating badge positioned after the main container but before SOH badge
-                            Positioned(
-                              top: 5,
-                              left: 5,
-                              child: Consumer(
-                                builder: (context, ref, child) {
-                                  final averageStarsAsync = ref.watch(
-                                      averageStarsProvider(
-                                          data['Name'] ?? 'No Name'));
-                                  return averageStarsAsync.when(
-                                    data: (rating) {
-                                      if (rating == 0.0) {
-                                        return const SizedBox(); // Hide badge if rating is 0
-                                      }
-                                      return ClipRRect(
-                                        borderRadius: const BorderRadius.all(
-                                          Radius.circular(5),
-                                        ),
-                                        child: Container(
-                                          height: 30,
-                                          width: MediaQuery.of(context)
-                                                  .size
-                                                  .width *
-                                              0.15, // Adjust width as needed
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 8.0, vertical: 4.0),
-                                          decoration: BoxDecoration(
-                                            color:
-                                                Colors.black.withOpacity(0.5),
-                                          ),
-                                          alignment: Alignment.center,
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const Icon(Icons.star,
-                                                  size: 14,
-                                                  color: Colors.yellow),
-                                              Text(
-                                                rating.toStringAsFixed(1),
-                                                style: GoogleFonts.poppins(
-                                                  color: Colors.white,
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    loading: () => const SizedBox(),
-                                    error: (error, _) => const SizedBox(),
-                                  );
-                                },
+                            // Discount percentage Positioned badge
+                            if (data['offer_price'] != null &&
+                                double.tryParse(data['offer_price'].toString()) != null &&
+                                double.parse(data['offer_price'].toString()) > 0)
+                              Positioned(
+                                bottom: 109,
+                                right: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.shade700,
+                                  ),
+                                  child: Text(
+                                    '${(((double.parse(price.toString()) - double.parse(data['offer_price'].toString())) / double.parse(price.toString())) * 100).round()}% off',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
+                            // Rating badge positioned after the main container but before SOH badge
+                            (() {
+                              final productName = data['Name']?.toString() ?? '';
+                              final rating = ratingsMap[productName] ?? 0.0;
+                              if (rating > 0.0) {
+                                return Positioned(
+                                  child: ClipPath(
+                                    clipper: LeftRibbonClipper(),
+                                    child: Container(
+                                      height: 25,
+                                      width: MediaQuery.of(context).size.width * 0.13,
+                                      decoration: const BoxDecoration(
+                                        color: Color.fromARGB(255, 67, 168, 70),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            rating.toStringAsFixed(1),
+                                            style: GoogleFonts.poppins(
+                                              color: Colors.white,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const Icon(Icons.star, size: 13, color: Colors.yellow),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            })(),
                             if ((data['SOH'] ?? 1) <= 4)
                               Positioned(
                                 top: 0,
@@ -672,4 +704,22 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
       // Removed CartContainer from bottomSheet as per instructions
     );
   }
+}
+
+
+// Custom clipper for left ribbon badge
+class LeftRibbonClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.lineTo(size.width - 10, 0);
+    path.lineTo(size.width, size.height / 2);
+    path.lineTo(size.width - 10, size.height);
+    path.lineTo(0, size.height);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

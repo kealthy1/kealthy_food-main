@@ -5,7 +5,7 @@ import 'package:kealthy_food/view/Login/login_page.dart';
 import 'package:kealthy_food/view/blog/blog.dart';
 import 'package:kealthy_food/view/blog/blog_list.dart';
 import 'package:kealthy_food/view/blog/blogs_tile.dart';
-import 'package:kealthy_food/view/home/category_tab.dart';
+import 'package:kealthy_food/view/home/Category.dart';
 import 'package:kealthy_food/view/profile%20page/edit_profile.dart';
 import 'package:kealthy_food/view/profile%20page/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -386,12 +386,10 @@ class _HomePageState extends ConsumerState<HomePage>
                         padding: EdgeInsets.symmetric(horizontal: 10),
                         child: ChangingImageWidget(),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 10),
                       const CenteredTitleWidget(title: "Categories"),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8.0),
-                        child: CategoryTabPage(),
-                      ),
+                      const SizedBox(height: 10),
+                      const HomeCategory(),
                       const SizedBox(height: 10),
                       const CenteredTitleWidget(title: "Subscribe & Save"),
                       Padding(
