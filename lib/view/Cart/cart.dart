@@ -57,7 +57,6 @@ class CartPage extends ConsumerWidget {
       body: cartItems.isEmpty
           ? Center(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Image.asset(

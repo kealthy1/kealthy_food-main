@@ -52,7 +52,11 @@ class ReviewsSection extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    // Otherwise, show the “Ratings & Reviews” header and the list of reviews
+    final groupedReviews = <String, List<ReviewModel>>{};
+    for (var review in reviews) {
+      groupedReviews.putIfAbsent(review.customerName, () => []).add(review);
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -64,20 +68,28 @@ class ReviewsSection extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 8),
-            // Render each review
-            ...reviews.map((review) => _ReviewTile(review: review)),
-          ],
-        );
-      },
+        ...groupedReviews.entries.map((entry) {
+          final name = entry.key;
+          final userReviews = entry.value;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _GroupedReviewTile(customerName: name, reviews: userReviews),
+            ],
+          );
+        }),
+      ],
     );
+  }
+);
   }
 }
 
 
-class _ReviewTile extends StatelessWidget {
+class ReviewTile extends StatelessWidget {
   final ReviewModel review;
 
-  const _ReviewTile({required this.review});
+  const ReviewTile({super.key, required this.review});
 
   @override
   Widget build(BuildContext context) {
@@ -155,6 +167,76 @@ class _ReviewTile extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
+      ],
+    );
+  }
+}
+
+class _GroupedReviewTile extends StatelessWidget {
+  final String customerName;
+  final List<ReviewModel> reviews;
+
+  const _GroupedReviewTile({required this.customerName, required this.reviews});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Divider(),
+        Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: Colors.blue,
+              child: Text(
+                customerName.isNotEmpty ? customerName[0].toUpperCase() : "U",
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Row(
+              children: [
+                Text(
+                  customerName,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        ...reviews.map((review) => Padding(
+              padding: const EdgeInsets.only(left: 50.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                   if (review.createdAt != null)
+                    Text(
+                      "${review.createdAt!.day}/${review.createdAt!.month}/${review.createdAt!.year} ${review.createdAt!.hour}:${review.createdAt!.minute.toString().padLeft(2, '0')}",
+                      style: GoogleFonts.poppins(fontSize: 10, color: Colors.black54),
+                    ),
+                    const SizedBox(height: 5,),
+                  Row(
+                    children: List.generate(5, (index) {
+                      return Icon(
+                        index < review.starCount ? Icons.star : Icons.star_border,
+                        color: Colors.amber,
+                        size: 16,
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 4),
+                  if (review.feedback.trim().isNotEmpty)
+                    Text(
+                      review.feedback,
+                      style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[800]),
+                    ),
+                 
+                ],
+              ),
+            )),
       ],
     );
   }

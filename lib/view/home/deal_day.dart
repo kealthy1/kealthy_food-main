@@ -19,7 +19,7 @@ class DealOfTheDayPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFFF3E0),
+        backgroundColor:  Colors.white,
         surfaceTintColor: Colors.white,
         title: Text('Deal of the Day',
             style: GoogleFonts.poppins(

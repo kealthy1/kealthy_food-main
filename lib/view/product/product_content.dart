@@ -313,24 +313,22 @@ class ProductContent extends ConsumerWidget {
                       children: [
                         // Price display with offer logic
                          if (hasOffer)
-                              Padding(
-                                padding:
-                                    const EdgeInsets.only(left: 8.0, top: 2),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      '${(((productPrice - offerPrice) / productPrice) * 100).round()}% ',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.redAccent,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const Icon(Icons.arrow_downward,
-                                        color: Colors.redAccent, size: 16),
-                                  ],
-                                ),
-                              ),
+                              Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade700,
+                          ),
+                          child: Text(
+                            '${(((productPrice - offerPrice) / productPrice ) * 100).round()}% off',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10,),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [

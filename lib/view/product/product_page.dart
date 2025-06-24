@@ -59,17 +59,26 @@ class _ProductPageState extends State<ProductPage>
           Consumer(
             builder: (context, ref, _) {
               final cartItems = ref.watch(cartProvider);
-              final itemCount = cartItems.length;
+              final itemCount = cartItems.fold<int>(
+                  0, (total, item) => total + item.quantity);
 
               return Padding(
                 padding: const EdgeInsets.all(10.0),
                 child: Stack(
                   children: [
-                    IconButton(
-                      icon: const Icon(CupertinoIcons.cart, size: 30),
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/cart');
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      transitionBuilder:
+                          (Widget child, Animation<double> animation) {
+                        return ScaleTransition(scale: animation, child: child);
                       },
+                      child: IconButton(
+                        key: ValueKey<int>(itemCount),
+                        icon: const Icon(CupertinoIcons.cart, size: 30),
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/cart');
+                        },
+                      ),
                     ),
                     if (itemCount > 0)
                       Positioned(
@@ -148,7 +157,7 @@ class _ProductPageState extends State<ProductPage>
                   productId: widget.productId,
                 );
               },
-            ),  
+            ),
           ),
         ],
       ),

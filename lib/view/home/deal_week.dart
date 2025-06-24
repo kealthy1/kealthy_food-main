@@ -20,7 +20,7 @@ class DealOfTheWeekPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFE3F2FD),
+        backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
         title: Text(
           'Deal of the Week',
@@ -295,7 +295,8 @@ class DealOfTheWeekPage extends StatelessWidget {
                                 clipper: LeftRibbonClipper(),
                                 child: Container(
                                   height: 25,
-                                  width: MediaQuery.of(context).size.width * 0.13,
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.13,
                                   decoration: const BoxDecoration(
                                     color: Color.fromARGB(255, 67, 168, 70),
                                   ),
@@ -327,10 +328,11 @@ class DealOfTheWeekPage extends StatelessWidget {
                     if (offerPrice != null && offerPrice < price)
                       Positioned(
                         bottom: 115,
-                                right: 0,
+                        right: 0,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration:  BoxDecoration(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
                             color: Colors.red.shade700,
                           ),
                           child: Text(
