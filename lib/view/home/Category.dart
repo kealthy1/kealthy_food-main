@@ -81,7 +81,6 @@ class _HomeCategoryState extends ConsumerState<HomeCategory>
                                     // Set your desired background color here
                                     child: CachedNetworkImage(
                                       imageUrl: category['image'] as String,
-                                      cacheKey: category['Categories'],
                                       width: double.infinity,
                                       height: 100,
                                       fit: BoxFit.cover,

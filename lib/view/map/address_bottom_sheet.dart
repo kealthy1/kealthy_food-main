@@ -300,7 +300,7 @@ class _AddressDetailsBottomSheetState
                                         return;
                                       }
                                       final combinedAddress =
-                                          '${flatRoomAreaController.text} ${address ?? ''}';
+                                          '${flatRoomAreaController.text}, ${address ?? ''}';
 
                                       final details = AddressDetails(
                                         name: nameController.text,

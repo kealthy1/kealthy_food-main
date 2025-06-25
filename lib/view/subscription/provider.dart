@@ -1,5 +1,4 @@
-
-  import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -23,7 +22,8 @@ Future<bool> isSlotAvailable(String selectedSlotLabel) async {
   return existingOrders < 10;
 }
 
-Future<void> pickDate(BuildContext context, WidgetRef ref, {required bool isFrom}) async {
+Future<void> pickDate(BuildContext context, WidgetRef ref,
+    {required bool isFrom}) async {
   final DateTime now = DateTime.now();
   final DateTime tomorrow = now.add(const Duration(days: 1));
 

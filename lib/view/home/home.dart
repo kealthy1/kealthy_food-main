@@ -293,14 +293,15 @@ class _HomePageState extends ConsumerState<HomePage>
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        toolbarHeight: MediaQuery.of(context).size.height * 0.15,
+        toolbarHeight: MediaQuery.of(context).size.width < 600
+            ? MediaQuery.of(context).size.height * 0.15
+            : MediaQuery.of(context).size.height * 0.12,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             // color: Color.fromARGB(255, 233, 210, 181), // pastel peach)
             gradient: LinearGradient(
               colors: [
                 Color.fromARGB(255, 249, 227, 201),
-
                 Color.fromARGB(255, 255, 255, 255), // Lighter blue// Pink shade
               ],
               begin: Alignment.topCenter,
@@ -422,72 +423,81 @@ class _HomePageState extends ConsumerState<HomePage>
                           title: "Hot Deals & Exclusive Offers"),
                       Padding(
                         padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const DealOfTheDayPage()),
-                                );
-                              },
-                              child: SizedBox(
-                                width:
-                                    (MediaQuery.of(context).size.width - 48) /
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final isTablet =
+                                MediaQuery.of(context).size.width >= 600;
+                            final imageHeight = isTablet ? 150.0 : 100.0;
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const DealOfTheDayPage()),
+                                    );
+                                  },
+                                  child: SizedBox(
+                                    width: (MediaQuery.of(context).size.width -
+                                            48) /
                                         2,
-                                child: Column(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      child: Container(
-                                        color: const Color(0xFFF4F4F5),
-                                        child: Image.asset(
-                                          'lib/assets/images/deal day.png',
-                                          height: 100,
-                                          width: double.infinity,
-                                          fit: BoxFit.cover,
+                                    child: Column(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                          child: Container(
+                                            color: const Color(0xFFF4F4F5),
+                                            child: Image.asset(
+                                              'lib/assets/images/deal day.png',
+                                              height: imageHeight,
+                                              width: double.infinity,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
                                         ),
-                                      ),
+                                      ],
                                     ),
-                                  ],
+                                  ),
                                 ),
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const DealOfTheWeekPage()),
-                                );
-                              },
-                              child: SizedBox(
-                                width:
-                                    (MediaQuery.of(context).size.width - 48) /
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const DealOfTheWeekPage()),
+                                    );
+                                  },
+                                  child: SizedBox(
+                                    width: (MediaQuery.of(context).size.width -
+                                            48) /
                                         2,
-                                child: Column(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      child: Container(
-                                        color: const Color(0xFFF4F4F5),
-                                        child: Image.asset(
-                                          'lib/assets/images/deal week.png',
-                                          height: 100,
-                                          width: double.infinity,
-                                          fit: BoxFit.cover,
+                                    child: Column(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                          child: Container(
+                                            color: const Color(0xFFF4F4F5),
+                                            child: Image.asset(
+                                              'lib/assets/images/deal week.png',
+                                              height: imageHeight,
+                                              width: double.infinity,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
                                         ),
-                                      ),
+                                      ],
                                     ),
-                                  ],
+                                  ),
                                 ),
-                              ),
-                            ),
-                          ],
+                              ],
+                            );
+                          },
                         ),
                       ),
                       const CenteredTitleWidget(title: "Kealthy blogs"),
@@ -499,9 +509,11 @@ class _HomePageState extends ConsumerState<HomePage>
                               ref.watch(blogPaginationProvider);
                           // Show only 6 recent blogs
                           final limitedBlogs = blogPagination.take(6).toList();
-                          final tileWidth =
-                              MediaQuery.of(context).size.width * 0.4;
-                          const tileHeight = 210.0;
+                          final screenWidth = MediaQuery.of(context).size.width;
+                          final tileWidth = screenWidth < 600
+                              ? screenWidth * 0.4
+                              : screenWidth * 0.25;
+                          final tileHeight = screenWidth < 600 ? 210.0 : 300.0;
                           return Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,

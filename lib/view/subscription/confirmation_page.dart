@@ -10,6 +10,8 @@ import 'package:kealthy_food/view/subscription/sub_payment.dart';
 import 'package:kealthy_food/view/subscription/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+final isAlternateDayProvider = StateProvider<bool>((ref) => false);
+
 class ConfirmationPage extends ConsumerWidget {
   final String title;
   final String description;
@@ -37,16 +39,22 @@ class ConfirmationPage extends ConsumerWidget {
                     '0') ??
             0
         : 0;
-    final endDate =
-        fromDate?.add(Duration(days: durationDays + additionalDays));
+    final isAlternate = ref.watch(isAlternateDayProvider);
+    final endDate = fromDate?.add(
+      Duration(
+        days: isAlternate
+            ? ((durationDays - 1) * 2) + 1 + additionalDays
+            : durationDays + additionalDays - 1,
+      ),
+    );
     final endDateText =
         endDate != null ? DateFormat('d MMMM y').format(endDate) : '';
     print(
         '📆 Start Date: ${fromDate != null ? DateFormat('d MMMM y').format(fromDate) : 'Not selected'}');
     print('📆 End Date: $endDateText');
     const double handlingCharge = 5;
-    final total = ((baseRate + handlingCharge) * selectedQty * durationDays).toStringAsFixed(0);
-
+    final total = ((baseRate + handlingCharge) * selectedQty * durationDays)
+        .toStringAsFixed(0);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -161,6 +169,8 @@ class ConfirmationPage extends ConsumerWidget {
                           ),
                         ),
                       ),
+                      // Alternate Day Checkbox
+
                       const SizedBox(height: 12),
                       if (fromDate != null) ...[
                         const Text(
@@ -190,6 +200,26 @@ class ConfirmationPage extends ConsumerWidget {
                               ),
                             ],
                           ),
+                        ),
+                        CheckboxListTile(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20)),
+                          value: isAlternate,
+                          checkColor: Colors.white,
+                          activeColor: Colors.green,
+                          title: Text(
+                            "Prefer Alternate Days",
+                            style: GoogleFonts.poppins(
+                                color: Colors.black,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500),
+                          ),
+                          contentPadding: EdgeInsets.zero,
+                          controlAffinity: ListTileControlAffinity.leading,
+                          onChanged: (value) {
+                            ref.read(isAlternateDayProvider.notifier).state =
+                                value ?? false;
+                          },
                         ),
                         // Delivery Slot Selection Section
                         const SizedBox(height: 20),
@@ -257,86 +287,190 @@ class ConfirmationPage extends ConsumerWidget {
                                               child: CupertinoActivityIndicator(
                                                   color: Colors.black));
                                         }
-                                        final availableSlots = (snapshot.data?["slots"] as List<dynamic>?)
-                                                ?.map((slot) => slot as Map<String, DateTime>)
+                                        final availableSlots = (snapshot
+                                                        .data?["slots"]
+                                                    as List<dynamic>?)
+                                                ?.map((slot) => slot
+                                                    as Map<String, DateTime>)
                                                 .toList() ??
                                             [];
                                         return Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             const Padding(
-                                              padding: EdgeInsets.symmetric(vertical: 8),
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 8),
                                               child: Text(
                                                 'Morning Slot',
-                                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                                                style: TextStyle(
+                                                    fontSize: 13,
+                                                    fontWeight:
+                                                        FontWeight.w600),
                                               ),
                                             ),
-                                            ...availableSlots.where((slot) => slot["start"]!.hour == 6).map((slot) {
-                                              final formattedStart = DateFormat('h:mm a').format(slot["start"]!);
-                                              final formattedEnd = DateFormat('h:mm a').format(slot["end"]!);
-                                              final isSelected = selectedSlot?["start"] == slot["start"] && selectedSlot?["end"] == slot["end"];
+                                            ...availableSlots
+                                                .where((slot) =>
+                                                    slot["start"]!.hour == 6)
+                                                .map((slot) {
+                                              final formattedStart =
+                                                  DateFormat('h:mm a')
+                                                      .format(slot["start"]!);
+                                              final formattedEnd =
+                                                  DateFormat('h:mm a')
+                                                      .format(slot["end"]!);
+                                              final isSelected =
+                                                  selectedSlot?["start"] ==
+                                                          slot["start"] &&
+                                                      selectedSlot?["end"] ==
+                                                          slot["end"];
                                               return GestureDetector(
                                                 onTap: () async {
-                                                  final formattedStartTime = DateFormat('hh:mm a').format(slot["start"]!);
-                                                  final formattedEndTime = DateFormat('hh:mm a').format(slot["end"]!);
-                                                  final selectedSlotLabel = "$formattedStartTime - $formattedEndTime";
-                                                  final isAvailable = await isSlotAvailable(selectedSlotLabel);
+                                                  final formattedStartTime =
+                                                      DateFormat('hh:mm a')
+                                                          .format(
+                                                              slot["start"]!);
+                                                  final formattedEndTime =
+                                                      DateFormat('hh:mm a')
+                                                          .format(slot["end"]!);
+                                                  final selectedSlotLabel =
+                                                      "$formattedStartTime - $formattedEndTime";
+                                                  final isAvailable =
+                                                      await isSlotAvailable(
+                                                          selectedSlotLabel);
                                                   if (!isAvailable) {
-                                                    ToastHelper.showErrorToast('Slot not available. Please choose another slot');
+                                                    ToastHelper.showErrorToast(
+                                                        'Slot not available. Please choose another slot');
                                                     return;
                                                   }
-                                                  ref.read(selectedSlotProvider.notifier).state = slot;
-                                                  ref.read(isSlotExpandedProvider.notifier).state = false;
-                                                  final prefs = await SharedPreferences.getInstance();
-                                                  await prefs.setString('selectedSlot', selectedSlotLabel);
+                                                  ref
+                                                      .read(selectedSlotProvider
+                                                          .notifier)
+                                                      .state = slot;
+                                                  ref
+                                                      .read(
+                                                          isSlotExpandedProvider
+                                                              .notifier)
+                                                      .state = false;
+                                                  final prefs =
+                                                      await SharedPreferences
+                                                          .getInstance();
+                                                  await prefs.setString(
+                                                      'selectedSlot',
+                                                      selectedSlotLabel);
                                                 },
                                                 child: Container(
-                                                  margin: const EdgeInsets.only(bottom: 10),
-                                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                                  margin: const EdgeInsets.only(
+                                                      bottom: 10),
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 12,
+                                                      vertical: 10),
                                                   decoration: BoxDecoration(
-                                                    color: isSelected ? const Color.fromARGB(255, 223, 240, 224) : Colors.white,
-                                                    border: Border.all(color: Colors.black12),
-                                                    borderRadius: BorderRadius.circular(8),
+                                                    color: isSelected
+                                                        ? const Color.fromARGB(
+                                                            255, 223, 240, 224)
+                                                        : Colors.white,
+                                                    border: Border.all(
+                                                        color: Colors.black12),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
                                                   ),
-                                                  child: Text("$formattedStart - $formattedEnd", style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                                                  child: Text(
+                                                      "$formattedStart - $formattedEnd",
+                                                      style: const TextStyle(
+                                                          fontSize: 13,
+                                                          fontWeight:
+                                                              FontWeight.w500)),
                                                 ),
                                               );
                                             }),
                                             const Padding(
-                                              padding: EdgeInsets.symmetric(vertical: 8),
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 8),
                                               child: Text(
                                                 'Evening Slot',
-                                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                                                style: TextStyle(
+                                                    fontSize: 13,
+                                                    fontWeight:
+                                                        FontWeight.w600),
                                               ),
                                             ),
-                                            ...availableSlots.where((slot) => slot["start"]!.hour == 15).map((slot) {
-                                              final formattedStart = DateFormat('h:mm a').format(slot["start"]!);
-                                              final formattedEnd = DateFormat('h:mm a').format(slot["end"]!);
-                                              final isSelected = selectedSlot?["start"] == slot["start"] && selectedSlot?["end"] == slot["end"];
+                                            ...availableSlots
+                                                .where((slot) =>
+                                                    slot["start"]!.hour == 15)
+                                                .map((slot) {
+                                              final formattedStart =
+                                                  DateFormat('h:mm a')
+                                                      .format(slot["start"]!);
+                                              final formattedEnd =
+                                                  DateFormat('h:mm a')
+                                                      .format(slot["end"]!);
+                                              final isSelected =
+                                                  selectedSlot?["start"] ==
+                                                          slot["start"] &&
+                                                      selectedSlot?["end"] ==
+                                                          slot["end"];
                                               return GestureDetector(
                                                 onTap: () async {
-                                                  final formattedStartTime = DateFormat('hh:mm a').format(slot["start"]!);
-                                                  final formattedEndTime = DateFormat('hh:mm a').format(slot["end"]!);
-                                                  final selectedSlotLabel = "$formattedStartTime - $formattedEndTime";
-                                                  final isAvailable = await isSlotAvailable(selectedSlotLabel);
+                                                  final formattedStartTime =
+                                                      DateFormat('hh:mm a')
+                                                          .format(
+                                                              slot["start"]!);
+                                                  final formattedEndTime =
+                                                      DateFormat('hh:mm a')
+                                                          .format(slot["end"]!);
+                                                  final selectedSlotLabel =
+                                                      "$formattedStartTime - $formattedEndTime";
+                                                  final isAvailable =
+                                                      await isSlotAvailable(
+                                                          selectedSlotLabel);
                                                   if (!isAvailable) {
-                                                    ToastHelper.showErrorToast('Slot not available. Please choose another slot');
+                                                    ToastHelper.showErrorToast(
+                                                        'Slot not available. Please choose another slot');
                                                     return;
                                                   }
-                                                  ref.read(selectedSlotProvider.notifier).state = slot;
-                                                  ref.read(isSlotExpandedProvider.notifier).state = false;
-                                                  final prefs = await SharedPreferences.getInstance();
-                                                  await prefs.setString('selectedSlot', selectedSlotLabel);
+                                                  ref
+                                                      .read(selectedSlotProvider
+                                                          .notifier)
+                                                      .state = slot;
+                                                  ref
+                                                      .read(
+                                                          isSlotExpandedProvider
+                                                              .notifier)
+                                                      .state = false;
+                                                  final prefs =
+                                                      await SharedPreferences
+                                                          .getInstance();
+                                                  await prefs.setString(
+                                                      'selectedSlot',
+                                                      selectedSlotLabel);
                                                 },
                                                 child: Container(
-                                                  margin: const EdgeInsets.only(bottom: 10),
-                                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                                  margin: const EdgeInsets.only(
+                                                      bottom: 10),
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 12,
+                                                      vertical: 10),
                                                   decoration: BoxDecoration(
-                                                    color: isSelected ? const Color.fromARGB(255, 223, 240, 224) : Colors.white,
-                                                    border: Border.all(color: Colors.black12),
-                                                    borderRadius: BorderRadius.circular(8),
+                                                    color: isSelected
+                                                        ? const Color.fromARGB(
+                                                            255, 223, 240, 224)
+                                                        : Colors.white,
+                                                    border: Border.all(
+                                                        color: Colors.black12),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
                                                   ),
-                                                  child: Text("$formattedStart - $formattedEnd", style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                                                  child: Text(
+                                                      "$formattedStart - $formattedEnd",
+                                                      style: const TextStyle(
+                                                          fontSize: 13,
+                                                          fontWeight:
+                                                              FontWeight.w500)),
                                                 ),
                                               );
                                             }),
@@ -391,16 +525,16 @@ class ConfirmationPage extends ConsumerWidget {
                                     child: GestureDetector(
                                       onTap: () async {
                                         final result =
-                                                await Navigator.pushReplacement(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const AddressPage(),
-                                              ),
-                                            );
-                                            if (result == true) {
-                                              ref.invalidate(addressProvider);
-                                            }
+                                            await Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const AddressPage(),
+                                          ),
+                                        );
+                                        if (result == true) {
+                                          ref.invalidate(addressProvider);
+                                        }
                                       },
                                       child: Row(
                                         children: [
@@ -524,30 +658,37 @@ class ConfirmationPage extends ConsumerWidget {
             Row(
               children: [
                 const Text("Total Amount :",
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                    style:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
                 const Spacer(),
-                Text("₹${(baseRate * selectedQty * durationDays).toStringAsFixed(0)}",
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                Text(
+                    "₹${(baseRate * selectedQty * durationDays).toStringAsFixed(0)}",
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.w500)),
               ],
             ),
             const SizedBox(height: 4),
             Row(
               children: [
-                const Text("Handling Charge :",
-                    style: TextStyle(fontSize: 14, color: Colors.black54)),
+                Text("Handling Charge : ₹5 x $durationDays Days",
+                    style:
+                        const TextStyle(fontSize: 14, color: Colors.black54)),
                 const Spacer(),
-                Text("₹${(5 * selectedQty * durationDays).toStringAsFixed(0)}",
-                    style: const TextStyle(fontSize: 14, color: Colors.black54)),
+                Text("₹${(5 * durationDays).toStringAsFixed(0)}",
+                    style:
+                        const TextStyle(fontSize: 14, color: Colors.black54)),
               ],
             ),
             const SizedBox(height: 6),
-        Row(
-              children:  [
+            Row(
+              children: [
                 const Text("To Pay :",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 const Spacer(),
                 Text("₹$total",
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 12),
@@ -610,6 +751,7 @@ class ConfirmationPage extends ConsumerWidget {
                         address: address,
                         totalAmount: double.parse(total),
                         productName: productName,
+                        isAlternateDay: isAlternate,
                       ),
                     ),
                   );
@@ -626,18 +768,18 @@ class ConfirmationPage extends ConsumerWidget {
   }
 }
 
-  // Helper to manually return slots for 6-9am and 3-6pm
-  Future<Map<String, dynamic>> getManualSlots() async {
-    final now = DateTime.now();
-    final start6am = DateTime(now.year, now.month, now.day, 6, 0);
-    final end9am = DateTime(now.year, now.month, now.day, 9, 0);
-    final start3pm = DateTime(now.year, now.month, now.day, 15, 0);
-    final end6pm = DateTime(now.year, now.month, now.day, 18, 0);
+// Helper to manually return slots for 6-9am and 3-6pm
+Future<Map<String, dynamic>> getManualSlots() async {
+  final now = DateTime.now();
+  final start6am = DateTime(now.year, now.month, now.day, 6, 0);
+  final end9am = DateTime(now.year, now.month, now.day, 9, 0);
+  final start3pm = DateTime(now.year, now.month, now.day, 15, 0);
+  final end6pm = DateTime(now.year, now.month, now.day, 18, 0);
 
-    return {
-      "slots": [
-        {"start": start6am, "end": end9am},
-        {"start": start3pm, "end": end6pm},
-      ]
-    };
-  }
+  return {
+    "slots": [
+      {"start": start6am, "end": end9am},
+      {"start": start3pm, "end": end6pm},
+    ]
+  };
+}

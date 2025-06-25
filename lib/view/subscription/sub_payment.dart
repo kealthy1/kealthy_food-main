@@ -17,6 +17,7 @@ class SubscriptionPaymentPage extends ConsumerWidget {
   final dynamic address;
   final double totalAmount;
   final String productName;
+  final bool isAlternateDay;
 
   const SubscriptionPaymentPage({
     super.key,
@@ -28,6 +29,7 @@ class SubscriptionPaymentPage extends ConsumerWidget {
     required this.address,
     required this.totalAmount,
     required this.productName,
+    required this.isAlternateDay,
   });
 
   @override
@@ -126,6 +128,7 @@ class SubscriptionPaymentPage extends ConsumerWidget {
                   print(
                       'Address: ${address.name}, ${address.selectedRoad}, Type: ${address.type}');
                   print('Total Amount: $totalAmount');
+                  print('Alternate Day Preference: $isAlternateDay');
 
                   final prefs = await SharedPreferences.getInstance();
                   await prefs.setString('subscription_plan_title', title);
@@ -136,6 +139,7 @@ class SubscriptionPaymentPage extends ConsumerWidget {
                   await prefs.setString('subscription_end_date', endDate);
                   await prefs.setDouble(
                       'subscription_qty', quantity.toDouble());
+                  await prefs.setBool('subscription_type', isAlternateDay);
 
                   final formattedSlot =
                       '${DateFormat('h:mm a').format(slot['start']!)} - ${DateFormat('h:mm a').format(slot['end']!)}';
@@ -162,6 +166,7 @@ class SubscriptionPaymentPage extends ConsumerWidget {
                         // instantDeliveryFee: 0,
                         razorpayOrderId: razorpayOrderId,
                         orderType: 'subscription',
+
                       ),
                     ),
                   );

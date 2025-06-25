@@ -36,7 +36,6 @@ class BlogVerticalListPage extends ConsumerWidget {
         backgroundColor: Colors.white,
         actions: [
           DropdownButton<String>(
-            value: selectedFilter,
             underline: const SizedBox(),
             icon: const Icon(Icons.filter_list, color: Color(0xFF273847)),
             items: <String>['All', 'This Month', 'This Week']
