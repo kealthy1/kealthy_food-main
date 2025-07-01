@@ -5,7 +5,7 @@ import 'package:kealthy_food/view/Login/login_page.dart';
 import 'package:kealthy_food/view/blog/blog.dart';
 import 'package:kealthy_food/view/blog/blog_list.dart';
 import 'package:kealthy_food/view/blog/blogs_tile.dart';
-import 'package:kealthy_food/view/home/Category.dart';
+import 'package:kealthy_food/view/home/category_tab.dart';
 import 'package:kealthy_food/view/profile%20page/edit_profile.dart';
 import 'package:kealthy_food/view/profile%20page/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -351,8 +351,8 @@ class _HomePageState extends ConsumerState<HomePage>
                                         ClipOval(
                                           child: Container(
                                             color: Colors.white,
-                                            width: 60,
-                                            height: 60,
+                                            width: 40,
+                                            height: 40,
                                             child: Lottie.asset(
                                               'lib/assets/animations/Delivery Boy.json',
                                               fit: BoxFit.cover,
@@ -365,7 +365,7 @@ class _HomePageState extends ConsumerState<HomePage>
                                     Text(
                                       "${liveOrders.first['status']}",
                                       style: GoogleFonts.poppins(
-                                        fontSize: 15,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.green,
                                       ),
@@ -390,7 +390,7 @@ class _HomePageState extends ConsumerState<HomePage>
                       const SizedBox(height: 10),
                       const CenteredTitleWidget(title: "Categories"),
                       const SizedBox(height: 10),
-                      const HomeCategory(),
+                      const CategoryTabPage(),
                       const SizedBox(height: 10),
                       const CenteredTitleWidget(title: "Subscribe & Save"),
                       Padding(

@@ -152,12 +152,12 @@ class FeedbackPage extends ConsumerWidget {
                   feedbackNotifier.setSatisfactionText),
               const Divider(thickness: 1),
 
-              _buildSectionTitle("Any additional comments?"),
+              _buildSectionTitle("Any suggestions or products you'd like to see in the app?"),
               TextField(
                 cursorColor: Colors.black,
                 maxLines: 4,
                 decoration: InputDecoration(
-                  hintText: "Type your feedback here...",
+                  hintText: "Type your suggestions here...",
                   hintStyle: GoogleFonts.poppins(),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),

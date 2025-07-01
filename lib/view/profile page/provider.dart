@@ -21,9 +21,17 @@ class ProfileModel {
   final String email;
   final bool isLoading;
 
-  ProfileModel({required this.name, required this.email,this.isLoading = false,});
+  ProfileModel({
+    required this.name,
+    required this.email,
+    this.isLoading = false,
+  });
 
-  ProfileModel copyWith({String? name, String? email,bool? isLoading,}) {
+  ProfileModel copyWith({
+    String? name,
+    String? email,
+    bool? isLoading,
+  }) {
     return ProfileModel(
       name: name ?? this.name,
       email: email ?? this.email,
@@ -39,7 +47,8 @@ final profileProvider = StateNotifierProvider<ProfileNotifier, ProfileModel>(
 
 class ProfileNotifier extends StateNotifier<ProfileModel> {
   final Ref ref;
-  ProfileNotifier(this.ref) : super(ProfileModel(name: '', email: '', isLoading: true)) {
+  ProfileNotifier(this.ref)
+      : super(ProfileModel(name: '', email: '', isLoading: true)) {
     final phone = ref.read(phoneNumberProvider);
     if (phone.isNotEmpty) {
       loadProfileData();
@@ -50,48 +59,49 @@ class ProfileNotifier extends StateNotifier<ProfileModel> {
 
   // ✅ 1️⃣ Load Profile from SharedPreferences (Fast Fetch)
   Future<void> loadProfileData() async {
-  final prefs = await SharedPreferences.getInstance();
-  final phoneNumber = ref.read(phoneNumberProvider);
+    final prefs = await SharedPreferences.getInstance();
+    final phoneNumber = ref.read(phoneNumberProvider);
 
-  if (phoneNumber.isEmpty) {
-    state = ProfileModel(name: '', email: '', isLoading: false);
-    return;
+    if (phoneNumber.isEmpty) {
+      state = ProfileModel(name: '', email: '', isLoading: false);
+      return;
+    }
+
+    state = state.copyWith(isLoading: true);
+    final storedName = prefs.getString('user_name') ?? '';
+    final storedEmail = prefs.getString('user_email') ?? '';
+
+    state =
+        ProfileModel(name: storedName, email: storedEmail, isLoading: false);
+    fetchProfileData();
   }
-
-  state = state.copyWith(isLoading: true);
-  final storedName = prefs.getString('user_name') ?? '';
-  final storedEmail = prefs.getString('user_email') ?? '';
-
-  state = ProfileModel(name: storedName, email: storedEmail, isLoading: false);
-  fetchProfileData();
-}
 
   // ✅ 2️⃣ Fetch Profile from API (Background Fetch)
-   Future<void> fetchProfileData() async {
-  final prefs = await SharedPreferences.getInstance();
-  final phoneNumber = ref.read(phoneNumberProvider);
+  Future<void> fetchProfileData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final phoneNumber = ref.read(phoneNumberProvider);
 
-  if (phoneNumber.isEmpty) return;
+    if (phoneNumber.isEmpty) return;
 
-  try {
-    state = state.copyWith(isLoading: true);
-    final userDetails = await UserService.getUserDetails(phoneNumber);
+    try {
+      state = state.copyWith(isLoading: true);
+      final userDetails = await UserService.getUserDetails(phoneNumber);
 
-    state = ProfileModel(
-      name: userDetails['name'] ?? '',
-      email: userDetails['email'] ?? '',
-      isLoading: false,
-    );
+      state = ProfileModel(
+        name: userDetails['name'] ?? '',
+        email: userDetails['email'] ?? '',
+        isLoading: false,
+      );
 
-    prefs.setString('user_name', userDetails['name'] ?? '');
-    prefs.setString('user_email', userDetails['email'] ?? '');
-  } catch (e) {
-    state = state.copyWith(isLoading: false);
+      prefs.setString('user_name', userDetails['name'] ?? '');
+      prefs.setString('user_email', userDetails['email'] ?? '');
+    } catch (e) {
+      state = state.copyWith(isLoading: false);
+    }
   }
-}
 
   // ✅ 3️⃣ Update User Profile
-   Future<void> updateUserData(String name, String email) async {
+  Future<void> updateUserData(String name, String email) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final phoneNumber = prefs.getString('phoneNumber');
@@ -214,7 +224,8 @@ Future<void> deleteAccount(WidgetRef ref, BuildContext context) async {
       // Clear all saved data from SharedPreferences
       await prefs.clear();
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      ref.read(profileProvider.notifier).state = ProfileModel(name: '', email: '', isLoading: false);
+      ref.read(profileProvider.notifier).state =
+          ProfileModel(name: '', email: '', isLoading: false);
       ref.invalidate(selectedLocationProvider);
       ref.invalidate(phoneNumberProvider);
       ref.invalidate(customerNameProvider);
@@ -222,7 +233,7 @@ Future<void> deleteAccount(WidgetRef ref, BuildContext context) async {
       ref.invalidate(addressProviders);
       ref.invalidate(bottomNavProvider);
       ref.invalidate(dismissedOffersProvider);
-      // Show success toast 
+      // Show success toast
 
       ToastHelper.showSuccessToast('Account deleted successfully.');
 
@@ -282,7 +293,8 @@ Future<void> logoutUser(BuildContext context, WidgetRef ref) async {
   await ref.read(loginStatusProvider.notifier).logout();
 
   // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-  ref.read(profileProvider.notifier).state = ProfileModel(name: '', email: '', isLoading: false);
+  ref.read(profileProvider.notifier).state =
+      ProfileModel(name: '', email: '', isLoading: false);
 
   // Invalidate providers
   ref.invalidate(selectedLocationProvider);

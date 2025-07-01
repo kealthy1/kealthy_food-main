@@ -158,6 +158,8 @@ class BlogVerticalListPage extends ConsumerWidget {
                           children: [
                             Text(
                               blog.title,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 color: Colors.black,

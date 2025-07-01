@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kealthy_food/view/food/food_category.dart';
 import 'Category.dart';
 
 final tabIndexProvider = StateProvider<int>((ref) => 0);
@@ -53,12 +54,12 @@ class _CategoryTabPageState extends ConsumerState<CategoryTabPage>
         ),
         const SizedBox(height: 8),
         SizedBox(
-          height: MediaQuery.of(context).size.height*0.44,
+          height: MediaQuery.of(context).size.height * 0.5,
           child: TabBarView(
             controller: _tabController,
             children: const [
               HomeCategory(),
-              Center(child: Text('Coming Soon', style: TextStyle(color: Colors.grey))),
+              FoodCategory()
             ],
           ),
         ),

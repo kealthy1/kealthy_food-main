@@ -41,7 +41,8 @@ class _SubCategoryPageState extends State<SubCategoryPage> {
               Consumer(
                 builder: (context, ref, _) {
                   final cartItems = ref.watch(cartProvider);
-                  final itemCount = cartItems.length;
+                  final itemCount = cartItems.fold<int>(
+                      0, (total, item) => total + item.quantity);
 
                   return Padding(
                     padding: const EdgeInsets.all(10.0),
