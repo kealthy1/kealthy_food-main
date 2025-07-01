@@ -274,6 +274,12 @@ class _TimePageState extends ConsumerState<TimePage> {
               //   const SizedBox(height: 20),
               // // Slot Selection Container
               // if (isSlotContainerVisible)
+              Text('Please Note: Trial dishes are available only during Lunch Hours (12 PM - 3 PM).',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.black,
+                  )),
+              const SizedBox(height: 20),
               const SlotSelectionContainer(),
               const SizedBox(height: 100),
             ],

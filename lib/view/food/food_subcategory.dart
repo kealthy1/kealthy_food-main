@@ -19,6 +19,14 @@ class _FoodSubCategoryPageState extends State<FoodSubCategoryPage> {
       children: [
         Scaffold(
           appBar: AppBar(
+            title: Text(
+              'Trial Dishes',
+              style: GoogleFonts.poppins(
+                color: Colors.black,
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             surfaceTintColor: Colors.white,
             backgroundColor: Colors.white,
             iconTheme: const IconThemeData(color: Colors.black),
@@ -83,6 +91,28 @@ class _FoodSubCategoryPageState extends State<FoodSubCategoryPage> {
             padding: const EdgeInsets.all(16.0),
             child: ListView(
               children: [
+                Container(
+                  height: 50,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade100,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  bottomRight: Radius.circular(10),
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  'Lunch Only (12 PM - 3 PM)',
+                  style: GoogleFonts.poppins(
+                    color: Colors.orange.shade800,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
                 _buildFoodItem(
                     "Buttercraft Chicken Bowl",
                     "150g",
@@ -151,72 +181,76 @@ class _FoodSubCategoryPageState extends State<FoodSubCategoryPage> {
       String name, String quantity, List<String> ingredients, int price) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: Colors.grey.shade300,
-          width: 1,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: Colors.grey.shade300,
+            width: 1,
+          ),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                name,
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Text(
+                  name,
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 5),
-              Text(
-                "($quantity)",
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.black54,
+                const SizedBox(width: 5),
+                Text(
+                  "($quantity)",
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.black,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Ingredients:',
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w500,
+              ],
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            ingredients.join(', '),
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Text(
-                "\u20B9 $price/-",
-                style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  color: Colors.black87,
-                ),
+            const SizedBox(height: 8),
+            Text(
+              'Ingredients:',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w500,
               ),
-              const Spacer(),
-              AddToCartSection(
+            ),
+            const SizedBox(height: 4),
+            Text(
+              ingredients.join(', '),
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Text(
+                  "\u20B9 $price/-",
+                  style: GoogleFonts.poppins(
+                    fontSize: 20,
+                    color: Colors.black87,
+                  ),
+                ),
+                const Spacer(),
+                AddToCartSection(
                   productName: name,
                   productPrice: price,
                   productEAN: '',
                   soh: 1,
-                  imageurl: '')
-            ],
-          ),
-        ],
+                  imageurl: '',
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

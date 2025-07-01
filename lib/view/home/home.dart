@@ -351,8 +351,8 @@ class _HomePageState extends ConsumerState<HomePage>
                                         ClipOval(
                                           child: Container(
                                             color: Colors.white,
-                                            width: 40,
-                                            height: 40,
+                                            width: 60,
+                                            height: 60,
                                             child: Lottie.asset(
                                               'lib/assets/animations/Delivery Boy.json',
                                               fit: BoxFit.cover,
@@ -365,7 +365,7 @@ class _HomePageState extends ConsumerState<HomePage>
                                     Text(
                                       "${liveOrders.first['status']}",
                                       style: GoogleFonts.poppins(
-                                        fontSize: 13,
+                                        fontSize: 15,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.green,
                                       ),

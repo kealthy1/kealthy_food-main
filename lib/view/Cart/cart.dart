@@ -117,36 +117,39 @@ class CartPage extends ConsumerWidget {
                                       // Product Image
                                       Column(
                                         children: [
-                                          ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                            child: CachedNetworkImage(
-                                              imageUrl: item.imageUrl,
-                                              width: 60,
-                                              height: 60,
-                                              fit: BoxFit.cover,
-                                              placeholder: (context, url) =>
-                                                  Container(
-                                                width: 60,
-                                                height: 60,
-                                                color: const Color(0xFFF4F4F5),
-                                                child: const Center(
-                                                    child:
-                                                        CupertinoActivityIndicator()),
-                                              ),
-                                              errorWidget:
-                                                  (context, url, error) =>
-                                                      Container(
-                                                width: 60,
-                                                height: 60,
-                                                color: const Color(0xFFF4F4F5),
-                                                child: const Icon(
-                                                    Icons.broken_image,
-                                                    color: Colors.grey),
-                                              ),
-                                            ),
-                                          ),
+                                          item.imageUrl.isEmpty
+                                              ? const SizedBox.shrink()
+                                              : ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  child: CachedNetworkImage(
+                                                    imageUrl: item.imageUrl,
+                                                    width: 60,
+                                                    height: 60,
+                                                    fit: BoxFit.cover,
+                                                    placeholder: (context, url) =>
+                                                        Container(
+                                                      width: 60,
+                                                      height: 60,
+                                                      color: const Color(0xFFF4F4F5),
+                                                      child: const Center(
+                                                          child:
+                                                              CupertinoActivityIndicator()),
+                                                    ),
+                                                    errorWidget:
+                                                        (context, url, error) =>
+                                                            Container(
+                                                      width: 60,
+                                                      height: 60,
+                                                      color: const Color(0xFFF4F4F5),
+                                                      child: const Icon(
+                                                          Icons.broken_image,
+                                                          color: Colors.grey),
+                                                    ),
+                                                  ),
+                                                ),
                                           const SizedBox(height: 10),
+                                         
                                           Stack(
                                             children: [
                                               GestureDetector(
