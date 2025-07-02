@@ -17,23 +17,41 @@ class CategoryTabPage extends ConsumerStatefulWidget {
 class _CategoryTabPageState extends ConsumerState<CategoryTabPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late ProviderSubscription<int> _subscription;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+
+    // Update provider when user swipes
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) return;
+      ref.read(tabIndexProvider.notifier).state = _tabController.index;
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Safe ref.listen setup
+    _subscription = ref.listenManual<int>(tabIndexProvider, (previous, next) {
+      if (_tabController.index != next) {
+        _tabController.animateTo(next);
+      }
+    });
   }
 
   @override
   void dispose() {
+    _subscription.close();
     _tabController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(tabIndexProvider);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

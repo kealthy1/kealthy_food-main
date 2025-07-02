@@ -34,6 +34,23 @@ final locationProvider = StateProvider<String?>((ref) => null);
 final locationTypeProvider = StateProvider<String?>((ref) => "Select address");
 final totalItemsProvider = StateProvider<int>((ref) => 0);
 
+final rainingStatusStreamProvider = StreamProvider<Map<String, dynamic>>((ref) {
+  return FirebaseFirestore.instance
+      .collection('RainStatus')
+      .doc('status')
+      .snapshots()
+      .map((snapshot) {
+        final data = snapshot.data();
+        if (data == null) {
+          return {'isRaining': false, 'message': ''};
+        }
+        return {
+          'isRaining': data['isRaining'] ?? false,
+          'message': data['message'] ?? '',
+        };
+      });
+});
+
 /// 🔹 **Fetch Phone Number from Shared Preferences**
 Future<String?> getStoredPhoneNumber() async {
   final prefs = await SharedPreferences.getInstance();

@@ -56,11 +56,150 @@ class _HomePageState extends ConsumerState<HomePage>
   late AnimationController _badgeController;
   late Animation<double> _badgeAnimation;
 
+  void _showTabSwitchDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: Text("What's in your mind today?",
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              )),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Future.delayed(const Duration(milliseconds: 300), () {
+                    ref.read(tabIndexProvider.notifier).state = 0;
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color.fromARGB(255, 230, 237, 234),
+                        Color.fromARGB(255, 253, 253, 253)
+                      ],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.green),
+                  ),
+                  child: Row(
+                    children: [
+                      Image.asset(
+                        'lib/assets/images/bag.png', // or 'restaurant.png'
+                        width: 30,
+                        color: Colors.black,
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        // 👈 Important: lets the column flex within the row
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Kealthy Store", // or "Kealthy Kitchen"
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            Text(
+                              "Shop healthy groceries & products", // or meal text
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              softWrap: true,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Future.delayed(const Duration(milliseconds: 300), () {
+                    ref.read(tabIndexProvider.notifier).state = 1;
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xFFFFE0B2),
+                        Color.fromARGB(255, 255, 255, 255)
+                      ],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.orange),
+                  ),
+                  child: Row(
+                    children: [
+                      Image.asset(
+                        'lib/assets/images/restaurant.png',
+                        width: 30,
+                        color: Colors.black,
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Kealthy Kitchen",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            Text(
+                              "Order freshly prepared healthy meals",
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              softWrap: true,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!hasShownDialog) {
+        hasShownDialog = true;
+        _showTabSwitchDialog(); // 👈 Show on first open
+      }
+
       VersionCheckService.checkForUpdate(context);
       ref.read(cartProvider.notifier).loadCartItems();
       checkLocationPermission(ref);
@@ -268,6 +407,7 @@ class _HomePageState extends ConsumerState<HomePage>
     final liveOrdersAsync = ref.watch(liveOrdersProvider);
     final profile = ref.watch(profileProvider);
     final phoneNumber = ref.watch(phoneNumberProvider);
+    final rainStatus = ref.watch(rainingStatusStreamProvider);
 
     final hasCartItems = totalItems > 0;
 
@@ -329,58 +469,98 @@ class _HomePageState extends ConsumerState<HomePage>
                         data: (liveOrders) {
                           final hasLiveOrders = liveOrders.isNotEmpty;
 
-                          if (hasLiveOrders) {
-                            return GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  CupertinoPageRoute(
-                                    builder: (context) => const MyOrdersPage(),
-                                  ),
-                                );
-                              },
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 20),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Stack(
-                                      alignment: Alignment.center,
-                                      children: [
-                                        ClipOval(
-                                          child: Container(
-                                            color: Colors.white,
-                                            width: 60,
-                                            height: 60,
-                                            child: Lottie.asset(
-                                              'lib/assets/animations/Delivery Boy.json',
-                                              fit: BoxFit.cover,
-                                            ),
+                          if (!hasLiveOrders) return const SizedBox.shrink();
+
+                          return rainStatus.when(
+                            data: (rainingData) {
+                              final isRaining =
+                                  rainingData['isRaining'] == true;
+                              final rainMessage = rainingData['message'] ?? "";
+
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    CupertinoPageRoute(
+                                      builder: (context) =>
+                                          const MyOrdersPage(),
+                                    ),
+                                  );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      // Left animation (always shown)
+                                      ClipOval(
+                                        child: Container(
+                                          color: Colors.white,
+                                          width: 60,
+                                          height: 60,
+                                          child: Lottie.asset(
+                                            'lib/assets/animations/Delivery Boy.json',
+                                            fit: BoxFit.cover,
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      "${liveOrders.first['status']}",
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.green,
                                       ),
-                                    ),
-                                  ],
+                                      const SizedBox(width: 10),
+
+                                      // Status and raining text block
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              "${liveOrders.first['status']}",
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.green,
+                                              ),
+                                            ),
+                                            if (isRaining) ...[
+                                              Text(
+                                                rainMessage,
+                                                style: const TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+
+                                      const SizedBox(width: 10),
+
+                                      // Right rain animation (only if raining)
+                                      if (isRaining)
+                                        SizedBox(
+                                          width: 60,
+                                          height: 60,
+                                          child: Lottie.asset(
+                                            'lib/assets/animations/Animation - 1751474562248.json',
+                                            fit: BoxFit.cover,
+                                            repeat: true,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            );
-                          } else {
-                            return const SizedBox.shrink();
-                          }
+                              );
+                            },
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, __) => const SizedBox.shrink(),
+                          );
                         },
                         loading: () => const SizedBox.shrink(),
                         error: (error, stack) => const SizedBox.shrink(),
                       ),
+                      const SizedBox(height: 10),
                       const CenteredTitleWidget(title: "Fitness & Health"),
                       const SizedBox(height: 20),
                       const Padding(

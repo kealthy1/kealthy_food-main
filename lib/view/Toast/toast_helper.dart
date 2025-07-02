@@ -29,7 +29,7 @@ class ToastHelper {
   static void showErrorToast(String message) {
     showToast(
       message: message,
-      backgroundColor: Colors.red,
+      backgroundColor: Colors.black,
     );
   }
 

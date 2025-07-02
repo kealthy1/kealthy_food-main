@@ -11,8 +11,6 @@ import 'package:kealthy_food/view/product/product_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
-
-
 final cartVisibilityProvider = StateProvider<bool>((ref) => true);
 final ratingsMapProvider = StateProvider.family<Map<String, double>, String>(
     (ref, subcategoryName) => {});
@@ -69,55 +67,60 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
   bool get wantKeepAlive => true;
   late TextEditingController _searchController;
 
-  @override
-  void initState() {
-    super.initState();
-    _searchController = TextEditingController();
+@override
+void initState() {
+  super.initState();
+  _searchController = TextEditingController();
 
-    // Reset the search query only when the page first loads
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(searchQueryProvider.notifier).state = "";
-    });
+  Future.microtask(() {
+    if (mounted) {
+      _initRatingsAndCache();
+    }
+  });
+}
 
-    Future.delayed(Duration.zero, () async {
-      final prefs = await SharedPreferences.getInstance();
-      final cacheKey = 'ratings_${widget.subcategoryName}';
+Future<void> _initRatingsAndCache() async {
+  if (!mounted) return;
+  ref.read(searchQueryProvider.notifier).state = "";
 
-      // Try loading from cache first
-      final cachedData = prefs.getString(cacheKey);
-      if (cachedData != null) {
-        final cachedMap = json.decode(cachedData) as Map<String, dynamic>;
-        final mapped =
-            cachedMap.map((k, v) => MapEntry(k, (v as num).toDouble()));
-        ref.read(ratingsMapProvider(widget.subcategoryName).notifier).state =
-            mapped;
-      }
+  final prefs = await SharedPreferences.getInstance();
+  final cacheKey = 'ratings_${widget.subcategoryName}';
 
-      // Always fetch fresh data in background
-      final snapshot = await FirebaseFirestore.instance
-          .collection('Products')
-          .where('Subcategory', isEqualTo: widget.subcategoryName)
-          .get();
+  final cachedData = prefs.getString(cacheKey);
+  if (!mounted) return;
 
-      final names = snapshot.docs
-          .map((doc) => doc.data()['Name']?.toString() ?? '')
-          .toList();
-      final updatedRatings = <String, double>{};
+  if (cachedData != null) {
+    final cachedMap = json.decode(cachedData) as Map<String, dynamic>;
+    final mapped =
+        cachedMap.map((k, v) => MapEntry(k, (v as num).toDouble()));
 
-      for (final name in names) {
-        final rating = await ref.read(averageStarsProvider(name).future);
-        updatedRatings[name] = rating;
-      }
-
-      // Save to SharedPreferences
-      await prefs.setString(cacheKey, json.encode(updatedRatings));
-
-      if (mounted) {
-        ref.read(ratingsMapProvider(widget.subcategoryName).notifier).state =
-            updatedRatings;
-      }
-    });
+    if (!mounted) return;
+ref.read(ratingsMapProvider(widget.subcategoryName).notifier).state = mapped;
   }
+
+  final snapshot = await FirebaseFirestore.instance
+      .collection('Products')
+      .where('Subcategory', isEqualTo: widget.subcategoryName)
+      .get();
+
+  if (!mounted) return;
+
+  final names = snapshot.docs
+      .map((doc) => doc.data()['Name']?.toString() ?? '')
+      .toList();
+
+  final updatedRatings = <String, double>{};
+  for (final name in names) {
+    final rating = await ref.read(averageStarsProvider(name).future);
+    updatedRatings[name] = rating;
+  }
+
+  await prefs.setString(cacheKey, json.encode(updatedRatings));
+
+  if (!mounted) return;
+  ref.read(ratingsMapProvider(widget.subcategoryName).notifier).state =
+      updatedRatings;
+}
 
   @override
   Widget build(BuildContext context) {
