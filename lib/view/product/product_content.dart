@@ -14,6 +14,16 @@ import 'package:kealthy_food/view/product/text.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
+bool _isTrialDish(String name) {
+  const trialDishes = [
+    'Buttercraft Chicken Bowl',
+    'Quinoa & Tuna Fusion Bowl',
+    'Soya Paneer Bowl',
+    'Herbrost Beef Bowl',
+  ];
+  return trialDishes.contains(name);
+}
+
 class ProductContent extends ConsumerWidget {
   final PageController pageController;
   final Map<String, dynamic> docData;
@@ -251,10 +261,13 @@ class ProductContent extends ConsumerWidget {
                             color: Colors.black54,
                           ),
                         ),
-                        ...List.generate(fullStars,
-                            (index) => const Icon(Icons.star, color: Colors.orange, size: 16)),
+                        ...List.generate(
+                            fullStars,
+                            (index) => const Icon(Icons.star,
+                                color: Colors.orange, size: 16)),
                         if (hasHalfStar)
-                          const Icon(Icons.star_half, color: Colors.orange, size: 20),
+                          const Icon(Icons.star_half,
+                              color: Colors.orange, size: 20),
                         ...List.generate(
                           5 - fullStars - (hasHalfStar ? 1 : 0),
                           (index) => const Icon(Icons.star_border,
@@ -265,7 +278,8 @@ class ProductContent extends ConsumerWidget {
                   } else {
                     return Consumer(
                       builder: (context, ref, child) {
-                        final averageStarsAsync = ref.watch(averageStarsProvider(productName));
+                        final averageStarsAsync =
+                            ref.watch(averageStarsProvider(productName));
                         return averageStarsAsync.when(
                           data: (rating) {
                             if (rating == 0.0) {
@@ -284,10 +298,13 @@ class ProductContent extends ConsumerWidget {
                                     color: Colors.black54,
                                   ),
                                 ),
-                                ...List.generate(fullStars,
-                                    (index) => const Icon(Icons.star, color: Colors.orange, size: 16)),
+                                ...List.generate(
+                                    fullStars,
+                                    (index) => const Icon(Icons.star,
+                                        color: Colors.orange, size: 16)),
                                 if (hasHalfStar)
-                                  const Icon(Icons.star_half, color: Colors.orange, size: 20),
+                                  const Icon(Icons.star_half,
+                                      color: Colors.orange, size: 20),
                                 ...List.generate(
                                   5 - fullStars - (hasHalfStar ? 1 : 0),
                                   (index) => const Icon(Icons.star_border,
@@ -312,23 +329,25 @@ class ProductContent extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Price display with offer logic
-                         if (hasOffer)
-                              Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.red.shade700,
-                          ),
-                          child: Text(
-                            '${(((productPrice - offerPrice) / productPrice ) * 100).round()}% off',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                        if (hasOffer)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade700,
+                            ),
+                            child: Text(
+                              '${(((productPrice - offerPrice) / productPrice) * 100).round()}% off',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
+                        const SizedBox(
+                          height: 10,
                         ),
-                        const SizedBox(height: 10,),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -363,7 +382,6 @@ class ProductContent extends ConsumerWidget {
                                   color: Colors.green,
                                   fontWeight: FontWeight.bold),
                             ),
-                           
                           ],
                         ),
                         Text(
@@ -382,6 +400,7 @@ class ProductContent extends ConsumerWidget {
                       productEAN: productEAN,
                       soh: productSoh,
                       imageurl: productImageUrl,
+                      maxQuantity: _isTrialDish(productName) ? 2 : null,
                     ),
                   ],
                 ),

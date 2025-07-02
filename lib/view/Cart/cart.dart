@@ -7,6 +7,7 @@ import 'package:kealthy_food/view/Toast/toast_helper.dart';
 import 'package:kealthy_food/view/address/adress.dart';
 import 'package:kealthy_food/view/address/provider.dart';
 import 'package:kealthy_food/view/Cart/time.dart';
+import 'package:kealthy_food/view/product/add_to_cart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -318,37 +319,62 @@ class CartPage extends ConsumerWidget {
                                                         ),
                                                       ),
                                                       IconButton(
-                                                        icon: Icon(
-                                                          Icons.add,
-                                                          color: item.quantity >=
-                                                                      2 &&
-                                                                  _isTrialDish(
-                                                                      item.name)
-                                                              ? Colors.grey
-                                                              : Colors.black,
-                                                        ),
-                                                        onPressed: ref
+                                                          icon: Icon(
+                                                            Icons.add,
+                                                            color: item.quantity >=
+                                                                        2 &&
+                                                                    _isTrialDish(
+                                                                        item.name)
+                                                                ? Colors.grey
+                                                                : Colors.black,
+                                                          ),
+                                                          onPressed: () async {
+                                                            if (ref
                                                                 .read(cartProvider
                                                                     .notifier)
                                                                 .isLoading(
-                                                                    item.name)
-                                                            ? null
-                                                            : () {
-                                                                if (_isTrialDish(item
-                                                                        .name) &&
-                                                                    item.quantity >=
-                                                                        2) {
-                                                                  ToastHelper.showErrorToast('You can only select 2 quantities for trial dishes');
-                                                                  return;
-                                                                }
+                                                                    item.name))
+                                                              return;
 
-                                                                ref
-                                                                    .read(cartProvider
-                                                                        .notifier)
-                                                                    .incrementItem(
-                                                                        item.name);
-                                                              },
-                                                      ),
+                                                            if (_isTrialDish(
+                                                                item.name)) {
+                                                              final prefs =
+                                                                  await SharedPreferences
+                                                                      .getInstance();
+                                                              final phoneNumber =
+                                                                  prefs.getString(
+                                                                          'phoneNumber') ??
+                                                                      '';
+
+                                                              final alreadyOrderedToday =
+                                                                  await getTodayOrderedQuantity(
+                                                                phoneNumber:
+                                                                    phoneNumber,
+                                                                productName:
+                                                                    item.name,
+                                                              );
+
+                                                              final totalIfAdded =
+                                                                  alreadyOrderedToday +
+                                                                      item.quantity +
+                                                                      1;
+
+                                                              if (totalIfAdded >
+                                                                  2) {
+                                                                ToastHelper
+                                                                    .showErrorToast(
+                                                                  'Daily limit reached: Only 2 quantities allowed per day for this dish.',
+                                                                );
+                                                                return;
+                                                              }
+                                                            }
+
+                                                            ref
+                                                                .read(cartProvider
+                                                                    .notifier)
+                                                                .incrementItem(
+                                                                    item.name);
+                                                          }),
                                                     ],
                                                   ),
                                                 ),

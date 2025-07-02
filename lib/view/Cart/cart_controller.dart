@@ -1,6 +1,9 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+
+
 
 /// CartItem model
 class CartItem {
@@ -42,6 +45,8 @@ class CartItem {
     );
   }
 
+  
+
   /// Helper if you want to create a copy with a new quantity
   CartItem copyWith({int? quantity}) => CartItem(
         name: name,
@@ -58,6 +63,10 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
   CartNotifier() : super([]) {
     loadCartItems();
   }
+
+  CartItem? getItem(String productName) {
+  return state.firstWhereOrNull((item) => item.name == productName);
+}
 
   // ---------------
   // Loading states
@@ -137,7 +146,7 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
     setRemoveLoading(name, false);
   }
 
-  /// Increment item quantity by 1 (local only)
+ 
   Future<void> incrementItem(String name) async {
     setLoading(name, true);
     try {
