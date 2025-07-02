@@ -1,3 +1,5 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kealthy_food/view/Cart/address_model.dart';
 import 'package:kealthy_food/view/Cart/cart_controller.dart';
@@ -7,29 +9,25 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 double calculateDeliveryFee(double itemTotal, double distanceInKm) {
-  // We'll keep everything as doubles—no rounding.
   double deliveryFee = 0;
 
   if (itemTotal >= 199) {
-    // 0–7 km free if >= 199
     if (distanceInKm <= 7) {
       deliveryFee = 0;
     } else {
-      // e.g. 11.54 - 7 = 4.54 * 8 = 36.32
       deliveryFee = 8 * (distanceInKm - 7);
     }
   } else {
-    // If < 199
     if (distanceInKm <= 7) {
       deliveryFee = 50;
     } else {
-      // 50 + ((distanceInKm - 7) * 10)
       deliveryFee = 50 + 10 * (distanceInKm - 7);
     }
   }
 
   return deliveryFee.roundToDouble();
 }
+
 final finalTotalProvider = StateProvider<double>((ref) => 0.0);
 
 final firstOrderProvider = AsyncNotifierProvider<FirstOrderNotifier, bool>(() {
@@ -39,41 +37,65 @@ final firstOrderProvider = AsyncNotifierProvider<FirstOrderNotifier, bool>(() {
 class FirstOrderNotifier extends AsyncNotifier<bool> {
   @override
   Future<bool> build() async {
-    return false; // default
+    return false;
   }
 
   Future<void> checkFirstOrder(String phoneNumber) async {
     state = const AsyncLoading();
-    final url =
-        Uri.parse('https://api-jfnhkjk4nq-uc.a.run.app/orders/$phoneNumber');
+
+    bool hasOrderFromApi = false;
+    bool hasOrderFromRealtime = false;
+
+    // 1. Check API
     try {
+      final url =
+          Uri.parse('https://api-jfnhkjk4nq-uc.a.run.app/orders/$phoneNumber');
       final response = await http.get(url);
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        state = AsyncData(data.isEmpty); // true if no orders
+        hasOrderFromApi = data.isNotEmpty;
       } else if (response.statusCode == 404) {
-        state = const AsyncData(true); // First order
+        hasOrderFromApi = false;
       } else {
-        state = const AsyncData(false);
+        hasOrderFromApi = true; // assume order exists on error
       }
     } catch (e) {
-      state = const AsyncData(false);
+      print('API check failed: $e');
+      hasOrderFromApi = true; // assume error means order exists
     }
+
+    try {
+      final database = FirebaseDatabase.instanceFor(
+        app: Firebase.app(),
+        databaseURL: 'https://kealthy-90c55-dd236.firebaseio.com/',
+      );
+      final ordersSnapshot = await database
+          .ref('orders')
+          .orderByChild('phoneNumber')
+          .equalTo(phoneNumber)
+          .get();
+
+      hasOrderFromRealtime = ordersSnapshot.exists;
+    } catch (e) {
+      print('Realtime DB check failed: $e');
+      hasOrderFromRealtime = true; // assume error means order exists
+    }
+
+    // 3. Result
+    final isFirstOrder = !(hasOrderFromApi || hasOrderFromRealtime);
+    state = AsyncData(isFirstOrder);
   }
 }
 
-/// Calculates the final total with delivery fee, handling fee, and instant delivery.
 double calculateFinalTotal(
   double itemTotal,
   double distanceInKm,
-  //  double instantDeliveryFee
 ) {
   double handlingFee = 5;
   double deliveryFee = calculateDeliveryFee(itemTotal, distanceInKm);
 
-  double totalDeliveryFee = deliveryFee
-      // + instantDeliveryFee
-      ;
+  double totalDeliveryFee = deliveryFee;
 
   double finalTotal = itemTotal + totalDeliveryFee + handlingFee;
 

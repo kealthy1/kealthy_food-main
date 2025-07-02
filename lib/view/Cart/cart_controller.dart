@@ -86,12 +86,7 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
     _removeLoadingMap[itemName] = isLoading;
     state = [...state];
   }
-
-  // ---------------
-  // SharedPreferences methods
-  // ---------------
-
-  /// Load all cart items from SharedPreferences
+  
   Future<void> loadCartItems() async {
     final prefs = await SharedPreferences.getInstance();
     final String? cartData = prefs.getString('cartItems');
@@ -112,11 +107,7 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
     await prefs.setString('cartItems', cartData);
   }
 
-  // ---------------
-  // Cart operations
-  // ---------------
-
-  /// Add a new item or increment if it already exists (local only)
+  
   Future<void> addItem(CartItem newItem) async {
     setLoading(newItem.name, true);
 

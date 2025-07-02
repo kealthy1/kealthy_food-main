@@ -3,11 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/Cart/cart_controller.dart';
+import 'package:kealthy_food/view/Toast/toast_helper.dart';
 import 'package:kealthy_food/view/address/adress.dart';
 import 'package:kealthy_food/view/address/provider.dart';
 import 'package:kealthy_food/view/Cart/time.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+
+bool _isTrialDish(String name) {
+  // Add names of trial dishes here (case-sensitive or lowercase match)
+  const trialDishes = [
+    'Buttercraft Chicken Bowl',
+    'Quinoa & Tuna Fusion Bowl',
+    'Soya Paneer Bowl',
+    'Herbrost Beef Bowl',
+  ];
+
+  return trialDishes.contains(name);
+}
 
 final slotAvailabilityProvider =
     StateProvider<bool>((ref) => true); // Default: slot available
@@ -117,39 +130,36 @@ class CartPage extends ConsumerWidget {
                                       // Product Image
                                       Column(
                                         children: [
-                                          item.imageUrl.isEmpty
-                                              ? const SizedBox.shrink()
-                                              : ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                  child: CachedNetworkImage(
-                                                    imageUrl: item.imageUrl,
-                                                    width: 60,
-                                                    height: 60,
-                                                    fit: BoxFit.cover,
-                                                    placeholder: (context, url) =>
-                                                        Container(
-                                                      width: 60,
-                                                      height: 60,
-                                                      color: const Color(0xFFF4F4F5),
-                                                      child: const Center(
-                                                          child:
-                                                              CupertinoActivityIndicator()),
-                                                    ),
-                                                    errorWidget:
-                                                        (context, url, error) =>
-                                                            Container(
-                                                      width: 60,
-                                                      height: 60,
-                                                      color: const Color(0xFFF4F4F5),
-                                                      child: const Icon(
-                                                          Icons.broken_image,
-                                                          color: Colors.grey),
-                                                    ),
-                                                  ),
-                                                ),
+                                          ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            child: CachedNetworkImage(
+                                              imageUrl: item.imageUrl,
+                                              width: 60,
+                                              height: 60,
+                                              fit: BoxFit.cover,
+                                              placeholder: (context, url) =>
+                                                  Container(
+                                                width: 60,
+                                                height: 60,
+                                                color: const Color(0xFFF4F4F5),
+                                                child: const Center(
+                                                    child:
+                                                        CupertinoActivityIndicator()),
+                                              ),
+                                              errorWidget:
+                                                  (context, url, error) =>
+                                                      Container(
+                                                width: 60,
+                                                height: 60,
+                                                color: const Color(0xFFF4F4F5),
+                                                child: const Icon(
+                                                    Icons.broken_image,
+                                                    color: Colors.grey),
+                                              ),
+                                            ),
+                                          ),
                                           const SizedBox(height: 10),
-                                         
                                           Stack(
                                             children: [
                                               GestureDetector(
@@ -308,9 +318,14 @@ class CartPage extends ConsumerWidget {
                                                         ),
                                                       ),
                                                       IconButton(
-                                                        icon: const Icon(
+                                                        icon: Icon(
                                                           Icons.add,
-                                                          color: Colors.black,
+                                                          color: item.quantity >=
+                                                                      2 &&
+                                                                  _isTrialDish(
+                                                                      item.name)
+                                                              ? Colors.grey
+                                                              : Colors.black,
                                                         ),
                                                         onPressed: ref
                                                                 .read(cartProvider
@@ -319,6 +334,14 @@ class CartPage extends ConsumerWidget {
                                                                     item.name)
                                                             ? null
                                                             : () {
+                                                                if (_isTrialDish(item
+                                                                        .name) &&
+                                                                    item.quantity >=
+                                                                        2) {
+                                                                  ToastHelper.showErrorToast('You can only select 2 quantities for trial dishes');
+                                                                  return;
+                                                                }
+
                                                                 ref
                                                                     .read(cartProvider
                                                                         .notifier)

@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,13 +11,14 @@ import 'package:kealthy_food/view/product/product_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
-// Provider for toggling cart container visibility.
-final cartVisibilityProvider = StateProvider<bool>((ref) => true);  
-final ratingsMapProvider = StateProvider.family<Map<String, double>, String>((ref, subcategoryName) => {});
+
+
+final cartVisibilityProvider = StateProvider<bool>((ref) => true);
+final ratingsMapProvider = StateProvider.family<Map<String, double>, String>(
+    (ref, subcategoryName) => {});
 final selectedTypeProvider =
     StateProvider.family<String?, String>((ref, subcategory) => null);
 
-// Provider for the search query.
 final searchQueryProvider = StateProvider<String>((ref) => '');
 
 // Provider to fetch distinct product types based on subcategory.
@@ -87,8 +87,10 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
       final cachedData = prefs.getString(cacheKey);
       if (cachedData != null) {
         final cachedMap = json.decode(cachedData) as Map<String, dynamic>;
-        final mapped = cachedMap.map((k, v) => MapEntry(k, (v as num).toDouble()));
-        ref.read(ratingsMapProvider(widget.subcategoryName).notifier).state = mapped;
+        final mapped =
+            cachedMap.map((k, v) => MapEntry(k, (v as num).toDouble()));
+        ref.read(ratingsMapProvider(widget.subcategoryName).notifier).state =
+            mapped;
       }
 
       // Always fetch fresh data in background
@@ -97,7 +99,9 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
           .where('Subcategory', isEqualTo: widget.subcategoryName)
           .get();
 
-      final names = snapshot.docs.map((doc) => doc.data()['Name']?.toString() ?? '').toList();
+      final names = snapshot.docs
+          .map((doc) => doc.data()['Name']?.toString() ?? '')
+          .toList();
       final updatedRatings = <String, double>{};
 
       for (final name in names) {
@@ -109,7 +113,8 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
       await prefs.setString(cacheKey, json.encode(updatedRatings));
 
       if (mounted) {
-        ref.read(ratingsMapProvider(widget.subcategoryName).notifier).state = updatedRatings;
+        ref.read(ratingsMapProvider(widget.subcategoryName).notifier).state =
+            updatedRatings;
       }
     });
   }
@@ -569,13 +574,17 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                             ),
                             // Discount percentage Positioned badge
                             if (data['offer_price'] != null &&
-                                double.tryParse(data['offer_price'].toString()) != null &&
-                                double.parse(data['offer_price'].toString()) > 0)
+                                double.tryParse(
+                                        data['offer_price'].toString()) !=
+                                    null &&
+                                double.parse(data['offer_price'].toString()) >
+                                    0)
                               Positioned(
                                 bottom: 109,
                                 right: 0,
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
                                     color: Colors.red.shade700,
                                   ),
@@ -591,7 +600,8 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                               ),
                             // Rating badge positioned after the main container but before SOH badge
                             (() {
-                              final productName = data['Name']?.toString() ?? '';
+                              final productName =
+                                  data['Name']?.toString() ?? '';
                               final rating = ratingsMap[productName] ?? 0.0;
                               if (rating > 0.0) {
                                 return Positioned(
@@ -599,7 +609,8 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                                     clipper: LeftRibbonClipper(),
                                     child: Container(
                                       height: 25,
-                                      width: MediaQuery.of(context).size.width * 0.13,
+                                      width: MediaQuery.of(context).size.width *
+                                          0.13,
                                       decoration: const BoxDecoration(
                                         color: Color.fromARGB(255, 67, 168, 70),
                                       ),
@@ -615,7 +626,8 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                          const Icon(Icons.star, size: 13, color: Colors.yellow),
+                                          const Icon(Icons.star,
+                                              size: 13, color: Colors.yellow),
                                         ],
                                       ),
                                     ),
@@ -706,7 +718,6 @@ class _AllProductsPageState extends ConsumerState<AllProductsPage>
     );
   }
 }
-
 
 // Custom clipper for left ribbon badge
 class LeftRibbonClipper extends CustomClipper<Path> {

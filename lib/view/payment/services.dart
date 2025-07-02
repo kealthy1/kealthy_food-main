@@ -162,7 +162,7 @@ class OrderService {
         "selectedSlot": deliveryTime,
         "selectedType": address.type ?? '',
         "status": "Order Placed",
-        "totalAmountToPay": totalAmount,
+        "totalAmountToPay": totalAmount.round(), // returns int
         "deliveryFee": deliveryFee,
         // "offerDiscount": offerDiscount,
         // "instantDeliveryfee": instantDeliveryFee,
@@ -239,8 +239,8 @@ class OrderService {
         "selectedSlot": deliveryTime,
         "selectedType": address.type ?? '',
         "status": "Order Placed",
-        "totalAmountToPay": totalAmount,
-        "deliveryFee": deliveryFee,
+        "totalAmountToPay": totalAmount.round(), // returns int
+        "deliveryFee": deliveryFee.round(),
         "item_ean": "8908024418004",
         "planTitle": planTitle,
         "productName": productName,

@@ -3,28 +3,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/Cart/cart_controller.dart';
-
+import 'package:kealthy_food/view/Toast/toast_helper.dart';
 
 class AddToCartSection extends ConsumerStatefulWidget {
   final String productName;
   final int productPrice;
   final String productEAN;
   final int soh;
-  final String imageurl;// Add Stock on Hand parameter
+  final String imageurl; // Add Stock on Hand parameter
+  final int? maxQuantity;
 
-  const AddToCartSection({super.key, 
+  const AddToCartSection({
+    super.key,
     required this.productName,
     required this.productPrice,
     required this.productEAN,
     required this.soh,
-    required this.imageurl // Include in constructor
+    required this.imageurl,
+    this.maxQuantity,
+    // Include in constructor
   });
 
   @override
   ConsumerState<AddToCartSection> createState() => _AddToCartSectionState();
 }
 
-class _AddToCartSectionState extends ConsumerState<AddToCartSection> with TickerProviderStateMixin {
+class _AddToCartSectionState extends ConsumerState<AddToCartSection>
+    with TickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _animation;
 
@@ -97,11 +102,10 @@ class _AddToCartSectionState extends ConsumerState<AddToCartSection> with Ticker
               : () async {
                   await cartNotifier.addItem(
                     CartItem(
-                      name: widget.productName,
-                      price: widget.productPrice,
-                      ean: widget.productEAN,
-                      imageUrl: widget.imageurl
-                    ),
+                        name: widget.productName,
+                        price: widget.productPrice,
+                        ean: widget.productEAN,
+                        imageUrl: widget.imageurl),
                   );
                 },
           child: Stack(
@@ -110,7 +114,7 @@ class _AddToCartSectionState extends ConsumerState<AddToCartSection> with Ticker
                 height: 40,
                 width: MediaQuery.of(context).size.width * 0.30,
                 decoration: BoxDecoration(
-                  color:    Colors.white,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                     color: Colors.green,
@@ -157,7 +161,7 @@ class _AddToCartSectionState extends ConsumerState<AddToCartSection> with Ticker
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color:  Colors.green,
+                color: Colors.green,
               ),
             ),
             child: Row(
@@ -177,10 +181,25 @@ class _AddToCartSectionState extends ConsumerState<AddToCartSection> with Ticker
                       color: Colors.green),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.add, color: Colors.green),
-                  onPressed: loading
-                      ? null
-                      : () => cartNotifier.incrementItem(widget.productName),
+                  icon: Icon(
+                    Icons.add,
+                    color: (widget.maxQuantity != null &&
+                            cartItem.quantity >= widget.maxQuantity!)
+                        ? Colors.grey
+                        : Colors.green,
+                  ),
+                  onPressed: () {
+                    if (loading) return;
+
+                    if (widget.maxQuantity != null &&
+                        cartItem.quantity >= widget.maxQuantity!) {
+                      ToastHelper.showErrorToast(
+                          'You can only select 2 quantities for trial dishes');
+                      return;
+                    }
+
+                    cartNotifier.incrementItem(widget.productName);
+                  },
                 ),
               ],
             ),
