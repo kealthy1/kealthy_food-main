@@ -316,7 +316,7 @@ class _AddToCartSectionState extends ConsumerState<AddToCartSection>
                       if (widget.maxQuantity != null &&
                           cartItem.quantity >= widget.maxQuantity!) {
                         ToastHelper.showErrorToast(
-                          'You can only select 2 quantities for trial dishes.',
+                          'You can only select 1 quantities for trial dishes.',
                         );
                         return;
                       }

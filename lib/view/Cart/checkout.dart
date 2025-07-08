@@ -6,6 +6,7 @@ import 'package:kealthy_food/view/Cart/bill.dart';
 import 'package:kealthy_food/view/Cart/cart_controller.dart';
 import 'package:kealthy_food/view/Cart/checkout_provider.dart';
 import 'package:kealthy_food/view/Cart/instruction_container.dart';
+import 'package:kealthy_food/view/Toast/toast_helper.dart';
 import 'package:kealthy_food/view/payment/payment.dart';
 
 // Asynchronous Provider for Address
@@ -306,7 +307,7 @@ class CheckoutPage extends ConsumerWidget {
                                       const SizedBox(width: 10),
                                       Expanded(
                                         child: Text(
-                                          "Congratulations! You get ₹${itemTotal >= 100 ? 100 : itemTotal.toStringAsFixed(0)} off on your first order.",
+                                          "Congratulations! You get ₹${itemTotal >= 50 ? 50 : itemTotal.toStringAsFixed(0)} off on your first order.",
                                           style: GoogleFonts.poppins(
                                             color: Colors.green.shade800,
                                             fontSize: 12,
@@ -369,6 +370,12 @@ class CheckoutPage extends ConsumerWidget {
             ),
           ),
           onPressed: () {
+            // Check if cart is empty before proceeding
+            final currentCartItems = ref.read(cartProvider);
+            if (currentCartItems.isEmpty) {
+              ToastHelper.showErrorToast('Your cart is expired!');
+              return;
+            }
             // Access selected instructions and packing instructions
             final instructions = getSelectedInstructions(ref);
             final packingInstructions = packingInstructionsController.text;

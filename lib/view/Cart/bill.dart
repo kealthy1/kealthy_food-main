@@ -34,11 +34,13 @@ class BillDetailsWidget extends StatelessWidget {
     double handlingFee = 5;
 
     // Product discount logic: Only apply discount if offerDiscount > 0
-    double productDiscount = offerDiscount > 0 ? (itemTotal >= 100 ? 100 : itemTotal) : 0;
+    double productDiscount =
+        offerDiscount > 0 ? (itemTotal >= 50 ? 50 : itemTotal) : 0;
     double adjustedItemTotal = itemTotal - productDiscount;
 
     // Total amount to pay
-    double finalTotalToPay = adjustedItemTotal + discountedFee + handlingFee;
+    // double finalTotalToPay = adjustedItemTotal + discountedFee + handlingFee;
+    double finalTotalToPay = 1;
 
     // Pass the calculated total up if callback is provided
     if (onTotalCalculated != null) {

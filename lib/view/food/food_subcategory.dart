@@ -6,23 +6,45 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/Cart/cart_controller.dart';
 import 'package:kealthy_food/view/product/add_to_cart.dart';
 
-/// Provider that fetches product stock from Firestore.
-/// The Firestore collection "productSOH" should have documents with product names as IDs
-/// and each document should have a "stock" field.
-final firestoreStockProvider = StreamProvider<Map<String, int>>((ref) {
-  final stockCollection = FirebaseFirestore.instance.collection('productSOH');
+/// Model that maps your Firestore document
+class TrialDish {
+  final String name;
+  final int stock;
+  final int price;
+  final String quantity;
+  final String ingredients; // single string
 
-  return stockCollection.snapshots().map((snapshot) {
-    final Map<String, int> stockMap = {};
-    for (var doc in snapshot.docs) {
-      final name = doc.id;
-      final soh = doc.data()['stock'] ?? 0;
-      stockMap[name] = soh is int ? soh : int.tryParse(soh.toString()) ?? 0;
-    }
-    return stockMap;
+  TrialDish({
+    required this.name,
+    required this.stock,
+    required this.price,
+    required this.quantity,
+    required this.ingredients,
   });
+
+  factory TrialDish.fromFirestore(Map<String, dynamic> data) {
+    return TrialDish(
+      name: data['Name'] ?? '',
+      stock: data['stock'] ?? 0,
+      price: data['price'] ?? 0,
+      quantity: data['qty'] ?? '',
+      ingredients: data['Ingredients'] ?? '',
+    );
+  }
+}
+
+/// Riverpod StreamProvider to fetch data from Firestore
+final trialDishesProvider = StreamProvider<List<TrialDish>>((ref) {
+  return FirebaseFirestore.instance.collection('productSOH').snapshots().map(
+    (snapshot) {
+      return snapshot.docs.map((doc) {
+        return TrialDish.fromFirestore(doc.data());
+      }).toList();
+    },
+  );
 });
 
+/// Utility to restrict max quantity for trial items
 bool _isTrialDish(String name) {
   const trialDishes = [
     'Buttercraft Chicken Bowl',
@@ -34,17 +56,17 @@ bool _isTrialDish(String name) {
 }
 
 class FoodSubCategoryPage extends ConsumerStatefulWidget {
-  const FoodSubCategoryPage({super.key});
+  const FoodSubCategoryPage({super.key, });
+  
 
   @override
-  ConsumerState<FoodSubCategoryPage> createState() =>
-      _FoodSubCategoryPageState();
+  ConsumerState<FoodSubCategoryPage> createState() => _FoodSubCategoryPageState();
 }
 
 class _FoodSubCategoryPageState extends ConsumerState<FoodSubCategoryPage> {
   @override
   Widget build(BuildContext context) {
-    final stockAsync = ref.watch(firestoreStockProvider);
+    final trialDishesAsync = ref.watch(trialDishesProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -91,8 +113,7 @@ class _FoodSubCategoryPageState extends ConsumerState<FoodSubCategoryPage> {
                             color: Colors.red,
                             shape: BoxShape.circle,
                           ),
-                          constraints:
-                              const BoxConstraints(minWidth: 18, minHeight: 18),
+                          constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
                           child: Text(
                             '$itemCount',
                             style: const TextStyle(
@@ -111,18 +132,17 @@ class _FoodSubCategoryPageState extends ConsumerState<FoodSubCategoryPage> {
         ],
       ),
       backgroundColor: Colors.white,
-      body: stockAsync.when(
+      body: trialDishesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => const Center(child: Text("Error loading stock")),
-        data: (stockMap) {
+        error: (e, _) => Center(child: Text("Error loading dishes")),
+        data: (dishes) {
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: ListView(
               children: [
                 Container(
                   height: 50,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.orange.shade100,
                     borderRadius: const BorderRadius.only(
@@ -142,73 +162,15 @@ class _FoodSubCategoryPageState extends ConsumerState<FoodSubCategoryPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                _buildFoodItem(
-                  "Buttercraft Chicken Bowl",
-                  "200g",
-                  [
-                    "Marinated Chicken",
-                    "Capsicum (Green/Yellow/Red)",
-                    "Onion",
-                    "Paneer(Grated)",
-                    "Butter",
-                    "Onion & Garlic & Celery",
-                  ],
-                  100,
-                  stockMap['Buttercraft Chicken Bowl']!,
+                ...dishes.map(_buildFoodItem).toList(),
+                const SizedBox(height: 12),
+                Text(
+                  '*Introductory price',
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    color: Colors.black,
+                  ),
                 ),
-                _buildFoodItem(
-                  "Quinoa & Tuna Fusion Bowl",
-                  "200g",
-                  [
-                    "Quinoa",
-                    "Tuna in Olive oil",
-                    "Green & Black Olives",
-                    "Capsicum (Green/Yellow/Red)",
-                    "Onion & Garlic & Celery",
-                    "Paneer(Grated)",
-                  ],
-                  100,
-                  stockMap['Quinoa & Tuna Fusion Bowl']!,
-                ),
-                _buildFoodItem(
-                  "Soya Paneer Bowl",
-                  "200g",
-                  [
-                    "Soya",
-                    "Paneer(Cubes & Grated)",
-                    "Onion",
-                    "Parsley",
-                    "Mushroom",
-                    "Capsicum (Green/Yellow/Red)",
-                    "Onion & Garlic & Celery",
-                    "Butter"
-                  ],
-                  100,
-                  stockMap['Soya Paneer Bowl']!,
-                ),
-                _buildFoodItem(
-                  "Herbrost Beef Bowl",
-                  "200g",
-                  [
-                    "Marinated Beef Tenderloin",
-                    "Potato",
-                    "Mushroom",
-                    "Capsicum (Green/Yellow/Red)",
-                    "Onion & Garlic & Celery",
-                    "Butter",
-                    "Parsley",
-                    "French Beans",
-                    "Broccoli",
-                    "Carrot",
-                  ],
-                  100,
-                  stockMap['Herbrost Beef Bowl']!,
-                ),
-                Text('*Introductory price',
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      color: Colors.black,
-                    )),
               ],
             ),
           );
@@ -217,8 +179,7 @@ class _FoodSubCategoryPageState extends ConsumerState<FoodSubCategoryPage> {
     );
   }
 
-  Widget _buildFoodItem(String name, String quantity, List<String> ingredients,
-      int price, int soh) {
+  Widget _buildFoodItem(TrialDish dish) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(12),
@@ -234,13 +195,15 @@ class _FoodSubCategoryPageState extends ConsumerState<FoodSubCategoryPage> {
           Row(
             children: [
               Text(
-                name,
+                dish.name,
                 style: GoogleFonts.poppins(
-                    fontSize: 18, fontWeight: FontWeight.w600),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(width: 5),
               Text(
-                "($quantity)",
+                "(${dish.quantity})",
                 style: GoogleFonts.poppins(fontSize: 14, color: Colors.black),
               ),
             ],
@@ -252,29 +215,29 @@ class _FoodSubCategoryPageState extends ConsumerState<FoodSubCategoryPage> {
           ),
           const SizedBox(height: 4),
           Text(
-            ingredients.join(', '),
+            dish.ingredients,
             style: GoogleFonts.poppins(fontSize: 14, color: Colors.black87),
           ),
           const SizedBox(height: 12),
           Row(
             children: [
               Text(
-                "*\u20B9$price/-",
+                "*\u20B9${dish.price}/-",
                 style: GoogleFonts.poppins(
                   fontSize: 20,
-                  color: soh > 0 ? Colors.black87 : Colors.grey,
+                  color: dish.stock > 0 ? Colors.black87 : Colors.grey,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const Spacer(),
-              if (soh > 0)
+              if (dish.stock > 0)
                 AddToCartSection(
-                  productName: name,
-                  productPrice: price,
+                  productName: dish.name,
+                  productPrice: dish.price,
                   productEAN: '',
-                  soh: soh,
+                  soh: dish.stock,
                   imageurl: '',
-                  maxQuantity: _isTrialDish(name) ? 2 : null,
+                  maxQuantity: _isTrialDish(dish.name) ? 1 : null,
                 )
               else
                 Container(

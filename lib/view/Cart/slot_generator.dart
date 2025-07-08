@@ -35,7 +35,9 @@ class AvailableSlotsGenerator {
         slotEndTime = endBoundary;
       }
 
-      slots.add({"start": adjustedStartTime, "end": slotEndTime});
+      if (adjustedStartTime.difference(currentTime).inMinutes >= 60) {
+        slots.add({"start": adjustedStartTime, "end": slotEndTime});
+      }
 
       adjustedStartTime = slotEndTime;
     }

@@ -58,6 +58,74 @@ class OrderService {
     }
   }
 
+  Future<void> sendPaymentFailureNotification({
+    required String token,
+    required String userName,
+    String? orderId,
+  }) async {
+    print("📨 Preparing to send notification to $token...");
+
+    const String apiUrl =
+        'https://api-jfnhkjk4nq-uc.a.run.app/sendPaymentFailureNotification';
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'token': token,
+          'userName': userName,
+          'orderId': orderId ?? '',
+        }),
+      );
+
+      print("📬 Response Status: ${response.statusCode}");
+      print("📬 Response Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        print("✅ Notification sent: ${response.body}");
+      } else {
+        print("❌ Failed to send: ${response.body}");
+      }
+    } catch (e) {
+      print("❌ Error sending notification: $e");
+    }
+  }
+
+  Future<void> sendPaymentSuccessNotification({
+    required String token,
+    required String userName,
+    String? orderId,
+  }) async {
+    print("📨 Preparing to send notification to $token...");
+
+    const String apiUrl =
+        'https://api-jfnhkjk4nq-uc.a.run.app/sendPaymentSuccessNotification';
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'token': token,
+          'userName': userName,
+          'orderId': orderId ?? '',
+        }),
+      );
+
+      print("📬 Response Status: ${response.statusCode}");
+      print("📬 Response Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        print("✅ Notification sent: ${response.body}");
+      } else {
+        print("❌ Failed to send: ${response.body}");
+      }
+    } catch (e) {
+      print("❌ Error sending notification: $e");
+    }
+  }
+
   /// Creates a Razorpay order via your backend’s `/create-order` route.
   static Future<String> createRazorpayOrder(double totalAmount) async {
     try {
@@ -247,7 +315,7 @@ class OrderService {
         "startDate": startDate,
         "endDate": endDate,
         "subscriptionQty": subscriptionQty,
-        "alternateDay" : subscriptionType,
+        "alternateDay": subscriptionType,
       };
 
       await database.ref().child('subscriptions').child(orderId).set(orderData);

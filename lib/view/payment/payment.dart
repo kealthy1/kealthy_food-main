@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/Cart/cart_controller.dart';
 import 'package:kealthy_food/view/payment/dialogue_helper.dart';
 import 'package:kealthy_food/view/payment/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'Online_payment.dart';
 
 final selectedPaymentProvider =
@@ -22,17 +23,17 @@ class PaymentPage extends ConsumerStatefulWidget {
   // final  double offerDiscount;
   // final double instantDeliveryFee;
 
-  const PaymentPage(
-      {super.key,
-      required this.totalAmount,
-      required this.instructions,
-      required this.address,
-      required this.deliverytime,
-      required this.packingInstructions,
-      required this.deliveryfee,
-      // required this.offerDiscount,
-      // required this.instantDeliveryFee
-      });
+  const PaymentPage({
+    super.key,
+    required this.totalAmount,
+    required this.instructions,
+    required this.address,
+    required this.deliverytime,
+    required this.packingInstructions,
+    required this.deliveryfee,
+    // required this.offerDiscount,
+    // required this.instantDeliveryFee
+  });
 
   @override
   _PaymentPageState createState() => _PaymentPageState();
@@ -87,7 +88,6 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
             _buildTotalAmount(),
 
             const SizedBox(height: 10),
-
 
             _buildActionButton(selectedPaymentMethod, isOrderSaving, context),
             const SizedBox(height: 10),
@@ -202,6 +202,9 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
 
   /// Handles Payment or Order Placement
   Future<void> _handlePayment(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    final fcmToken = prefs.getString("fcm_token") ?? '';
+    final userName = widget.address.name ?? 'Unknown Name';
     ref.read(isOrderSavingProvider.notifier).state = true;
 
     try {
@@ -218,6 +221,10 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
           // offerDiscount: widget.offerDiscount,
           // instantDeliveryFee: widget.instantDeliveryFee,
           paymentMethod: 'Cash on Delivery',
+        );
+        await OrderService().sendPaymentSuccessNotification(
+          token: fcmToken,
+          userName: userName,
         );
         await ref.read(cartProvider.notifier).clearCart();
 
@@ -238,7 +245,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
               deliverytime: widget.deliverytime,
               deliveryFee: widget.deliveryfee,
               // instantDeliveryFee: widget.instantDeliveryFee,
-              razorpayOrderId: razorpayOrderId, 
+              razorpayOrderId: razorpayOrderId,
               orderType: 'Normal',
             ),
           ),
@@ -246,7 +253,9 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
       }
     } catch (e) {
       print('Error placing order: $e');
-      PaymentDialogHelper.showPaymentFailureDialog(context,);
+      PaymentDialogHelper.showPaymentFailureDialog(
+        context,
+      );
     } finally {
       ref.read(isOrderSavingProvider.notifier).state = false;
     }

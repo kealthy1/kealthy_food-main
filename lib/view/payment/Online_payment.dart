@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kealthy_food/view/payment/dialogue_helper.dart';
@@ -57,6 +58,10 @@ class _OnlinePaymentProcessingState
   }
 
   Future<void> _handlePaymentSuccess(PaymentSuccessResponse response) async {
+    final prefs = await SharedPreferences.getInstance();
+    final fcmToken = prefs.getString("fcm_token") ?? '';
+    final userName = widget.address.name ?? 'Unknown Name';
+    final orderId = widget.razorpayOrderId;
     await OrderService.removeRazorpayOrderId();
 
     // Payment succeeded, so let's save the order
@@ -85,6 +90,12 @@ class _OnlinePaymentProcessingState
       );
     }
 
+    await OrderService().sendPaymentSuccessNotification(
+    token: fcmToken,
+    userName: userName,
+    orderId: orderId,
+  );
+
     // Clear the cart only if not a subscription
     if (widget.orderType != 'subscription') {
       ref.read(cartProvider.notifier).clearCart();
@@ -97,10 +108,61 @@ class _OnlinePaymentProcessingState
   void _handlePaymentFailure(PaymentFailureResponse response) async {
     print("Payment Failed: ${response.code} | ${response.message}");
 
+    final prefs = await SharedPreferences.getInstance();
+    final phoneNumber = prefs.getString('phoneNumber') ?? 'Unknown';
+    final fcmToken = prefs.getString("fcm_token") ?? '';
+    final userName = widget.address.name ?? 'Unknown Name';
+    final orderId = widget.razorpayOrderId;
+
+    final failureOrderData = {
+      "Name": widget.address.name ?? 'Unknown Name',
+      "type": widget.orderType,
+      "cookinginstrcutions": widget.packingInstructions,
+      "createdAt": DateTime.now().toIso8601String(),
+      "deliveryInstructions": widget.deliveryInstructions,
+      "distance": widget.address.distance ?? 0.0,
+      "landmark": widget.address.landmark ?? '',
+      "orderId": widget.razorpayOrderId,
+      "orderItems": widget.address.cartItems.map((item) {
+        return {
+          "item_name": item.name ?? '',
+          "item_price": item.price ?? 0.0,
+          "item_quantity": item.quantity ?? 1,
+          "item_ean": item.ean ?? ''
+        };
+      }).toList(),
+      "paymentmethod": "Online Payment",
+      "fcm_token": prefs.getString("fcm_token") ?? '',
+      "phoneNumber": phoneNumber,
+      "selectedDirections": widget.address.selectedInstruction ?? 0.0,
+      "selectedLatitude": widget.address.selectedLatitude ?? 0.0,
+      "selectedLongitude": widget.address.selectedLongitude ?? 0.0,
+      "selectedRoad": widget.address.selectedRoad ?? '',
+      "selectedSlot": widget.deliverytime,
+      "selectedType": widget.address.type ?? '',
+      "status": "Order not placed",
+      "totalAmountToPay": widget.totalAmount.round(),
+      "deliveryFee": widget.deliveryFee,
+      "failureReason": response.message ?? 'Unknown',
+      "failureCode": response.code,
+    };
+
+    await FirebaseFirestore.instance
+        .collection('FailedPayments')
+        .add(failureOrderData);
+    print("❌ Full failed order data saved to Firestore.");
+
+    await OrderService().sendPaymentFailureNotification(
+    token: fcmToken,
+    userName: userName,
+    orderId: orderId,
+  );
+
     await OrderService.removeRazorpayOrderId();
+     ref.read(cartProvider.notifier).clearCart();
 
     // Show failure dialog from the new helper
-    PaymentDialogHelper.showPaymentFailureDialog(context,);
+    PaymentDialogHelper.showPaymentFailureDialog(context);
   }
 
   Future<void> _handleExternalWallet(ExternalWalletResponse response) async {
@@ -184,7 +246,10 @@ class _OnlinePaymentProcessingState
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Image.asset('lib/assets/images/shield.png',width: 50,),
+            Image.asset(
+              'lib/assets/images/shield.png',
+              width: 50,
+            ),
             const SizedBox(height: 20),
             Text(
               '🔐 Secure • Private • Protected',
