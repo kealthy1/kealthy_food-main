@@ -12,34 +12,39 @@ import 'package:kealthy_food/view/payment/payment.dart';
 // Asynchronous Provider for Address
 
 // Checkout Page
-class CheckoutPage extends ConsumerWidget {
+class CheckoutPage extends ConsumerStatefulWidget {
+  final String preferredTime;
   final double itemTotal;
   final List<CartItem> cartItems;
   final String deliveryTime;
-  // final double instantDeliveryfee;
 
   const CheckoutPage({
     super.key,
     required this.itemTotal,
     required this.cartItems,
     required this.deliveryTime,
-    // required this.instantDeliveryfee,
+    required this.preferredTime,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CheckoutPage> createState() => _CheckoutPageState();
+}
+
+class _CheckoutPageState extends ConsumerState<CheckoutPage> {
+  final TextEditingController packingInstructionsController = TextEditingController();
+
+  @override
+  void dispose() {
+    packingInstructionsController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final firstOrderAsync = ref.watch(firstOrderProvider);
     double finalToPay = 0.0;
-
-// ignore: dead_code
     // Watch the addressProvider
     final addressAsyncValue = ref.watch(addressProvider);
-
-    final TextEditingController packingInstructionsController =
-        TextEditingController(
-      text: "Don't send cutleries, tissues, straws, etc.",
-    );
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -68,11 +73,6 @@ class CheckoutPage extends ConsumerWidget {
             ),
           ),
           data: (isFirstOrder) {
-            final TextEditingController packingInstructionsController =
-                TextEditingController(
-              text: "Don't send cutleries, tissues, straws, etc.",
-            );
-
             return SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,7 +168,7 @@ class CheckoutPage extends ConsumerWidget {
                                         ),
                                         const SizedBox(height: 5),
                                         Text(
-                                          'Delivery Time: $deliveryTime',
+                                          'Delivery Time: ${widget.deliveryTime}',
                                           style: GoogleFonts.poppins(
                                             fontSize: 12,
                                             fontWeight: FontWeight.bold,
@@ -212,6 +212,12 @@ class CheckoutPage extends ConsumerWidget {
                                     ),
                                     cursorColor: Colors.black,
                                     decoration: InputDecoration(
+                                      hintText: "Don't send cutleries, tissues, straws, etc.",
+                                      hintStyle: GoogleFonts.poppins(
+                                        fontSize: 13,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                      
                                       contentPadding:
                                           const EdgeInsets.symmetric(
                                         horizontal: 15,
@@ -307,7 +313,7 @@ class CheckoutPage extends ConsumerWidget {
                                       const SizedBox(width: 10),
                                       Expanded(
                                         child: Text(
-                                          "Congratulations! You get ₹${itemTotal >= 50 ? 50 : itemTotal.toStringAsFixed(0)} off on your first order.",
+                                          "Congratulations! You get ₹${widget.itemTotal >= 50 ? 50 : widget.itemTotal.toStringAsFixed(0)} off on your first order.",
                                           style: GoogleFonts.poppins(
                                             color: Colors.green.shade800,
                                             fontSize: 12,
@@ -322,10 +328,10 @@ class CheckoutPage extends ConsumerWidget {
 
                               // Final bill
                               BillDetailsWidget(
-                                itemTotal: itemTotal,
+                                itemTotal: widget.itemTotal,
                                 distanceInKm: distanceInKm,
                                 offerDiscount: isFirstOrder
-                                    ? (itemTotal >= 100 ? 100.0 : itemTotal)
+                                    ? (widget.itemTotal >= 100 ? 100.0 : widget.itemTotal)
                                     : 0.0,
                                 onTotalCalculated: (value) {
                                   finalToPay = value;
@@ -388,19 +394,17 @@ class CheckoutPage extends ConsumerWidget {
 
                 // Use helper methods:
                 final double normalDeliveryFee =
-                    calculateDeliveryFee(itemTotal, distanceInKm);
-
-                // 2) Combine Normal + Instant
-                // final double offerDiscount = isFirstOrder ? 100.0 : 0.0;
+                    calculateDeliveryFee(widget.itemTotal, distanceInKm);
 
                 Navigator.push(
                   context,
                   CupertinoPageRoute(
                     builder: (context) => PaymentPage(
+                      preferredTime: widget.preferredTime,
                       totalAmount: finalToPay,
                       instructions: instructions,
                       address: selectedAddress,
-                      deliverytime: deliveryTime,
+                      deliverytime: widget.deliveryTime,
                       packingInstructions: packingInstructions,
                       deliveryfee: normalDeliveryFee,
                       // instantDeliveryFee: instantDeliveryfee,

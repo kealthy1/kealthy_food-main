@@ -20,6 +20,7 @@ class OnlinePaymentProcessing extends ConsumerStatefulWidget {
   // final double instantDeliveryFee;
   final String razorpayOrderId;
   final String orderType;
+  final String preferredTime;
   // final double offerDiscount;
 
   const OnlinePaymentProcessing({
@@ -33,6 +34,7 @@ class OnlinePaymentProcessing extends ConsumerStatefulWidget {
     // required this.instantDeliveryFee,
     required this.razorpayOrderId,
     required this.orderType,
+    required this.preferredTime,
     // required this.offerDiscount,
   });
 
@@ -78,6 +80,7 @@ class _OnlinePaymentProcessingState
       );
     } else {
       await OrderService.saveOrderToFirebase(
+        preferredTime: widget.preferredTime,
         // offerDiscount: widget.offerDiscount,
         address: widget.address,
         totalAmount: widget.totalAmount,

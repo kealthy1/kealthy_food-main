@@ -156,6 +156,7 @@ class SubscriptionPaymentPage extends ConsumerWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => OnlinePaymentProcessing(
+                        preferredTime: '',
                         // offerDiscount: 0,
                         totalAmount: totalAmount,
                         packingInstructions: '',
@@ -166,7 +167,6 @@ class SubscriptionPaymentPage extends ConsumerWidget {
                         // instantDeliveryFee: 0,
                         razorpayOrderId: razorpayOrderId,
                         orderType: 'subscription',
-
                       ),
                     ),
                   );

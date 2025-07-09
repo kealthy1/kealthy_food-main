@@ -1,10 +1,15 @@
+// Provider to manage expanded state for each ingredient block by dish name
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/Cart/cart_controller.dart';
 import 'package:kealthy_food/view/product/add_to_cart.dart';
+import 'package:shimmer/shimmer.dart';
+
 
 /// Model that maps your Firestore document
 class TrialDish {
@@ -13,6 +18,21 @@ class TrialDish {
   final int price;
   final String quantity;
   final String ingredients; // single string
+  final String imageurl; // added
+  final String what; // added
+  final String nutrients; // added
+  final String fiber; // added
+  final String energy; // added
+  final String protein; // added
+  final String saturatedFat; // added
+  final String totalFat; // added
+  final String transFat; // added
+  final String unsaturatedFat; // added
+  final String whatisitusedfor; // added
+  final String sugar; // added
+  final String carbs; // added
+
+
 
   TrialDish({
     required this.name,
@@ -20,47 +40,80 @@ class TrialDish {
     required this.price,
     required this.quantity,
     required this.ingredients,
+    required this.imageurl,
+    required this.what,
+    required this.nutrients,
+    required this.fiber,
+    required this.energy,
+    required this.protein,
+    required this.saturatedFat,
+    required this.totalFat,
+    required this.transFat,
+    required this.unsaturatedFat,
+    required this.whatisitusedfor,
+    required this.sugar,
+    required this.carbs,
   });
 
   factory TrialDish.fromFirestore(Map<String, dynamic> data) {
     return TrialDish(
       name: data['Name'] ?? '',
-      stock: data['stock'] ?? 0,
-      price: data['price'] ?? 0,
-      quantity: data['qty'] ?? '',
-      ingredients: data['Ingredients'] ?? '',
+      carbs : data['Total Carbohydrates (g)'] ?? '',
+      sugar : data['Sugars (g)'] ?? '',
+      unsaturatedFat: data['Unsaturated Fat (g)'] ?? '',
+      transFat: data['Trans Fat (g)'] ?? '',
+      totalFat: data['Total Fat (g)'] ?? '',
+      saturatedFat: data['Saturated Fat (g)'] ?? '',
+      protein : data['Protein (g)'] ?? '',
+      what : data['What is it?'] ?? '',
+      whatisitusedfor: data['What is it used for?'] ?? '',
+      energy: data['Energy (kcal)'] ?? '',
+      fiber :data ['Dietary Fiber (g)'] ?? '',
+      nutrients: data['Vendor Name'] ?? '',
+      stock: data['SOH'] ?? 0,
+      price: data['Price'] ?? 0,
+      quantity: data['Qty'] ?? '',
+      ingredients: (data['Ingredients'] as List?)?.join(', ') ?? '',
+      imageurl: (data['ImageUrl'] is List && data['ImageUrl'].isNotEmpty)
+          ? data['ImageUrl'][0]
+          : '',
     );
   }
 }
 
 /// Riverpod StreamProvider to fetch data from Firestore
-final trialDishesProvider = StreamProvider<List<TrialDish>>((ref) {
-  return FirebaseFirestore.instance.collection('productSOH').snapshots().map(
-    (snapshot) {
-      return snapshot.docs.map((doc) {
-        return TrialDish.fromFirestore(doc.data());
-      }).toList();
-    },
-  );
+final trialDishesProvider = StreamProvider<List<TrialDish>>((ref) async* {
+  final trialDoc = await FirebaseFirestore.instance
+      .collection('trail dish')
+      .doc('A9TFXmziRdIXE2Cg6yqQ')
+      .get();
+  final data = trialDoc.data();
+  if (data == null) {
+    yield [];
+    return;
+  }
+
+  final trialNames = data.values.map((v) => v.toString()).toList();
+
+  yield* FirebaseFirestore.instance
+      .collection('Products')
+      .where('Name', whereIn: trialNames)
+      .snapshots()
+      .map((snapshot) {
+    return snapshot.docs.map((doc) {
+      return TrialDish.fromFirestore(doc.data());
+    }).toList();
+  });
 });
 
-/// Utility to restrict max quantity for trial items
-bool _isTrialDish(String name) {
-  const trialDishes = [
-    'Buttercraft Chicken Bowl',
-    'Quinoa & Tuna Fusion Bowl',
-    'Soya Paneer Bowl',
-    'Herbrost Beef Bowl',
-  ];
-  return trialDishes.contains(name);
-}
-
 class FoodSubCategoryPage extends ConsumerStatefulWidget {
-  const FoodSubCategoryPage({super.key, });
-  
+  const FoodSubCategoryPage({
+    super.key,
+  });
 
   @override
-  ConsumerState<FoodSubCategoryPage> createState() => _FoodSubCategoryPageState();
+  ConsumerState<FoodSubCategoryPage> createState() =>
+      _FoodSubCategoryPageState();
 }
 
 class _FoodSubCategoryPageState extends ConsumerState<FoodSubCategoryPage> {
@@ -113,7 +166,8 @@ class _FoodSubCategoryPageState extends ConsumerState<FoodSubCategoryPage> {
                             color: Colors.red,
                             shape: BoxShape.circle,
                           ),
-                          constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                          constraints:
+                              const BoxConstraints(minWidth: 18, minHeight: 18),
                           child: Text(
                             '$itemCount',
                             style: const TextStyle(
@@ -133,16 +187,18 @@ class _FoodSubCategoryPageState extends ConsumerState<FoodSubCategoryPage> {
       ),
       backgroundColor: Colors.white,
       body: trialDishesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text("Error loading dishes")),
+        loading: () => const Center(child: CupertinoActivityIndicator()),
+        error: (e, _) => const Center(child: Text("Error loading dishes")),
         data: (dishes) {
+          print("Fetched dishes: ${dishes.length}");
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: ListView(
               children: [
                 Container(
                   height: 50,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.orange.shade100,
                     borderRadius: const BorderRadius.only(
@@ -191,14 +247,41 @@ class _FoodSubCategoryPageState extends ConsumerState<FoodSubCategoryPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (dish.imageurl.isNotEmpty)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: CachedNetworkImage(
+                imageUrl: dish.imageurl,
+                width: double.infinity,
+                height: 200,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: Container(
+                    width: double.infinity,
+                    height: 200,
+                    color: Colors.white,
+                  ),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  height: 200,
+                  color: Colors.grey[200],
+                  child: const Center(child: Icon(Icons.image_not_supported)),
+                ),
+              ),
+            ),
           const SizedBox(height: 10),
           Row(
             children: [
-              Text(
-                dish.name,
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
+              Expanded(
+                child: Text(
+                  overflow: TextOverflow.visible,
+                  dish.name,
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               const SizedBox(width: 5),
@@ -208,21 +291,20 @@ class _FoodSubCategoryPageState extends ConsumerState<FoodSubCategoryPage> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          // Move price/AddToCart row and ingredients section here
+         
+          const SizedBox(height: 12),
           Text(
             'Ingredients:',
             style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 4),
-          Text(
-            dish.ingredients,
-            style: GoogleFonts.poppins(fontSize: 14, color: Colors.black87),
-          ),
+          IngredientText(dish: dish),
           const SizedBox(height: 12),
-          Row(
+           Row(
             children: [
               Text(
-                "*\u20B9${dish.price}/-",
+                "\u20B9${dish.price}*",
                 style: GoogleFonts.poppins(
                   fontSize: 20,
                   color: dish.stock > 0 ? Colors.black87 : Colors.grey,
@@ -236,13 +318,12 @@ class _FoodSubCategoryPageState extends ConsumerState<FoodSubCategoryPage> {
                   productPrice: dish.price,
                   productEAN: '',
                   soh: dish.stock,
-                  imageurl: '',
-                  maxQuantity: _isTrialDish(dish.name) ? 1 : null,
+                  imageurl: dish.imageurl,
+                  maxQuantity: 1,
                 )
               else
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.grey.shade300,
                     borderRadius: BorderRadius.circular(6),
@@ -256,9 +337,113 @@ class _FoodSubCategoryPageState extends ConsumerState<FoodSubCategoryPage> {
                   ),
                 ),
             ],
-          )
+          ),
+         
         ],
       ),
+    );
+  }
+}
+
+class IngredientText extends StatelessWidget {
+  final TrialDish dish;
+
+  const IngredientText({
+    super.key,
+    required this.dish,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final exceedsLimit = dish.ingredients.length > 100;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          dish.ingredients,
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.poppins(fontSize: 14, color: Colors.black87),
+        ),
+        if (exceedsLimit)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text(
+                          'Additional Information',
+                          style: GoogleFonts.poppins(fontWeight: FontWeight.bold,
+                            fontSize: 18,),
+                        ),
+                        content: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              
+                              RichText(
+                                text: TextSpan(
+                                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.black87),
+                                  children: [
+                                    const TextSpan(
+                                      text: 'Ingredients: ',
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                    TextSpan(text: dish.ingredients),
+                                    const TextSpan(text: '\n\n'),
+                                    TextSpan(text: dish.what),
+                                    const TextSpan(text: '\n\nUsed for: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    TextSpan(text: dish.whatisitusedfor),
+                                    const TextSpan(text: '\n\nEnergy: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    TextSpan(text: dish.energy),
+                                    const TextSpan(text: '\nProtein: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    TextSpan(text: dish.protein),
+                                    const TextSpan(text: '\nFiber: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    TextSpan(text: dish.fiber),
+                                    const TextSpan(text: '\nTotal Fat: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    TextSpan(text: dish.totalFat),
+                                    const TextSpan(text: '\nSaturated Fat: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    TextSpan(text: dish.saturatedFat),
+                                    const TextSpan(text: '\nUnsaturated Fat: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    TextSpan(text: dish.unsaturatedFat),
+                                    const TextSpan(text: '\nTrans Fat: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    TextSpan(text: dish.transFat),
+                                    const TextSpan(text: '\nSugar: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    TextSpan(text: dish.sugar),
+                                    const TextSpan(text: '\nCarbs: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    TextSpan(text: dish.carbs),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(
+                              'Close',
+                              style: GoogleFonts.poppins(),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                child: Text(
+                  'More',
+                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.green),
+                ),
+              ),
+            ],
+          ),
+      ],
     );
   }
 }

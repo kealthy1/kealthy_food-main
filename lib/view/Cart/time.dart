@@ -23,16 +23,24 @@ class TimePage extends ConsumerStatefulWidget {
 }
 
 class _TimePageState extends ConsumerState<TimePage> {
+  late TextEditingController preferredTimeController;
   @override
   void initState() {
     super.initState();
     checkTimeBoundaries(ref);
+    preferredTimeController = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final prefs = await SharedPreferences.getInstance();
       final phone = prefs.getString('phoneNumber') ?? '';
       final firstOrderNotifier = ref.read(firstOrderProvider.notifier);
       await firstOrderNotifier.checkFirstOrder(phone);
     });
+  }
+
+  @override
+  void dispose() {
+    preferredTimeController.dispose();
+    super.dispose();
   }
 
   @override
@@ -274,13 +282,50 @@ class _TimePageState extends ConsumerState<TimePage> {
               //   const SizedBox(height: 20),
               // // Slot Selection Container
               // if (isSlotContainerVisible)
-              Text('Please Note: Trial dishes are available only during Lunch Hours (12 PM - 3 PM).',
+              Text(
+                  'Please Note: Trial dishes are available only during Lunch Hours (12 PM - 3 PM).',
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     color: Colors.black,
                   )),
               const SizedBox(height: 20),
               const SlotSelectionContainer(),
+              const SizedBox(height: 20),
+              Text(
+                'Delivery Suggestions (Optional)',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: Colors.black,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: preferredTimeController,
+                decoration: InputDecoration(
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(
+                      color: Colors.grey.shade300,
+                      width: 1,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(
+                      color: Colors.grey.shade300,
+                      width: 1,
+                    ),
+                  ),
+                  hintText: 'Eg: Deliver between 1:00 PM -  2:00 PM',
+                  hintStyle: GoogleFonts.poppins(fontSize: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
+              ),
               const SizedBox(height: 100),
             ],
           ),
@@ -378,6 +423,7 @@ class _TimePageState extends ConsumerState<TimePage> {
                       context,
                       CupertinoPageRoute(
                         builder: (context) => CheckoutPage(
+                          preferredTime: preferredTimeController.text,
                           // offerDiscount: 0.0,
                           itemTotal: baseTotal,
                           cartItems: ref.read(cartProvider),

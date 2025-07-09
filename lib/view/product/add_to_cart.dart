@@ -9,16 +9,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:kealthy_food/view/Cart/cart_controller.dart';
 import 'package:kealthy_food/view/Toast/toast_helper.dart';
+import 'package:kealthy_food/view/food/food_subcategory.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-bool _isTrialDish(String name) {
-  const trialDishes = [
-    'Buttercraft Chicken Bowl',
-    'Quinoa & Tuna Fusion Bowl',
-    'Soya Paneer Bowl',
-    'Herbrost Beef Bowl',
-  ];
-  return trialDishes.contains(name);
+bool _isTrialDish(String name, WidgetRef ref) {
+  final trialDishes = ref.read(trialDishesProvider).asData?.value ?? [];
+  return trialDishes.any((dish) => dish.name == name);
 }
 
 Future<int> getTodayOrderedQuantity({
@@ -74,20 +70,26 @@ Future<int> getTodayOrderedQuantity({
     );
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      for (final order in data) {
-        final createdAt = DateTime.tryParse(order['createdAt'] ?? '');
-        if (createdAt != null && createdAt.isAfter(todayStart)) {
-          final orderItems =
-              List<Map<String, dynamic>>.from(order['orderItems'] ?? []);
-          for (final item in orderItems) {
-            if (item['item_name'] == productName) {
-              totalQty += (item['item_quantity'] ?? 0) is int
-                  ? (item['item_quantity'] ?? 0) as int
-                  : ((item['item_quantity'] ?? 0) as num).toInt();
+      final responseData = jsonDecode(response.body);
+
+      if (responseData is Map && responseData.containsKey('orders')) {
+        final List<dynamic> orders = responseData['orders'] ?? [];
+
+        for (final order in orders) {
+          final createdAt = DateTime.tryParse(order['createdAt'] ?? '');
+          if (createdAt != null && createdAt.isAfter(todayStart)) {
+            final orderItems = List<Map<String, dynamic>>.from(order['orderItems'] ?? []);
+            for (final item in orderItems) {
+              if (item['item_name'] == productName) {
+                totalQty += (item['item_quantity'] ?? 0) is int
+                    ? (item['item_quantity'] ?? 0) as int
+                    : ((item['item_quantity'] ?? 0) as num).toInt();
+              }
             }
           }
         }
+      } else {
+        print('⚠️ Unexpected API format: $responseData');
       }
     } else {
       print('⚠️ API failed with status: ${response.statusCode}');
@@ -199,15 +201,15 @@ class _AddToCartSectionState extends ConsumerState<AddToCartSection>
                   final phoneNumber = prefs.getString('phoneNumber') ?? '';
 
                   // ✅ Trial dish logic
-                  if (_isTrialDish(widget.productName)) {
+                  if (_isTrialDish(widget.productName,ref)) {
                     final alreadyOrderedToday = await getTodayOrderedQuantity(
                       phoneNumber: phoneNumber,
                       productName: widget.productName,
                     );
 
-                    if (alreadyOrderedToday >= 2) {
+                    if (alreadyOrderedToday >= 1) {
                       ToastHelper.showErrorToast(
-                        'Daily limit reached: You can only order 2 of this item per day.',
+                        'Daily limit reached: You can only order 1 of this item per day.',
                       );
                       return;
                     }
@@ -312,7 +314,7 @@ class _AddToCartSectionState extends ConsumerState<AddToCartSection>
                         : Colors.green,
                   ),
                   onPressed: () async {
-                    if (_isTrialDish(widget.productName)) {
+                    if (_isTrialDish(widget.productName,ref)) {
                       if (widget.maxQuantity != null &&
                           cartItem.quantity >= widget.maxQuantity!) {
                         ToastHelper.showErrorToast(
@@ -332,9 +334,9 @@ class _AddToCartSectionState extends ConsumerState<AddToCartSection>
                       int totalIfAdded =
                           alreadyOrderedToday + cartItem.quantity + 1;
 
-                      if (totalIfAdded > 2) {
+                      if (totalIfAdded > 1) {
                         ToastHelper.showErrorToast(
-                          'Daily limit reached: You can only order 2 quantities of this item per day.',
+                          'Daily limit reached: You can only order 1 quantities of this item per day.',
                         );
                         return;
                       }

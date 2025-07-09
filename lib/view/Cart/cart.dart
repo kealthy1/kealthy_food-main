@@ -7,20 +7,14 @@ import 'package:kealthy_food/view/Toast/toast_helper.dart';
 import 'package:kealthy_food/view/address/adress.dart';
 import 'package:kealthy_food/view/address/provider.dart';
 import 'package:kealthy_food/view/Cart/time.dart';
+import 'package:kealthy_food/view/food/food_subcategory.dart';
 import 'package:kealthy_food/view/product/add_to_cart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-bool _isTrialDish(String name) {
-  // Add names of trial dishes here (case-sensitive or lowercase match)
-  const trialDishes = [
-    'Buttercraft Chicken Bowl',
-    'Quinoa & Tuna Fusion Bowl',
-    'Soya Paneer Bowl',
-    'Herbrost Beef Bowl',
-  ];
-
-  return trialDishes.contains(name);
+bool _isTrialDish(String name, WidgetRef ref) {
+  final trialDishes = ref.read(trialDishesProvider).asData?.value ?? [];
+  return trialDishes.any((dish) => dish.name == name);
 }
 
 final slotAvailabilityProvider =
@@ -94,20 +88,20 @@ class CartPage extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                     if (remaining != null)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: Center(
-                            child: Text(
-                              "🕒 Cart will expire in ${remaining.inMinutes.toString().padLeft(2, '0')}:${(remaining.inSeconds % 60).toString().padLeft(2, '0')}",
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.red,
-                              ),
+                    if (remaining != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Center(
+                          child: Text(
+                            "🕒 Cart will expire in ${remaining.inMinutes.toString().padLeft(2, '0')}:${(remaining.inSeconds % 60).toString().padLeft(2, '0')}",
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.red,
                             ),
                           ),
                         ),
+                      ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 1, vertical: 1),
@@ -337,9 +331,9 @@ class CartPage extends ConsumerWidget {
                                                           icon: Icon(
                                                             Icons.add,
                                                             color: item.quantity >=
-                                                                        2 &&
+                                                                        1 &&
                                                                     _isTrialDish(
-                                                                        item.name)
+                                                                        item.name, ref)
                                                                 ? Colors.grey
                                                                 : Colors.black,
                                                           ),
@@ -352,7 +346,7 @@ class CartPage extends ConsumerWidget {
                                                               return;
 
                                                             if (_isTrialDish(
-                                                                item.name)) {
+                                                                item.name, ref)) {
                                                               final prefs =
                                                                   await SharedPreferences
                                                                       .getInstance();

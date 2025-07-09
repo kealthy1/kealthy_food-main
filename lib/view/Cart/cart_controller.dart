@@ -128,7 +128,7 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
     _cartTimer?.cancel();
     final endTime = DateTime.now().add(duration);
 
-    _cartTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _cartTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       final remaining = endTime.difference(DateTime.now());
 
       if (remaining <= Duration.zero) {
