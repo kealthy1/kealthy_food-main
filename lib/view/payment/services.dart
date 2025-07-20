@@ -270,8 +270,6 @@ class OrderService {
     print("✅ Razorpay Order ID removed from SharedPreferences");
   }
 
-  /// Saves a new order in Firebase (Realtime Database in this example).
-  /// NOTE: Only call this for COD orders from frontend. For online payment, let backend webhook handle order creation.
   static Future<void> saveOrderToFirebase({
     // required double offerDiscount,
     required String preferredTime,

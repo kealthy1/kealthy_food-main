@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,18 @@ import 'package:kealthy_food/view/payment/Online_payment.dart';
 import 'package:kealthy_food/view/payment/dialogue_helper.dart';
 import 'package:kealthy_food/view/payment/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+final onlinePaymentEnabledProvider = FutureProvider<bool>((ref) async {
+  final doc = await FirebaseFirestore.instance
+      .collection('payment')
+      .doc('PaymentOptions')
+      .get();
+
+  if (doc.exists && doc.data()?['isOnlinePaymentEnabled'] == false) {
+    return false;
+  }
+  return true;
+});
 
 final selectedPaymentProvider = StateProvider<String>((ref) => '');
 
@@ -95,14 +108,33 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
                     'Cash on Delivery',
               ),
               const SizedBox(height: 20),
-              _buildPaymentOption(
-                context,
-                "Online Payment",
-                Icons.credit_card,
-                selectedPaymentMethod == 'Online Payment',
-                () => ref.read(selectedPaymentProvider.notifier).state =
-                    'Online Payment',
-              ),
+              ref.watch(onlinePaymentEnabledProvider).when(
+                    data: (isOnlineEnabled) {
+                      return _buildPaymentOption(
+                        context,
+                        "Online Payment",
+                        Icons.credit_card,
+                        selectedPaymentMethod == 'Online Payment',
+                        () => ref.read(selectedPaymentProvider.notifier).state =
+                            'Online Payment',
+                        isDisabled: !isOnlineEnabled,
+                        disabledMessage:
+                            !isOnlineEnabled ? "Facing issues." : null,
+                      );
+                    },
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, __) => _buildPaymentOption(
+                      context,
+                      "Online Payment",
+                      Icons.credit_card,
+                      selectedPaymentMethod == 'Online Payment',
+                      () => ref.read(selectedPaymentProvider.notifier).state =
+                          'Online Payment',
+                      isDisabled: true,
+                      disabledMessage:
+                          "Unable to verify Online Payment status. Please try again later.",
+                    ),
+                  ),
               const Spacer(),
 
               // Total Amount Display
@@ -125,41 +157,20 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
     String title,
     IconData icon,
     bool isSelected,
-    VoidCallback onTap,
-  ) {
-    final cartItems = ref.watch(cartProvider);
-    final cartTypes = cartItems.map((item) => item.type).toSet();
-    final trialDishesByType = {
-      for (var type in cartTypes) type: ref.watch(dishesProvider(type)),
-    };
-
-    final allTrialDishes = trialDishesByType.values
-        .whereType<AsyncData<List<TrialDish>>>()
-        .expand((async) => async.value)
-        .toList();
-
-    final trialDishNames = allTrialDishes.map((d) => d.name).toSet();
-    final isDisabled = title == "Cash on Delivery" &&
-        cartItems.any((item) => trialDishNames.contains(item.name));
-
-    return GestureDetector(
-      onTap: isDisabled ? null : onTap,
-      child: Opacity(
-        opacity: isDisabled ? 0.5 : 1.0,
-        child: IgnorePointer(
-          ignoring: isDisabled,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (isDisabled)
-                const Padding(
-                  padding: EdgeInsets.only(top: 8.0, left: 8.0, bottom: 8.0),
-                  child: Text(
-                    "⚠️ Cash on Delivery is not available for food",
-                    style: TextStyle(color: Colors.red, fontSize: 13),
-                  ),
-                ),
-              Container(
+    VoidCallback onTap, {
+    bool isDisabled = false,
+    String? disabledMessage,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: isDisabled ? null : onTap,
+          child: Opacity(
+            opacity: isDisabled ? 0.5 : 1.0,
+            child: IgnorePointer(
+              ignoring: isDisabled,
+              child: Container(
                 height: MediaQuery.of(context).size.height * 0.1,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -167,7 +178,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                     color: isSelected
-                        ? const Color.fromARGB(255, 65, 88, 108)
+                        ? const Color(0xFF41586C)
                         : Colors.grey.shade300,
                     width: 2,
                   ),
@@ -192,10 +203,21 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
                   ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
-      ),
+        if (isDisabled && disabledMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 6, left: 8),
+            child: Text(
+              disabledMessage,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Colors.red,
+              ),
+            ),
+          ),
+      ],
     );
   }
 

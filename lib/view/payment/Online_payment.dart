@@ -165,8 +165,8 @@ class _OnlinePaymentProcessingState
 
     try {
       final options = {
-        // 'key': 'rzp_live_jA2MRdwkkUcT9v',
-        'key': 'rzp_test_xvodwFJzA6n4ei',
+        'key': 'rzp_live_jA2MRdwkkUcT9v',
+        // 'key': 'rzp_test_xvodwFJzA6n4ei',
         'amount': widget.totalAmount
             .toStringAsFixed(0), // <-- If your server does the paise conversion
         'currency': 'INR',
@@ -212,6 +212,7 @@ class _OnlinePaymentProcessingState
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         surfaceTintColor: Colors.white,
         title: Text(
           "Processing Payment",
