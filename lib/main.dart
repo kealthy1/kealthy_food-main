@@ -8,6 +8,7 @@ import 'package:kealthy_food/firebase_options.dart';
 import 'package:kealthy_food/view/Cart/cart.dart';
 import 'package:kealthy_food/view/notifications/fcm.dart';
 import 'package:kealthy_food/view/notifications/offers.dart';
+import 'package:kealthy_food/view/product/product_page.dart';
 import 'package:kealthy_food/view/splash_screen/network.dart';
 import 'package:kealthy_food/view/splash_screen/splash_screen.dart';
 import 'package:kealthy_food/view/subscription/subscription_details.dart';
@@ -53,7 +54,6 @@ class MyApp extends ConsumerWidget {
       print("FCM Message Data: ${message.data}");
       print("FCM Notification: ${message.notification?.toMap()}");
 
-      // Extract image URL
       final imageUrl = message.notification?.android?.imageUrl ??
           message.notification?.apple?.imageUrl ??
           message.data['image'] ??
@@ -100,8 +100,8 @@ class MyApp extends ConsumerWidget {
           secondary: Colors.white,
           onPrimary: Colors.white,
           onSecondary: Colors.black,
-          background: Colors.white,
-          onBackground: Colors.black,
+          surface: Colors.white,
+          onSurface: Colors.black,
         ),
         textTheme: GoogleFonts.poppinsTextTheme(
           Theme.of(context).textTheme,

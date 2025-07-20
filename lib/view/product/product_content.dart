@@ -14,16 +14,6 @@ import 'package:kealthy_food/view/product/text.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-bool _isTrialDish(String name) {
-  const trialDishes = [
-    'Buttercraft Chicken Bowl',
-    'Quinoa & Tuna Fusion Bowl',
-    'Soya Paneer Bowl',
-    'Herbrost Beef Bowl',
-  ];
-  return trialDishes.contains(name);
-}
-
 class ProductContent extends ConsumerWidget {
   final PageController pageController;
   final Map<String, dynamic> docData;
@@ -143,12 +133,7 @@ class ProductContent extends ConsumerWidget {
     final filteredMicrosMap = Map.fromEntries(
       microsMap.entries.where((entry) => entry.value != "Not Applicable"),
     );
-    // Preload all product images in the background for faster display.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      for (final url in imageUrls) {
-        precacheImage(CachedNetworkImageProvider(url), context);
-      }
-    });
+
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -220,21 +205,19 @@ class ProductContent extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Product name + Add-to-Cart section.
                 Row(
                   children: [
-                    /// Wrap the long text with `Expanded` or `Flexible`
                     Expanded(
                       child: Text(
                         productName.contains(productQty)
                             ? productName
-                            : '$productName $productQty',
+                            : '$productName \n$productQty',
                         overflow: TextOverflow.visible,
                         style: GoogleFonts.poppins(
                           textStyle: const TextStyle(
-                            fontSize: 19.5,
-                            color: Colors.black,
-                          ),
+                              fontSize: 19.5,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
@@ -400,7 +383,7 @@ class ProductContent extends ConsumerWidget {
                       productEAN: productEAN,
                       soh: productSoh,
                       imageurl: productImageUrl,
-                      maxQuantity: _isTrialDish(productName) ? 2 : null,
+                      type: docData['Type'] ?? '',
                     ),
                   ],
                 ),

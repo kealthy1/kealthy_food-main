@@ -70,10 +70,6 @@ Future<String> calculateEstimatedDeliveryTime() async {
     double? longitude = prefs.getDouble('selectedLong') ??
         double.tryParse(prefs.getString('selectedLongitude') ?? '');
 
-    if (longitude == null) {
-      throw Exception("Latitude or Longitude is null. Address not selected.");
-    }
-
     // Constants for restaurant location and delivery calculation
     const restaurantLatitude = 10.010279427438405;
     const restaurantLongitude = 76.38426666931349;
@@ -85,7 +81,7 @@ Future<String> calculateEstimatedDeliveryTime() async {
       restaurantLatitude,
       restaurantLongitude,
       latitude!,
-      longitude,
+      longitude!,
     );
 
     // Calculate travel time in minutes
@@ -119,5 +115,3 @@ Future<String> calculateEstimatedDeliveryTime() async {
     return "Error calculating delivery time.";
   }
 }
-
-

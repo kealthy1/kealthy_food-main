@@ -38,7 +38,7 @@ class CartContainer extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         decoration: const BoxDecoration(
           // color:  Color.fromARGB(255, 249, 227, 201),
-           gradient: LinearGradient(
+          gradient: LinearGradient(
             colors: [
               Color.fromARGB(255, 255, 255, 255), // Light blue
               Color.fromARGB(255, 255, 239, 221), // Lighter blue

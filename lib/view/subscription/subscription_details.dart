@@ -1,15 +1,25 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kealthy_food/view/subscription/provider.dart';
+import 'package:shimmer/shimmer.dart';
 import 'confirmation_page.dart';
 
-final quantityProvider = StateProvider.family<int, String>((ref, title) => 1);
-
-class SubscriptionDetailsPage extends StatelessWidget {
+class SubscriptionDetailsPage extends ConsumerStatefulWidget {
   const SubscriptionDetailsPage({super.key});
 
   @override
+  ConsumerState<SubscriptionDetailsPage> createState() =>
+      _SubscriptionDetailsPageState();
+}
+
+class _SubscriptionDetailsPageState
+    extends ConsumerState<SubscriptionDetailsPage> {
+  @override
   Widget build(BuildContext context) {
+    final plansAsync = ref.watch(subscriptionPlansProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -19,58 +29,108 @@ class SubscriptionDetailsPage extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Center(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  'lib/assets/images/promo_1736765179.jpg',
-                  height: 140,
+        child: plansAsync.when(
+          data: (plans) {
+            final plan = plans.first;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Center(
+                  child: CachedNetworkImage(
+                    imageUrl: plan.imageUrl,
+                    fit: BoxFit.cover,
+                    width: 140,
+                    height: 140,
+                    placeholder: (context, url) => Shimmer.fromColors(
+                      baseColor: Colors.grey.shade300,
+                      highlightColor: Colors.grey.shade100,
+                      child: Container(
+                        width: 140,
+                        height: 140,
+                        color: Colors.white,
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => const SizedBox(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  plan.name,
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  '₹${plan.baseRate.toStringAsFixed(0)}/-',
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  plan.caption,
+                  style: const TextStyle(fontSize: 14, color: Colors.black),
+                  textAlign: TextAlign.left,
+                ),
+                const SizedBox(height: 24),
+
+                // Plan cards section
+                ...plans.map((p) => PlanCard(
+                      title: p.title,
+                      description: p.description,
+                      baseRate: p.baseRate,
+                      durationDays: p.durationDays,
+                      name: p.name,
+                    )),
+                const SizedBox(height: 12),
+              ],
+            );
+          },
+          loading: () => Column(
+            children: [
+              // Shimmer for image and text placeholders
+              Shimmer.fromColors(
+                baseColor: Colors.grey.shade300,
+                highlightColor: Colors.grey.shade100,
+                child: Container(
                   width: 140,
-                  fit: BoxFit.cover,
+                  height: 140,
+                  color: Colors.white,
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'A2 Mate Milk 1L',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const Text(
-              "₹ 120/L",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Pure Goodness in Every Drop — Experience the Natural Taste of A2 Mate Milk, Delivered Fresh to Your Doorstep Daily.',
-              style: TextStyle(fontSize: 14, color: Colors.black),
-              textAlign: TextAlign.left,
-            ),
-            const SizedBox(height: 24),
-            const PlanCard(
-              title: '7-Day Plan',
-              description: 'Plus 1 day Free\nFree Delivery',
-              baseRate: 120,
-              durationDays: 7,
-            ),
-            const SizedBox(height: 12),
-            const PlanCard(
-              title: '15-Day Plan',
-              description: 'Plus 2 day Free\nFree Delivery',
-              baseRate: 120,
-              durationDays: 15,
-            ),
-            const SizedBox(height: 12),
-            const PlanCard(
-              title: '30-Day Plan',
-              description: 'Plus 4 day Free\nFree Delivery',
-              baseRate: 120,
-              durationDays: 30,
-            ),
-            const SizedBox(height: 12),
-          ],
+              const SizedBox(height: 16),
+              ...List.generate(3, (_) {
+                return Shimmer.fromColors(
+                  baseColor: Colors.grey.shade300,
+                  highlightColor: Colors.grey.shade100,
+                  child: Container(
+                    width: double.infinity,
+                    height: 20,
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    color: Colors.white,
+                  ),
+                );
+              }),
+              const SizedBox(height: 24),
+
+              // Shimmer for PlanCard placeholders
+              ...List.generate(2, (_) {
+                return Shimmer.fromColors(
+                  baseColor: Colors.grey.shade300,
+                  highlightColor: Colors.grey.shade100,
+                  child: Container(
+                    width: double.infinity,
+                    height: 120,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.white,
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+          error: (e, _) => Center(child: Text('Error loading plans: $e')),
         ),
       ),
     );
@@ -82,6 +142,7 @@ class PlanCard extends ConsumerWidget {
   final String description;
   final double baseRate;
   final int durationDays;
+  final String name;
 
   const PlanCard({
     super.key,
@@ -89,6 +150,7 @@ class PlanCard extends ConsumerWidget {
     required this.description,
     required this.baseRate,
     required this.durationDays,
+    required this.name,
   });
 
   @override
@@ -106,7 +168,7 @@ class PlanCard extends ConsumerWidget {
               baseRate: baseRate,
               durationDays: durationDays,
               selectedQty: selectedQty,
-              productName: 'A2 Mate Milk',
+              productName: name,
             ),
           ),
         );

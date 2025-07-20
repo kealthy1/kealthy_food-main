@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -64,40 +63,20 @@ class _OnlinePaymentProcessingState
     final fcmToken = prefs.getString("fcm_token") ?? '';
     final userName = widget.address.name ?? 'Unknown Name';
     final orderId = widget.razorpayOrderId;
-    await OrderService.removeRazorpayOrderId();
 
-    // Payment succeeded, so let's save the order
-    if (widget.orderType == 'subscription') {
-      await OrderService.saveSubscriptionOrderToFirebase(
-        address: widget.address,
-        totalAmount: widget.totalAmount,
-        deliveryFee: widget.deliveryFee,
-        packingInstructions: widget.packingInstructions,
-        deliveryInstructions: widget.deliveryInstructions,
-        deliveryTime: widget.deliverytime,
-        // instantDeliveryFee: widget.instantDeliveryFee,
-        paymentMethod: "Online Payment",
-      );
-    } else {
-      await OrderService.saveOrderToFirebase(
-        preferredTime: widget.preferredTime,
-        // offerDiscount: widget.offerDiscount,
-        address: widget.address,
-        totalAmount: widget.totalAmount,
-        deliveryFee: widget.deliveryFee,
-        packingInstructions: widget.packingInstructions,
-        deliveryInstructions: widget.deliveryInstructions,
-        deliveryTime: widget.deliverytime,
-        // instantDeliveryFee: widget.instantDeliveryFee,
-        paymentMethod: "Online Payment",
-      );
-    }
+    await OrderService.removeRazorpayOrderId();
+    await OrderService.decrementSOHForItems(widget.address);
+    await OrderService.saveNotificationToFirestore(
+        orderId, widget.address.cartItems);
+
+    // ✅ Order will now be saved by the backend webhook
+    // Do NOT save order manually here anymore
 
     await OrderService().sendPaymentSuccessNotification(
-    token: fcmToken,
-    userName: userName,
-    orderId: orderId,
-  );
+      token: fcmToken,
+      userName: userName,
+      orderId: orderId,
+    );
 
     // Clear the cart only if not a subscription
     if (widget.orderType != 'subscription') {
@@ -156,13 +135,13 @@ class _OnlinePaymentProcessingState
     print("❌ Full failed order data saved to Firestore.");
 
     await OrderService().sendPaymentFailureNotification(
-    token: fcmToken,
-    userName: userName,
-    orderId: orderId,
-  );
+      token: fcmToken,
+      userName: userName,
+      orderId: orderId,
+    );
 
     await OrderService.removeRazorpayOrderId();
-     ref.read(cartProvider.notifier).clearCart();
+    ref.read(cartProvider.notifier).clearCart();
 
     // Show failure dialog from the new helper
     PaymentDialogHelper.showPaymentFailureDialog(context);
@@ -186,7 +165,8 @@ class _OnlinePaymentProcessingState
 
     try {
       final options = {
-        'key': 'rzp_live_jA2MRdwkkUcT9v',
+        // 'key': 'rzp_live_jA2MRdwkkUcT9v',
+        'key': 'rzp_test_xvodwFJzA6n4ei',
         'amount': widget.totalAmount
             .toStringAsFixed(0), // <-- If your server does the paise conversion
         'currency': 'INR',

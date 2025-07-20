@@ -4,17 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/Cart/cart_controller.dart';
 import 'package:kealthy_food/view/food/food_subcategory.dart';
+import 'package:kealthy_food/view/payment/Online_payment.dart';
 import 'package:kealthy_food/view/payment/dialogue_helper.dart';
 import 'package:kealthy_food/view/payment/services.dart';
-import 'package:kealthy_food/view/payment/online_payment.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-final selectedPaymentProvider =
-    StateProvider<String>((ref) => '');
+final selectedPaymentProvider = StateProvider<String>((ref) => '');
 
 final isOrderSavingProvider = StateProvider<bool>((ref) => false);
 
 class PaymentPage extends ConsumerStatefulWidget {
+  final String initialPaymentMethod;
   final double totalAmount;
   final String instructions;
   final dynamic address;
@@ -25,18 +25,19 @@ class PaymentPage extends ConsumerStatefulWidget {
   // final  double offerDiscount;
   // final double instantDeliveryFee;
 
-  const PaymentPage({
-    super.key,
-    required this.totalAmount,
-    required this.instructions,
-    required this.address,
-    required this.deliverytime,
-    required this.packingInstructions,
-    required this.deliveryfee,
-    required this.preferredTime,
-    // required this.offerDiscount,
-    // required this.instantDeliveryFee
-  });
+  const PaymentPage(
+      {super.key,
+      required this.totalAmount,
+      required this.instructions,
+      required this.address,
+      required this.deliverytime,
+      required this.packingInstructions,
+      required this.deliveryfee,
+      required this.preferredTime,
+      required this.initialPaymentMethod
+      // required this.offerDiscount,
+      // required this.instantDeliveryFee
+      });
 
   @override
   _PaymentPageState createState() => _PaymentPageState();
@@ -44,57 +45,75 @@ class PaymentPage extends ConsumerStatefulWidget {
 
 class _PaymentPageState extends ConsumerState<PaymentPage> {
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(selectedPaymentProvider.notifier).state =
+          widget.initialPaymentMethod;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final selectedPaymentMethod = ref.watch(selectedPaymentProvider);
     final isOrderSaving = ref.watch(isOrderSavingProvider);
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
+    return WillPopScope(
+      onWillPop: () async {
+        // Prevent back navigation while saving order
+        return !isOrderSaving;
+      },
+      child: Scaffold(
         backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        title: Text(
-          "Select Payment Method",
-          style: GoogleFonts.poppins(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+        appBar: AppBar(
+          leading: isOrderSaving
+              ? const SizedBox() // Disable back button while saving
+              : const BackButton(color: Colors.black),
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.white,
+          title: Text(
+            "Select Payment Method",
+            style: GoogleFonts.poppins(
+              color: Colors.black,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
           ),
+          iconTheme: const IconThemeData(color: Colors.black),
         ),
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildPaymentOption(
-              context,
-              "Cash on Delivery",
-              Icons.currency_rupee,
-              selectedPaymentMethod == 'Cash on Delivery',
-              () => ref.read(selectedPaymentProvider.notifier).state =
-                  'Cash on Delivery',
-            ),
-            const SizedBox(height: 20),
-            _buildPaymentOption(
-              context,
-              "Online Payment",
-              Icons.credit_card,
-              selectedPaymentMethod == 'Online Payment',
-              () => ref.read(selectedPaymentProvider.notifier).state =
-                  'Online Payment',
-            ),
-            const Spacer(),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildPaymentOption(
+                context,
+                "Cash on Delivery",
+                Icons.currency_rupee,
+                selectedPaymentMethod == 'Cash on Delivery',
+                () => ref.read(selectedPaymentProvider.notifier).state =
+                    'Cash on Delivery',
+              ),
+              const SizedBox(height: 20),
+              _buildPaymentOption(
+                context,
+                "Online Payment",
+                Icons.credit_card,
+                selectedPaymentMethod == 'Online Payment',
+                () => ref.read(selectedPaymentProvider.notifier).state =
+                    'Online Payment',
+              ),
+              const Spacer(),
 
-            // Total Amount Display
-            _buildTotalAmount(),
+              // Total Amount Display
+              _buildTotalAmount(),
 
-            const SizedBox(height: 10),
+              const SizedBox(height: 10),
 
-            _buildActionButton(selectedPaymentMethod, isOrderSaving, context),
-            const SizedBox(height: 10),
-          ],
+              _buildActionButton(selectedPaymentMethod, isOrderSaving, context),
+              const SizedBox(height: 10),
+            ],
+          ),
         ),
       ),
     );
@@ -109,8 +128,17 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
     VoidCallback onTap,
   ) {
     final cartItems = ref.watch(cartProvider);
-    final trialDishes = ref.read(trialDishesProvider).asData?.value ?? [];
-    final trialDishNames = trialDishes.map((d) => d.name).toSet();
+    final cartTypes = cartItems.map((item) => item.type).toSet();
+    final trialDishesByType = {
+      for (var type in cartTypes) type: ref.watch(dishesProvider(type)),
+    };
+
+    final allTrialDishes = trialDishesByType.values
+        .whereType<AsyncData<List<TrialDish>>>()
+        .expand((async) => async.value)
+        .toList();
+
+    final trialDishNames = allTrialDishes.map((d) => d.name).toSet();
     final isDisabled = title == "Cash on Delivery" &&
         cartItems.any((item) => trialDishNames.contains(item.name));
 
@@ -125,9 +153,9 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
             children: [
               if (isDisabled)
                 const Padding(
-                  padding: EdgeInsets.only(top: 8.0, left: 8.0,bottom: 8.0),
+                  padding: EdgeInsets.only(top: 8.0, left: 8.0, bottom: 8.0),
                   child: Text(
-                    "⚠️ Cash on Delivery is not available for trial dishes",
+                    "⚠️ Cash on Delivery is not available for food",
                     style: TextStyle(color: Colors.red, fontSize: 13),
                   ),
                 ),
@@ -164,18 +192,6 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
                   ],
                 ),
               ),
-              if (title == "Online Payment" && isSelected && !isDisabled)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0, left: 8.0),
-                  child: Text(
-                    "⚠️ After completing the payment, please return to the app to complete your order",
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: Colors.orangeAccent,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
             ],
           ),
         ),
@@ -222,7 +238,9 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
             borderRadius: BorderRadius.circular(10),
           ),
         ),
-        onPressed: isOrderSaving || selectedPaymentMethod.isEmpty ? null : () async => _handlePayment(context),
+        onPressed: isOrderSaving || selectedPaymentMethod.isEmpty
+            ? null
+            : () async => _handlePayment(context),
         child: isOrderSaving
             ? const CupertinoActivityIndicator(
                 color: Color(0xFF41586C),
@@ -263,7 +281,8 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
           deliveryTime: widget.deliverytime,
           // offerDiscount: widget.offerDiscount,
           // instantDeliveryFee: widget.instantDeliveryFee,
-          paymentMethod: 'Cash on Delivery', preferredTime: widget.preferredTime,
+          paymentMethod: 'Cash on Delivery',
+          preferredTime: widget.preferredTime,
         );
         await OrderService().sendPaymentSuccessNotification(
           token: fcmToken,
@@ -273,23 +292,30 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
 
         PaymentDialogHelper.showPaymentSuccessDialog(context, ref);
       } else {
-        final razorpayOrderId =
-            await OrderService.createRazorpayOrder(widget.totalAmount);
+        final razorpayOrderId = await OrderService.createRazorpayOrder(
+          totalAmount: widget.totalAmount,
+          address: widget.address,
+          packingInstructions: widget.packingInstructions,
+          deliveryInstructions: widget.instructions,
+          deliveryTime: widget.deliverytime,
+          preferredTime: widget.preferredTime,
+          isSubscription: false,
+          deliveryFee: widget.deliveryfee,
+        );
 
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => OnlinePaymentProcessing(
-              // offerDiscount: widget.offerDiscount,
               totalAmount: widget.totalAmount,
               packingInstructions: widget.packingInstructions,
               deliveryInstructions: widget.instructions,
               address: widget.address,
               deliverytime: widget.deliverytime,
               deliveryFee: widget.deliveryfee,
-              // instantDeliveryFee: widget.instantDeliveryFee,
               razorpayOrderId: razorpayOrderId,
-              orderType: 'Normal', preferredTime: widget.preferredTime,
+              orderType: 'Normal',
+              preferredTime: widget.preferredTime,
             ),
           ),
         );
@@ -304,4 +330,3 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
     }
   }
 }
-

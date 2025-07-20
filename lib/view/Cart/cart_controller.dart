@@ -9,14 +9,17 @@ class CartItem {
   final int price;
   int quantity;
   final String ean;
+  final String? type; // Optional category for trial dish check
+  final int soh; // Stock on Hand
 
-  CartItem({
-    required this.name,
-    required this.price,
-    this.quantity = 1,
-    required this.ean,
-    required this.imageUrl,
-  });
+  CartItem(
+      {required this.name,
+      required this.price,
+      this.quantity = 1,
+      required this.ean,
+      required this.imageUrl,
+      this.type,
+      required this.soh});
 
   int get totalPrice => price * quantity;
 
@@ -26,6 +29,8 @@ class CartItem {
         'Quantity': quantity,
         'EAN': ean,
         'ImageUrl': imageUrl,
+        'type': type,
+        'SOH': soh, // Include stock on hand in JSON
       };
 
   factory CartItem.fromJson(Map<String, dynamic> json) {
@@ -35,15 +40,19 @@ class CartItem {
       quantity: json['Quantity'],
       ean: json['EAN'],
       imageUrl: json['ImageUrl'] ?? '',
+      type: json['Type'], // Handle optional category
+      soh: json['SOH'] ?? 0, // Handle optional stock on hand
     );
   }
 
   CartItem copyWith({int? quantity}) => CartItem(
-        name: name,
-        price: price,
-        quantity: quantity ?? this.quantity,
-        ean: ean,
-        imageUrl: imageUrl,
+      name: name,
+      price: price,
+      quantity: quantity ?? this.quantity,
+      ean: ean,
+      imageUrl: imageUrl,
+      type: type,
+      soh: soh // Ensure stock on hand is copied
       );
 }
 

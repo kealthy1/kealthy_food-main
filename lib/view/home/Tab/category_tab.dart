@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -93,8 +92,7 @@ class _CategoryTabPageState extends ConsumerState<CategoryTabPage>
           height: MediaQuery.of(context).size.height * 0.5,
           child: TabBarView(
             controller: _tabController,
-            children: const [HomeCategory(), 
-            FoodCategory()],
+            children: const [HomeCategory(), FoodCategory()],
           ),
         ),
       ],

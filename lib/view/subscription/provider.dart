@@ -1,26 +1,30 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kealthy_food/view/subscription/model.dart';
+
+final quantityProvider = StateProvider.family<int, String>((ref, title) => 1);
 
 final fromDateProvider = StateProvider<DateTime?>((ref) => null);
 final selectedSlotProvider =
     StateProvider<Map<String, DateTime>?>((ref) => null);
 final isSlotExpandedProvider = StateProvider<bool>((ref) => false);
 
-Future<bool> isSlotAvailable(String selectedSlotLabel) async {
-  final databaseRef = FirebaseDatabase.instanceFor(
-    app: FirebaseDatabase.instance.app,
-    databaseURL: 'https://kealthy-90c55-dd236.firebaseio.com/',
-  ).ref().child('orders');
+// Future<bool> isSlotAvailable(String selectedSlotLabel) async {
+//   final databaseRef = FirebaseDatabase.instanceFor(
+//     app: FirebaseDatabase.instance.app,
+//     databaseURL: 'https://kealthy-90c55-dd236.firebaseio.com/',
+//   ).ref().child('orders');
 
-  final snapshot = await databaseRef
-      .orderByChild('selectedSlot')
-      .equalTo(selectedSlotLabel)
-      .get();
+//   final snapshot = await databaseRef
+//       .orderByChild('selectedSlot')
+//       .equalTo(selectedSlotLabel)
+//       .get();
 
-  final existingOrders = snapshot.children.length;
-  return existingOrders < 10;
-}
+//   final existingOrders = snapshot.children.length;
+//   return existingOrders < 10;
+// }
 
 Future<void> pickDate(BuildContext context, WidgetRef ref,
     {required bool isFrom}) async {
@@ -42,3 +46,13 @@ Future<void> pickDate(BuildContext context, WidgetRef ref,
     ref.read(fromDateProvider.notifier).state = picked;
   }
 }
+
+final subscriptionPlansProvider =
+    FutureProvider<List<SubscriptionPlan>>((ref) async {
+  final snapshot =
+      await FirebaseFirestore.instance.collection('SubscriptionPlans').get();
+
+  return snapshot.docs
+      .map((doc) => SubscriptionPlan.fromFirestore(doc.data()))
+      .toList();
+});

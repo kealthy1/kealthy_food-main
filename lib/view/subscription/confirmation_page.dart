@@ -56,6 +56,8 @@ class ConfirmationPage extends ConsumerWidget {
     final total = ((baseRate + handlingCharge) * selectedQty * durationDays)
         .toStringAsFixed(0);
 
+    final int handlingFee = 5 * durationDays;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -335,14 +337,14 @@ class ConfirmationPage extends ConsumerWidget {
                                                           .format(slot["end"]!);
                                                   final selectedSlotLabel =
                                                       "$formattedStartTime - $formattedEndTime";
-                                                  final isAvailable =
-                                                      await isSlotAvailable(
-                                                          selectedSlotLabel);
-                                                  if (!isAvailable) {
-                                                    ToastHelper.showErrorToast(
-                                                        'Slot not available. Please choose another slot');
-                                                    return;
-                                                  }
+                                                  // final isAvailable =
+                                                  //     await isSlotAvailable(
+                                                  //         selectedSlotLabel);
+                                                  // if (!isAvailable) {
+                                                  //   ToastHelper.showErrorToast(
+                                                  //       'Slot not available. Please choose another slot');
+                                                  //   return;
+                                                  // }
                                                   ref
                                                       .read(selectedSlotProvider
                                                           .notifier)
@@ -423,14 +425,14 @@ class ConfirmationPage extends ConsumerWidget {
                                                           .format(slot["end"]!);
                                                   final selectedSlotLabel =
                                                       "$formattedStartTime - $formattedEndTime";
-                                                  final isAvailable =
-                                                      await isSlotAvailable(
-                                                          selectedSlotLabel);
-                                                  if (!isAvailable) {
-                                                    ToastHelper.showErrorToast(
-                                                        'Slot not available. Please choose another slot');
-                                                    return;
-                                                  }
+                                                  // final isAvailable =
+                                                  //     await isSlotAvailable(
+                                                  //         selectedSlotLabel);
+                                                  // if (!isAvailable) {
+                                                  //   ToastHelper.showErrorToast(
+                                                  //       'Slot not available. Please choose another slot');
+                                                  //   return;
+                                                  // }
                                                   ref
                                                       .read(selectedSlotProvider
                                                           .notifier)
@@ -674,7 +676,7 @@ class ConfirmationPage extends ConsumerWidget {
                     style:
                         const TextStyle(fontSize: 14, color: Colors.black54)),
                 const Spacer(),
-                Text("₹${(5 * durationDays).toStringAsFixed(0)}",
+                Text("₹${handlingFee.toStringAsFixed(0)}",
                     style:
                         const TextStyle(fontSize: 14, color: Colors.black54)),
               ],
@@ -749,6 +751,8 @@ class ConfirmationPage extends ConsumerWidget {
                         quantity: selectedQty,
                         slot: selectedSlot,
                         address: address,
+                        baseRate: baseRate,
+                        handlingCharge: handlingFee,
                         totalAmount: double.parse(total),
                         productName: productName,
                         isAlternateDay: isAlternate,

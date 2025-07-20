@@ -126,32 +126,130 @@ class OrderService {
     }
   }
 
-  /// Creates a Razorpay order via your backend’s `/create-order` route.
-  static Future<String> createRazorpayOrder(double totalAmount) async {
+  /// Creates a Razorpay order via your backend’s `/create-order` route, with full order data.
+  static Future<String> createRazorpayOrder({
+    required double totalAmount,
+    required dynamic address,
+    required String packingInstructions,
+    required String deliveryInstructions,
+    required String deliveryTime,
+    required String preferredTime,
+    required double deliveryFee,
+    required bool isSubscription, // pass this flag from frontend
+  }) async {
     try {
       const String backendUrl = 'https://api-jfnhkjk4nq-uc.a.run.app';
+      final prefs = await SharedPreferences.getInstance();
+      final phoneNumber = prefs.getString('phoneNumber') ?? 'Unknown';
+      final orderId = _generateOrderId();
+      final orderTime = DateTime.now().toIso8601String();
+
+      Map<String, dynamic> orderData;
+
+      if (isSubscription) {
+        final String planTitle =
+            prefs.getString('subscription_plan_title') ?? '';
+        final String productName =
+            prefs.getString('subscription_product_name') ?? '';
+        final String startDate =
+            prefs.getString('subscription_start_date') ?? '';
+        final String endDate = prefs.getString('subscription_end_date') ?? '';
+        final double subscriptionQty =
+            prefs.getDouble('subscription_qty') ?? 0.0;
+        final bool subscriptionType =
+            prefs.getBool('subscription_type') ?? false;
+        final double baserate = prefs.getDouble('sub_baseRate') ?? 0.0;
+        final int handlingFee = prefs.getInt('sub_handlingFee') ?? 0;
+
+        orderData = {
+          "Name": address.name ?? 'Unknown Name',
+          "type": "subscription",
+          "assignedto": "NotAssigned",
+          "DA": "Waiting",
+          "DAMOBILE": "Waiting",
+          "createdAt": orderTime,
+          "distance": address.distance ?? 0.0,
+          "landmark": address.landmark ?? '',
+          "orderId": orderId,
+          "paymentmethod": 'Prepaid',
+          "fcm_token": prefs.getString("fcm_token") ?? '',
+          "phoneNumber": phoneNumber,
+          "selectedDirections": address.selectedInstruction ?? 0.0,
+          "selectedLatitude": address.selectedLatitude ?? 0.0,
+          "selectedLongitude": address.selectedLongitude ?? 0.0,
+          "selectedRoad": address.selectedRoad ?? '',
+          "selectedSlot": deliveryTime,
+          "selectedType": address.type ?? '',
+          "status": "Order Placed",
+          "totalAmountToPay": totalAmount.round(),
+          "deliveryFee": deliveryFee,
+          "item_ean": "8908024418004",
+          "planTitle": planTitle,
+          "productName": productName,
+          "BaseRate": baserate,
+          "handlingCharge": handlingFee,
+          "startDate": startDate,
+          "endDate": endDate,
+          "subscriptionQty": subscriptionQty,
+          "alternateDay": subscriptionType,
+        };
+      } else {
+        orderData = {
+          "Name": address.name ?? 'Unknown Name',
+          "type": "Normal",
+          "assignedto": "NotAssigned",
+          "DA": "Waiting",
+          "DAMOBILE": "Waiting",
+          "cookinginstrcutions": packingInstructions,
+          "createdAt": orderTime,
+          "deliveryInstructions": deliveryInstructions,
+          "distance": address.distance ?? 0.0,
+          "landmark": address.landmark ?? '',
+          "orderId": orderId,
+          "orderItems": address.cartItems.map((item) {
+            return {
+              "item_name": item.name ?? '',
+              "item_price": item.price ?? 0.0,
+              "item_quantity": item.quantity ?? 1,
+              "item_ean": item.ean ?? '',
+              "item_category": item.type ?? ''
+            };
+          }).toList(),
+          "paymentmethod": "Online Payment",
+          "fcm_token": prefs.getString("fcm_token") ?? '',
+          "phoneNumber": phoneNumber,
+          "selectedDirections": address.selectedInstruction ?? 0.0,
+          "selectedLatitude": address.selectedLatitude ?? 0.0,
+          "selectedLongitude": address.selectedLongitude ?? 0.0,
+          "selectedRoad": address.selectedRoad ?? '',
+          "selectedSlot": deliveryTime,
+          "selectedType": address.type ?? '',
+          "status": "Order Placed",
+          "totalAmountToPay": totalAmount.round(),
+          "deliveryFee": deliveryFee,
+          "preferredTime": preferredTime,
+          "device": 'iOS',
+        };
+      }
+
       final response = await http.post(
         Uri.parse('$backendUrl/create-order'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'amount': totalAmount
-              .round(), // in rupees if your backend does the *100 conversion
+          'amount': totalAmount.round(),
           'currency': 'INR',
-          'receipt': 'receipt_${DateTime.now().millisecondsSinceEpoch}',
+          'receipt': 'receipt_$orderId',
+          'orderData': orderData,
         }),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final razorpayOrderId = data['orderId'];
-        print("✅ Razorpay Order ID generated: $razorpayOrderId");
-
-        // Save Razorpay Order ID
-        final prefs = await SharedPreferences.getInstance();
         await prefs.setString('RazorpayorderId', razorpayOrderId);
-
-        print(
-            "🔒 Saved Razorpay Order ID to SharedPreferences: $razorpayOrderId");
+        await prefs.setString('order_id', orderId);
+        await prefs.setString('latest_order_id', orderId);
+        await prefs.setString('order_completed_time', orderTime);
         return razorpayOrderId;
       } else {
         ToastHelper.showErrorToast(
@@ -160,7 +258,7 @@ class OrderService {
       }
     } catch (e) {
       print("❌ Error creating Razorpay order: $e");
-      ToastHelper.showErrorToast('Something went wrong !');
+      ToastHelper.showErrorToast('Something went wrong!');
       rethrow;
     }
   }
@@ -173,6 +271,7 @@ class OrderService {
   }
 
   /// Saves a new order in Firebase (Realtime Database in this example).
+  /// NOTE: Only call this for COD orders from frontend. For online payment, let backend webhook handle order creation.
   static Future<void> saveOrderToFirebase({
     // required double offerDiscount,
     required String preferredTime,
@@ -218,7 +317,8 @@ class OrderService {
             "item_name": item.name ?? '',
             "item_price": item.price ?? 0.0,
             "item_quantity": item.quantity ?? 1,
-            "item_ean": item.ean ?? ''
+            "item_ean": item.ean ?? '',
+            "item_category": item.type ?? ''
           };
         }).toList(),
         "paymentmethod": paymentMethod,
@@ -256,81 +356,79 @@ class OrderService {
   }
 
   /// Saves a subscription order in Firebase Realtime Database.
-  static Future<void> saveSubscriptionOrderToFirebase({
-    required dynamic address,
-    required double totalAmount,
-    required double deliveryFee,
-    required String packingInstructions,
-    required String deliveryInstructions,
-    required String deliveryTime,
-    required String paymentMethod,
-    // required double instantDeliveryFee,
-  }) async {
-    try {
-      final database = FirebaseDatabase.instanceFor(
-        databaseURL: 'https://kealthy-90c55-dd236.firebaseio.com/',
-        app: Firebase.app(),
-      );
-      final prefs = await SharedPreferences.getInstance();
-      final phoneNumber = prefs.getString('phoneNumber') ?? 'Unknown';
+  // static Future<void> saveSubscriptionOrderToFirebase({
+  //   required dynamic address,
+  //   required double totalAmount,
+  //   required double deliveryFee,
+  //   required String packingInstructions,
+  //   required String deliveryInstructions,
+  //   required String deliveryTime,
+  //   required String paymentMethod,
+  //   // required double instantDeliveryFee,
+  // }) async {
+  //   try {
+  //     final database = FirebaseDatabase.instanceFor(
+  //       databaseURL: 'https://kealthy-90c55-dd236.firebaseio.com/',
+  //       app: Firebase.app(),
+  //     );
+  //     final prefs = await SharedPreferences.getInstance();
+  //     final phoneNumber = prefs.getString('phoneNumber') ?? 'Unknown';
 
-      // Generate Unique Subscription Order ID
-      final orderId = _generateOrderId();
-      await prefs.setString('subscription_order_id', orderId);
-      await prefs.setString('latest_order_id', orderId);
+  //     final orderId = _generateOrderId();
+  //     await prefs.setString('subscription_order_id', orderId);
+  //     await prefs.setString('latest_order_id', orderId);
 
-      final orderTime = DateTime.now().toIso8601String();
-      await prefs.setString('order_completed_time', orderTime);
+  //     final orderTime = DateTime.now().toIso8601String();
+  //     await prefs.setString('order_completed_time', orderTime);
 
-      final String planTitle = prefs.getString('subscription_plan_title') ?? '';
-      final String productName =
-          prefs.getString('subscription_product_name') ?? '';
-      final String startDate = prefs.getString('subscription_start_date') ?? '';
-      final String endDate = prefs.getString('subscription_end_date') ?? '';
-      final double subscriptionQty = prefs.getDouble('subscription_qty') ?? 0.0;
-      final bool subscriptionType = prefs.getBool('subscription_type') ?? false;
+  //     final String planTitle = prefs.getString('subscription_plan_title') ?? '';
+  //     final String productName =
+  //         prefs.getString('subscription_product_name') ?? '';
+  //     final String startDate = prefs.getString('subscription_start_date') ?? '';
+  //     final String endDate = prefs.getString('subscription_end_date') ?? '';
+  //     final double subscriptionQty = prefs.getDouble('subscription_qty') ?? 0.0;
+  //     final bool subscriptionType = prefs.getBool('subscription_type') ?? false;
 
-      final orderData = {
-        "Name": address.name ?? 'Unknown Name',
-        "type": "subscription",
-        "assignedto": "NotAssigned",
-        "DA": "Waiting",
-        "DAMOBILE": "Waiting",
-        "createdAt": orderTime,
-        "distance": address.distance ?? 0.0,
-        "landmark": address.landmark ?? '',
-        "orderId": orderId,
-        "paymentmethod": 'Prepaid',
-        "fcm_token": prefs.getString("fcm_token") ?? '',
-        "phoneNumber": phoneNumber,
-        "selectedDirections": address.selectedInstruction ?? 0.0,
-        "selectedLatitude": address.selectedLatitude ?? 0.0,
-        "selectedLongitude": address.selectedLongitude ?? 0.0,
-        "selectedRoad": address.selectedRoad ?? '',
-        "selectedSlot": deliveryTime,
-        "selectedType": address.type ?? '',
-        "status": "Order Placed",
-        "totalAmountToPay": totalAmount.round(), // returns int
-        "deliveryFee": deliveryFee.round(),
-        "item_ean": "8908024418004",
-        "planTitle": planTitle,
-        "productName": productName,
-        "startDate": startDate,
-        "endDate": endDate,
-        "subscriptionQty": subscriptionQty,
-        "alternateDay": subscriptionType,
-      };
+  //     final orderData = {
+  //       "Name": address.name ?? 'Unknown Name',
+  //       "type": "subscription",
+  //       "assignedto": "NotAssigned",
+  //       "DA": "Waiting",
+  //       "DAMOBILE": "Waiting",
+  //       "createdAt": orderTime,
+  //       "distance": address.distance ?? 0.0,
+  //       "landmark": address.landmark ?? '',
+  //       "orderId": orderId,
+  //       "paymentmethod": 'Prepaid',
+  //       "fcm_token": prefs.getString("fcm_token") ?? '',
+  //       "phoneNumber": phoneNumber,
+  //       "selectedDirections": address.selectedInstruction ?? 0.0,
+  //       "selectedLatitude": address.selectedLatitude ?? 0.0,
+  //       "selectedLongitude": address.selectedLongitude ?? 0.0,
+  //       "selectedRoad": address.selectedRoad ?? '',
+  //       "selectedSlot": deliveryTime,
+  //       "selectedType": address.type ?? '',
+  //       "status": "Order Placed",
+  //       "totalAmountToPay": totalAmount.round(), // returns int
+  //       "deliveryFee": deliveryFee.round(),
+  //       "item_ean": "8908024418004",
+  //       "planTitle": planTitle,
+  //       "productName": productName,
+  //       "startDate": startDate,
+  //       "endDate": endDate,
+  //       "subscriptionQty": subscriptionQty,
+  //       "alternateDay": subscriptionType,
+  //     };
 
-      await database.ref().child('subscriptions').child(orderId).set(orderData);
-      print('Subscription order saved successfully with orderId = $orderId');
-    } catch (error, stackTrace) {
-      print('Error saving subscription order: $error');
-      print('StackTrace: $stackTrace');
-      rethrow;
-    }
-  }
+  //     await database.ref().child('subscriptions').child(orderId).set(orderData);
+  //     print('Subscription order saved successfully with orderId = $orderId');
+  //   } catch (error, stackTrace) {
+  //     print('Error saving subscription order: $error');
+  //     print('StackTrace: $stackTrace');
+  //     rethrow;
+  //   }
+  // }
 
-  /// Saves a "review request" notification in Firestore
   static Future<void> saveNotificationToFirestore(
       String orderId, List cartItems) async {
     try {

@@ -18,19 +18,23 @@ class SubscriptionPaymentPage extends ConsumerWidget {
   final double totalAmount;
   final String productName;
   final bool isAlternateDay;
+  final double baseRate;
+  final int handlingCharge; // Added handling charge parameter
 
-  const SubscriptionPaymentPage({
-    super.key,
-    required this.title,
-    required this.startDate,
-    required this.endDate,
-    required this.quantity,
-    required this.slot,
-    required this.address,
-    required this.totalAmount,
-    required this.productName,
-    required this.isAlternateDay,
-  });
+  const SubscriptionPaymentPage(
+      {super.key,
+      required this.title,
+      required this.startDate,
+      required this.endDate,
+      required this.quantity,
+      required this.slot,
+      required this.address,
+      required this.totalAmount,
+      required this.productName,
+      required this.isAlternateDay,
+      required this.baseRate,
+      required this.handlingCharge,
+      x});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -71,10 +75,13 @@ class SubscriptionPaymentPage extends ConsumerWidget {
                   const SizedBox(height: 12),
                   Text("Plan: $title"),
                   Text("Product: $productName"),
+                  Text("Base price: ${baseRate.toStringAsFixed(0)}/-"),
                   Text(
                       "Start Date: ${DateFormat('MMMM d, y').format(startDate)}"),
                   Text("End Date: $endDate"),
                   Text("Quantity: $quantity L"),
+                  Text(
+                      "Handling Charge: ₹${handlingCharge.toStringAsFixed(0)}"),
                   const SizedBox(height: 12),
                   const Text("Delivery Slot",
                       style: TextStyle(fontWeight: FontWeight.bold)),
@@ -140,6 +147,8 @@ class SubscriptionPaymentPage extends ConsumerWidget {
                   await prefs.setDouble(
                       'subscription_qty', quantity.toDouble());
                   await prefs.setBool('subscription_type', isAlternateDay);
+                  await prefs.setDouble('sub_baseRate', baseRate);
+                  await prefs.setInt('sub_handlingFee', handlingCharge);
 
                   final formattedSlot =
                       '${DateFormat('h:mm a').format(slot['start']!)} - ${DateFormat('h:mm a').format(slot['end']!)}';
@@ -147,7 +156,15 @@ class SubscriptionPaymentPage extends ConsumerWidget {
                       'subscription_delivery_slot', formattedSlot);
 
                   final razorpayOrderId =
-                      await OrderService.createRazorpayOrder(totalAmount);
+                      await OrderService.createRazorpayOrder(
+                          totalAmount: totalAmount,
+                          address: address,
+                          packingInstructions: '',
+                          deliveryInstructions: '',
+                          deliveryTime: '',
+                          preferredTime: '',
+                          isSubscription: true,
+                          deliveryFee: 0);
                   print(formattedSlot);
 
                   ref.read(subscriptionLoadingProvider.notifier).state = false;

@@ -12,9 +12,9 @@ import 'package:kealthy_food/view/Toast/toast_helper.dart';
 import 'package:kealthy_food/view/food/food_subcategory.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-bool _isTrialDish(String name, WidgetRef ref) {
-  final trialDishes = ref.read(trialDishesProvider).asData?.value ?? [];
-  return trialDishes.any((dish) => dish.name == name);
+bool isTrialDish(String productName, AsyncValue<List<TrialDish>> trialAsync) {
+  final dishes = trialAsync.asData?.value ?? [];
+  return dishes.any((dish) => dish.name == productName);
 }
 
 Future<int> getTodayOrderedQuantity({
@@ -78,7 +78,8 @@ Future<int> getTodayOrderedQuantity({
         for (final order in orders) {
           final createdAt = DateTime.tryParse(order['createdAt'] ?? '');
           if (createdAt != null && createdAt.isAfter(todayStart)) {
-            final orderItems = List<Map<String, dynamic>>.from(order['orderItems'] ?? []);
+            final orderItems =
+                List<Map<String, dynamic>>.from(order['orderItems'] ?? []);
             for (final item in orderItems) {
               if (item['item_name'] == productName) {
                 totalQty += (item['item_quantity'] ?? 0) is int
@@ -109,6 +110,7 @@ class AddToCartSection extends ConsumerStatefulWidget {
   final int soh;
   final String imageurl; // Add Stock on Hand parameter
   final int? maxQuantity;
+  final String type; // Optional category name for trial dish check
 
   const AddToCartSection({
     super.key,
@@ -118,6 +120,7 @@ class AddToCartSection extends ConsumerStatefulWidget {
     required this.soh,
     required this.imageurl,
     this.maxQuantity,
+    required this.type,
     // Include in constructor
   });
 
@@ -155,13 +158,15 @@ class _AddToCartSectionState extends ConsumerState<AddToCartSection>
     final cartItem = ref
         .watch(cartProvider)
         .firstWhereOrNull((item) => item.name == widget.productName);
+    final trialAsync =
+        ref.watch(dishesProvider(widget.type)); // or dynamically based on logic
 
     if (widget.soh == 0) {
       return Column(
         children: [
           Container(
             height: 40,
-            width: MediaQuery.of(context).size.width * 0.30,
+            width: MediaQuery.of(context).size.width * 0.35,
             decoration: BoxDecoration(
               color: Colors.grey.shade400, // Grey out the button
               borderRadius: BorderRadius.circular(10),
@@ -201,15 +206,15 @@ class _AddToCartSectionState extends ConsumerState<AddToCartSection>
                   final phoneNumber = prefs.getString('phoneNumber') ?? '';
 
                   // ✅ Trial dish logic
-                  if (_isTrialDish(widget.productName,ref)) {
+                  if (isTrialDish(widget.productName, trialAsync)) {
                     final alreadyOrderedToday = await getTodayOrderedQuantity(
                       phoneNumber: phoneNumber,
                       productName: widget.productName,
                     );
 
-                    if (alreadyOrderedToday >= 1) {
+                    if (alreadyOrderedToday >= 2) {
                       ToastHelper.showErrorToast(
-                        'Daily limit reached: You can only order 1 of this item per day.',
+                        'Daily limit reached: You can only order 2 of this item per day.',
                       );
                       return;
                     }
@@ -224,10 +229,12 @@ class _AddToCartSectionState extends ConsumerState<AddToCartSection>
                   await cartNotifier.addItem(
                     CartItem(
                       name: widget.productName,
+                      type: widget.type,
                       price: widget.productPrice,
                       ean: widget.productEAN,
                       imageUrl: widget.imageurl,
                       quantity: 1,
+                      soh: widget.soh,
                     ),
                   );
 
@@ -237,7 +244,7 @@ class _AddToCartSectionState extends ConsumerState<AddToCartSection>
             children: [
               Container(
                 height: 40,
-                width: MediaQuery.of(context).size.width * 0.30,
+                width: MediaQuery.of(context).size.width * 0.35,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
@@ -281,7 +288,7 @@ class _AddToCartSectionState extends ConsumerState<AddToCartSection>
         children: [
           Container(
             height: 40,
-            width: MediaQuery.of(context).size.width * 0.30,
+            width: MediaQuery.of(context).size.width * 0.35,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
@@ -314,11 +321,30 @@ class _AddToCartSectionState extends ConsumerState<AddToCartSection>
                         : Colors.green,
                   ),
                   onPressed: () async {
-                    if (_isTrialDish(widget.productName,ref)) {
+                    if (cartItem.quantity >= widget.soh) {
+                      ToastHelper.showErrorToast(
+                          'Only ${cartItem.quantity} left in stock.');
+                      return;
+                    }
+
+                    // ✅ Check maxQuantity limit
+                    if (widget.maxQuantity != null &&
+                        cartItem.quantity >= widget.maxQuantity!) {
+                      ToastHelper.showErrorToast(
+                        'You can only select ${widget.maxQuantity} quantities of this item.',
+                      );
+                      return;
+                    }
+
+                    final isFood = ['Lunch', 'Breakfast', 'Evening', 'Dinner']
+                        .contains(widget.type);
+
+                    if (isFood) {
+                      // ✅ Enforce maxQuantity (e.g., 2 per person per day)
                       if (widget.maxQuantity != null &&
                           cartItem.quantity >= widget.maxQuantity!) {
                         ToastHelper.showErrorToast(
-                          'You can only select 1 quantities for trial dishes.',
+                          'You can only select ${widget.maxQuantity} quantities of this item.',
                         );
                         return;
                       }
@@ -334,9 +360,9 @@ class _AddToCartSectionState extends ConsumerState<AddToCartSection>
                       int totalIfAdded =
                           alreadyOrderedToday + cartItem.quantity + 1;
 
-                      if (totalIfAdded > 1) {
+                      if (totalIfAdded > 2) {
                         ToastHelper.showErrorToast(
-                          'Daily limit reached: You can only order 1 quantities of this item per day.',
+                          'Daily limit reached: You can only order 2 quantities of this item per day.',
                         );
                         return;
                       }

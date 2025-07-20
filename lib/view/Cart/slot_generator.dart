@@ -1,102 +1,102 @@
-import 'package:ntp/ntp.dart';
+// import 'package:ntp/ntp.dart';
 
-class AvailableSlotsGenerator {
-  final int slotDurationMinutes;
+// class AvailableSlotsGenerator {
+//   final int slotDurationMinutes;
 
-  AvailableSlotsGenerator({
-    required this.slotDurationMinutes,
-  });
+//   AvailableSlotsGenerator({
+//     required this.slotDurationMinutes,
+//   });
 
-  Future<List<Map<String, DateTime>>> getAvailableSlots(
-    DateTime startBoundary,
-    DateTime endBoundary,
-    DateTime currentTime,
-    double etaMinutes,
-  ) async {
-    DateTime etaPlusBreak = currentTime;
+//   Future<List<Map<String, DateTime>>> getAvailableSlots(
+//     DateTime startBoundary,
+//     DateTime endBoundary,
+//     DateTime currentTime,
+//     double etaMinutes,
+//   ) async {
+//     DateTime etaPlusBreak = currentTime;
 
-    DateTime adjustedStartTime = DateTime(
-      etaPlusBreak.year,
-      etaPlusBreak.month,
-      etaPlusBreak.day,
-      ((etaPlusBreak.hour ~/ 3) + 1) * 3,
-    );
+//     DateTime adjustedStartTime = DateTime(
+//       etaPlusBreak.year,
+//       etaPlusBreak.month,
+//       etaPlusBreak.day,
+//       ((etaPlusBreak.hour ~/ 3) + 1) * 3,
+//     );
 
-    if (adjustedStartTime.isBefore(startBoundary)) {
-      adjustedStartTime = startBoundary;
-    }
+//     if (adjustedStartTime.isBefore(startBoundary)) {
+//       adjustedStartTime = startBoundary;
+//     }
 
-    List<Map<String, DateTime>> slots = [];
+//     List<Map<String, DateTime>> slots = [];
 
-    while (adjustedStartTime.isBefore(endBoundary)) {
-      DateTime slotEndTime = adjustedStartTime.add(const Duration(hours: 3));
+//     while (adjustedStartTime.isBefore(endBoundary)) {
+//       DateTime slotEndTime = adjustedStartTime.add(const Duration(hours: 3));
 
-      if (slotEndTime.isAfter(endBoundary)) {
-        slotEndTime = endBoundary;
-      }
+//       if (slotEndTime.isAfter(endBoundary)) {
+//         slotEndTime = endBoundary;
+//       }
 
-      if (adjustedStartTime.difference(currentTime).inMinutes >= 60) {
-        slots.add({"start": adjustedStartTime, "end": slotEndTime});
-      }
+//       if (adjustedStartTime.difference(currentTime).inMinutes >= 60) {
+//         slots.add({"start": adjustedStartTime, "end": slotEndTime});
+//       }
 
-      adjustedStartTime = slotEndTime;
-    }
+//       adjustedStartTime = slotEndTime;
+//     }
 
-    return slots;
-  }
+//     return slots;
+//   }
 
-  Future<Map<String, dynamic>> getSlots(double etaMinutes) async {
-    DateTime currentTime = await NTP.now();
+//   Future<Map<String, dynamic>> getSlots(double etaMinutes) async {
+//     DateTime currentTime = await NTP.now();
 
-    DateTime todayStartBoundary = DateTime(
-      currentTime.year,
-      currentTime.month,
-      currentTime.day,
-      9,
-    );
+//     DateTime todayStartBoundary = DateTime(
+//       currentTime.year,
+//       currentTime.month,
+//       currentTime.day,
+//       9,
+//     );
 
-    DateTime todayEndBoundary = DateTime(
-      currentTime.year,
-      currentTime.month,
-      currentTime.day,
-      18,
-    );
+//     DateTime todayEndBoundary = DateTime(
+//       currentTime.year,
+//       currentTime.month,
+//       currentTime.day,
+//       18,
+//     );
 
-    DateTime tomorrowStartBoundary = DateTime(
-      currentTime.year,
-      currentTime.month,
-      currentTime.day + 1,
-      9,
-    );
+//     DateTime tomorrowStartBoundary = DateTime(
+//       currentTime.year,
+//       currentTime.month,
+//       currentTime.day + 1,
+//       9,
+//     );
 
-    DateTime tomorrowEndBoundary = DateTime(
-      currentTime.year,
-      currentTime.month,
-      currentTime.day + 1,
-      18,
-    );
+//     DateTime tomorrowEndBoundary = DateTime(
+//       currentTime.year,
+//       currentTime.month,
+//       currentTime.day + 1,
+//       18,
+//     );
 
-    List<Map<String, DateTime>> todaySlots = [];
-    List<Map<String, DateTime>> tomorrowSlots = [];
+//     List<Map<String, DateTime>> todaySlots = [];
+//     List<Map<String, DateTime>> tomorrowSlots = [];
 
-    if (currentTime.isBefore(todayEndBoundary)) {
-      todaySlots = await getAvailableSlots(
-        todayStartBoundary,
-        todayEndBoundary,
-        currentTime,
-        etaMinutes,
-      );
-    }
+//     if (currentTime.isBefore(todayEndBoundary)) {
+//       todaySlots = await getAvailableSlots(
+//         todayStartBoundary,
+//         todayEndBoundary,
+//         currentTime,
+//         etaMinutes,
+//       );
+//     }
 
-    tomorrowSlots = await getAvailableSlots(
-      tomorrowStartBoundary,
-      tomorrowEndBoundary,
-      currentTime,
-      etaMinutes,
-    );
+//     tomorrowSlots = await getAvailableSlots(
+//       tomorrowStartBoundary,
+//       tomorrowEndBoundary,
+//       currentTime,
+//       etaMinutes,
+//     );
 
-    return {
-      "slots": [...todaySlots, ...tomorrowSlots],
-    };
-  }
-}
+//     return {
+//       "slots": [...todaySlots, ...tomorrowSlots],
+//     };
+//   }
+// }

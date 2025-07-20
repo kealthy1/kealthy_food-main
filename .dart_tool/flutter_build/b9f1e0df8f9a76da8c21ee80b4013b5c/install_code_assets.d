@@ -1,0 +1,1 @@
+ /Users/mrvs/development/projects/kealthy_food-main/.dart_tool/flutter_build/b9f1e0df8f9a76da8c21ee80b4013b5c/native_assets.json: 

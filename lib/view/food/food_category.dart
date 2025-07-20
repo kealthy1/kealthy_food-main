@@ -16,14 +16,15 @@ class FoodCategory extends ConsumerStatefulWidget {
 
 class _HomeCategoryState extends ConsumerState<FoodCategory>
     with AutomaticKeepAliveClientMixin {
-
   void preloadCategoryImages(List<Map<String, dynamic>> categories) {
     for (var category in categories) {
       final url = category['image'] as String;
-      final provider = CachedNetworkImageProvider(url, cacheKey: category['foodCategory']);
+      final provider =
+          CachedNetworkImageProvider(url, cacheKey: category['foodCategory']);
       provider.resolve(const ImageConfiguration());
     }
   }
+
   @override
   bool get wantKeepAlive => true;
 
@@ -33,18 +34,22 @@ class _HomeCategoryState extends ConsumerState<FoodCategory>
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
     return FutureBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      future: firestore
-          .collection('foodCategory')
-          .orderBy('Categories') 
-          .get(),
+      future:
+          firestore.collection('foodSubcategory').orderBy('Categories').get(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
+          final customOrder = ['Breakfast', 'Lunch', '4 PM', 'Dinner'];
           final categories = snapshot.data?.docs.map((doc) {
             return {
               'Categories': doc.data()['Categories'],
               'image': doc.data()['imageurl'],
             };
           }).toList();
+          categories?.sort((a, b) {
+            final indexA = customOrder.indexOf(a['Categories']);
+            final indexB = customOrder.indexOf(b['Categories']);
+            return indexA.compareTo(indexB);
+          });
 
           if (categories != null) {
             preloadCategoryImages(categories);
@@ -54,7 +59,7 @@ class _HomeCategoryState extends ConsumerState<FoodCategory>
             child: Column(
               children: [
                 Wrap(
-                  spacing: 8.0,
+                  spacing: 10.0,
                   runSpacing: 8.0,
                   children: categories?.map((category) {
                         return GestureDetector(
@@ -62,40 +67,40 @@ class _HomeCategoryState extends ConsumerState<FoodCategory>
                             Navigator.push(
                               context,
                               CupertinoPageRoute(
-                                builder: (context) => const FoodSubCategoryPage(
+                                builder: (context) => FoodSubCategoryPage(
+                                  categoryName:
+                                      category['Categories'] as String,
                                 ),
                               ),
                             );
                           },
                           child: SizedBox(
+                            width: (MediaQuery.of(context).size.width - 40) / 2,
                             child: Column(
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    child: Container(
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFFF4F4F5),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  child: Container(
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFF4F4F5),
+                                    ),
+                                    // Set your desired background color here
+                                    child: CachedNetworkImage(
+                                      imageUrl: category['image'] as String,
+                                      width: double.infinity,
+                                      height: 100,
+                                      fit: BoxFit.cover,
+                                      placeholder: (context, url) =>
+                                          Shimmer.fromColors(
+                                        baseColor: Colors.grey[300]!,
+                                        highlightColor: Colors.grey[100]!,
+                                        child: Container(color: Colors.white),
                                       ),
-                                      // Set your desired background color here
-                                      child: CachedNetworkImage(
-                                        imageUrl: category['image'] as String,
-                                        width: double.infinity,
-                                        height: 100,
-                                        fit: BoxFit.cover,
-                                        placeholder: (context, url) =>
-                                            Shimmer.fromColors(
-                                          baseColor: Colors.grey[300]!,
-                                          highlightColor: Colors.grey[100]!,
-                                          child: Container(color: Colors.white),
-                                        ),
-                                        errorWidget: (context, url, error) =>
-                                            Shimmer.fromColors(
-                                          baseColor: Colors.grey[300]!,
-                                          highlightColor: Colors.grey[100]!,
-                                          child: Container(color: Colors.white),
-                                        ),
+                                      errorWidget: (context, url, error) =>
+                                          Shimmer.fromColors(
+                                        baseColor: Colors.grey[300]!,
+                                        highlightColor: Colors.grey[100]!,
+                                        child: Container(color: Colors.white),
                                       ),
                                     ),
                                   ),
@@ -121,7 +126,7 @@ class _HomeCategoryState extends ConsumerState<FoodCategory>
             ),
           );
         } else {
-          return SizedBox();
+          return const SizedBox();
         }
       },
     );

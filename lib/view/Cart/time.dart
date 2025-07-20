@@ -399,7 +399,7 @@ class _TimePageState extends ConsumerState<TimePage> {
                           "start"]!; // ✅ Correctly extracting DateTime
                       DateTime slotEnd = selectedSlot["end"]!;
 
-                      if (slotStart.difference(currentTime).inMinutes < 1) {
+                      if (slotStart.difference(currentTime).inMinutes < 110) {
                         ToastHelper.showErrorToast(
                             'Selected slot is not available. Please select a valid slot.');
                         return;

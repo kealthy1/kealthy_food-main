@@ -76,59 +76,36 @@ class _HomePageState extends ConsumerState<HomePage>
                 ),
                 insetPadding: const EdgeInsets.symmetric(horizontal: 24),
                 backgroundColor: Colors.transparent,
-                child: Stack(
-                  children: [
-                    // Card with image and white space
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        Future.delayed(const Duration(milliseconds: 500), () {
-                          ref.read(tabIndexProvider.notifier).state = 1;
-                        });
-                      },
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Container(
-                          color: Colors.white,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(3.0),
-                                child: ClipRRect(
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(16)),
-                                  child: Image.asset(
-                                    'lib/assets/images/kitchen logo5.png',
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                  ),
-                                ),
-                              ), // Extra white space below
-                            ],
-                          ),
-                        ),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    Future.delayed(const Duration(milliseconds: 500), () {
+                      ref.read(tabIndexProvider.notifier).state = 1;
+                    });
+                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      color: Colors.white,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(3.0),
+                            child: ClipRRect(
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(16)),
+                              child: Image.asset(
+                                'lib/assets/images/kitchen logo5.png',
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                              ),
+                            ),
+                          ), // Extra white space below
+                        ],
                       ),
                     ),
-
-                    // Clear icon
-                    Positioned(
-                      top: 10, // slightly above dialog
-                      right: 10,
-                      child: CircleAvatar(
-                        backgroundColor: Colors.white,
-                        radius: 15,
-                        child: IconButton(
-                          padding: EdgeInsets.zero,
-                          icon: const Icon(Icons.clear,
-                              size: 20, color: Colors.black),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -145,7 +122,18 @@ class _HomePageState extends ConsumerState<HomePage>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!hasShownDialog) {
         hasShownDialog = true;
-        showKitchenDialog(context, ref); // 👈 Show on first open
+        // Use SharedPreferences to show kitchen dialog only once per day
+        SharedPreferences.getInstance().then((prefs) {
+          final today = DateTime.now();
+          final todayString = "${today.year}-${today.month}-${today.day}";
+
+          final lastShown = prefs.getString('lastKitchenDialogDate');
+
+          if (lastShown != todayString) {
+            showKitchenDialog(context, ref);
+            prefs.setString('lastKitchenDialogDate', todayString);
+          }
+        });
       }
 
       VersionCheckService.checkForUpdate(context);

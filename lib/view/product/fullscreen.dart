@@ -14,7 +14,7 @@ class ImageIndexNotifier extends StateNotifier<int> {
 }
 
 // Provider for image index management
-final imageIndexProvider = StateNotifierProvider<ImageIndexNotifier, int> (
+final imageIndexProvider = StateNotifierProvider<ImageIndexNotifier, int>(
   (ref) => ImageIndexNotifier(0),
 );
 
@@ -40,28 +40,26 @@ class _ImageZoomPageState extends ConsumerState<ImageZoomPage>
   late PageController _pageController;
   late List<ImageProvider> _cachedImages;
 
- @override
-void initState() {
-  super.initState();
-  _pageController = PageController(initialPage: widget.initialIndex);
-  _cachedImages = widget.imageUrls
-      .map((url) => CachedNetworkImageProvider(url))
-      .toList();
-  
-  // Delay the provider update to avoid modifying it during widget build
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    ref.read(imageIndexProvider.notifier).setIndex(widget.initialIndex);
-  });
-}
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: widget.initialIndex);
+    _cachedImages =
+        widget.imageUrls.map((url) => CachedNetworkImageProvider(url)).toList();
 
-@override
-void didChangeDependencies() {
-  super.didChangeDependencies();
-  for (final provider in _cachedImages) {
-    precacheImage(provider, context);
+    // Delay the provider update to avoid modifying it during widget build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(imageIndexProvider.notifier).setIndex(widget.initialIndex);
+    });
   }
-}
-    
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    for (final provider in _cachedImages) {
+      precacheImage(provider, context);
+    }
+  }
 
   @override
   void dispose() {
@@ -96,7 +94,6 @@ void didChangeDependencies() {
               itemCount: widget.imageUrls.length,
               pageController: _pageController,
               onPageChanged: (index) {
-                
                 ref.read(imageIndexProvider.notifier).setIndex(index);
               },
               builder: (context, index) {
@@ -106,12 +103,11 @@ void didChangeDependencies() {
                   maxScale: PhotoViewComputedScale.covered * 2.5,
                   heroAttributes: PhotoViewHeroAttributes(tag: index),
                   filterQuality: FilterQuality.high,
-                  
                 );
               },
             ),
           ),
-          
+
           Consumer(builder: (context, ref, child) {
             final selectedIndex = ref.watch(imageIndexProvider);
 
@@ -134,12 +130,14 @@ void didChangeDependencies() {
                       _pageController.jumpToPage(index);
                     },
                     child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200), // Smooth transition
+                      duration: const Duration(
+                          milliseconds: 200), // Smooth transition
                       margin: const EdgeInsets.symmetric(horizontal: 5),
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         border: Border.all(
-                          color: isSelected ? Colors.orange : Colors.transparent,
+                          color:
+                              isSelected ? Colors.orange : Colors.transparent,
                           width: 1,
                         ),
                         borderRadius: BorderRadius.circular(8),
