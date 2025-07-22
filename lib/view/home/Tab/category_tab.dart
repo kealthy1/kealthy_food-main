@@ -51,6 +51,18 @@ class _CategoryTabPageState extends ConsumerState<CategoryTabPage>
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    double tileHeight;
+
+    if (screenWidth < 600) {
+      tileHeight = screenHeight * 0.6;
+    } else if (screenWidth < 900) {
+      tileHeight = 280;
+    } else {
+      tileHeight = 1100;
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -89,7 +101,7 @@ class _CategoryTabPageState extends ConsumerState<CategoryTabPage>
         ),
         const SizedBox(height: 15),
         SizedBox(
-          height: MediaQuery.of(context).size.height * 0.5,
+          height: tileHeight,
           child: TabBarView(
             controller: _tabController,
             children: const [HomeCategory(), FoodCategory()],

@@ -368,15 +368,15 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
           final isAnyLoading = trialDishesByType.values
               .any((asyncValue) => asyncValue is AsyncLoading);
 
-          final allTrialDishes = trialDishesByType.values
-              .whereType<AsyncData<List<TrialDish>>>()
-              .expand((async) => async.value)
-              .toList();
+          // final allTrialDishes = trialDishesByType.values
+          //     .whereType<AsyncData<List<TrialDish>>>()
+          //     .expand((async) => async.value)
+          //     .toList();
 
-          final trialDishNames = allTrialDishes.map((d) => d.name).toSet();
+          // final trialDishNames = allTrialDishes.map((d) => d.name).toSet();
 
-          final containsTrial = widget.cartItems
-              .any((item) => trialDishNames.contains(item.name));
+          // final containsTrial = widget.cartItems
+          //     .any((item) => trialDishNames.contains(item.name));
 
           return Container(
             width: double.infinity,
@@ -413,8 +413,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                       ref.read(isProceedingToPaymentProvider.notifier).state =
                           true;
 
-                      final initialPaymentMethod =
-                          containsTrial ? 'Online Payment' : 'Cash on Delivery';
+                      // final initialPaymentMethod =
+                      //     containsTrial ? 'Online Payment' : 'Cash on Delivery';
 
                       final instructions = getSelectedInstructions(ref);
                       final packingInstructions =
@@ -441,7 +441,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                               deliverytime: widget.deliveryTime,
                               packingInstructions: packingInstructions,
                               deliveryfee: normalDeliveryFee,
-                              initialPaymentMethod: initialPaymentMethod,
+                              initialPaymentMethod: '',
                             ),
                           ),
                         );

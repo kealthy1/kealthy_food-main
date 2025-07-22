@@ -126,6 +126,20 @@ class _ChangingImageWidgetState extends ConsumerState<ChangingImageWidget> {
   @override
   Widget build(BuildContext context) {
     final imageDataList = ref.watch(imageDataProvider);
+    final screenWidth = MediaQuery.of(context).size.width;
+    double tileWidth;
+    double tileHeight;
+
+    if (screenWidth < 600) {
+      tileWidth = screenWidth;
+      tileHeight = 180;
+    } else if (screenWidth < 900) {
+      tileWidth = screenWidth;
+      tileHeight = 500;
+    } else {
+      tileWidth = screenWidth;
+      tileHeight = 500;
+    }
 
     if (imageDataList.isEmpty) {
       // Show shimmer and placeholder bubbles
@@ -140,8 +154,8 @@ class _ChangingImageWidgetState extends ConsumerState<ChangingImageWidget> {
                 decoration: BoxDecoration(
                     color: Colors.grey[300],
                     borderRadius: BorderRadius.circular(20)),
-                width: MediaQuery.of(context).size.width,
-                height: 180,
+                width: tileWidth,
+                height: tileHeight,
               ),
             ),
           ),
@@ -164,7 +178,7 @@ class _ChangingImageWidgetState extends ConsumerState<ChangingImageWidget> {
     return Column(
       children: [
         SizedBox(
-          height: 180,
+          height: tileHeight,
           child: GestureDetector(
             onPanDown: (_) => _stopAutoScroll(),
             onPanCancel: () => _restartAutoScroll(),
@@ -196,7 +210,7 @@ class _ChangingImageWidgetState extends ConsumerState<ChangingImageWidget> {
                         borderRadius: BorderRadius.circular(20),
                         child: imageData.imageUrl.isEmpty
                             ? Container(
-                                height: 180,
+                                height: tileHeight,
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
                                   color: Colors.white,

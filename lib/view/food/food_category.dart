@@ -59,7 +59,7 @@ class _HomeCategoryState extends ConsumerState<FoodCategory>
             child: Column(
               children: [
                 Wrap(
-                  spacing: 10.0,
+                  spacing: 8.0,
                   runSpacing: 8.0,
                   children: categories?.map((category) {
                         return GestureDetector(
@@ -75,9 +75,19 @@ class _HomeCategoryState extends ConsumerState<FoodCategory>
                             );
                           },
                           child: SizedBox(
-                            width: (MediaQuery.of(context).size.width - 40) / 2,
+                            width: (MediaQuery.of(context).size.width - 40),
                             child: Column(
                               children: [
+                                // Text(
+                                //   category['Categories'] as String,
+                                //   style: GoogleFonts.poppins(
+                                //     color: Colors.black,
+                                //     fontWeight: FontWeight.bold,
+                                //     fontSize: 15,
+                                //   ),
+                                //   textAlign: TextAlign.center,
+                                // ),
+                                const SizedBox(height: 4),
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(8.0),
                                   child: Container(
@@ -105,16 +115,7 @@ class _HomeCategoryState extends ConsumerState<FoodCategory>
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  category['Categories'] as String,
-                                  style: GoogleFonts.poppins(
-                                    color: Colors.black54,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 10,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
+                                const SizedBox(height: 6),
                               ],
                             ),
                           ),

@@ -55,6 +55,8 @@ class _HomePageState extends ConsumerState<HomePage>
   late ScrollController _scrollController;
   late AnimationController _badgeController;
   late Animation<double> _badgeAnimation;
+  late double tileWidth;
+  late double tileHeight;
 
   void showKitchenDialog(BuildContext context, WidgetRef ref) {
     Future.delayed(const Duration(milliseconds: 500), () {
@@ -344,8 +346,19 @@ class _HomePageState extends ConsumerState<HomePage>
     final profile = ref.watch(profileProvider);
     final phoneNumber = ref.watch(phoneNumberProvider);
     final rainStatus = ref.watch(rainingStatusStreamProvider);
-
     final hasCartItems = totalItems > 0;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    if (screenWidth < 600) {
+      tileWidth = screenWidth * 0.45;
+      tileHeight = 220;
+    } else if (screenWidth < 900) {
+      tileWidth = screenWidth * 0.3;
+      tileHeight = 280;
+    } else {
+      tileWidth = screenWidth * 0.4;
+      tileHeight = 350;
+    }
 
     print('Cart items: $cartItems');
     print('Total items: $totalItems');
@@ -626,10 +639,19 @@ class _HomePageState extends ConsumerState<HomePage>
                           // Show only 6 recent blogs
                           final limitedBlogs = blogPagination.take(6).toList();
                           final screenWidth = MediaQuery.of(context).size.width;
-                          final tileWidth = screenWidth < 600
-                              ? screenWidth * 0.4
-                              : screenWidth * 0.25;
-                          final tileHeight = screenWidth < 600 ? 210.0 : 300.0;
+                          double tileWidth;
+                          double tileHeight;
+
+                          if (screenWidth < 600) {
+                            tileWidth = screenWidth * 0.45;
+                            tileHeight = 220;
+                          } else if (screenWidth < 900) {
+                            tileWidth = screenWidth * 0.3;
+                            tileHeight = 280;
+                          } else {
+                            tileWidth = screenWidth * 0.4;
+                            tileHeight = 350;
+                          }
                           return Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -833,7 +855,7 @@ class _HomePageState extends ConsumerState<HomePage>
                 ),
               ],
             ),
-            const ReviewAlert(),
+            //const ReviewAlert(),
             Consumer(
               builder: (context, ref, child) {
                 return const OrderFeedbackAlert();

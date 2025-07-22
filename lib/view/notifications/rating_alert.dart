@@ -83,7 +83,6 @@ class ReviewAlert extends ConsumerWidget {
           final bTime = b['timestamp']?.toDate() ?? DateTime(1970);
           return bTime.compareTo(aTime); // Descending
         });
-
         // 5) Take the newest delivered notification
         final newestNotification = delivered.first;
 
@@ -116,7 +115,8 @@ class ReviewAlert extends ConsumerWidget {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           title: Text(
             "Love It or Leave It?",
             style: GoogleFonts.poppins(

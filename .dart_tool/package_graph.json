@@ -5,7 +5,7 @@
   "packages": [
     {
       "name": "kealthy_food",
-      "version": "1.1.36+37",
+      "version": "1.1.37+38",
       "dependencies": [
         "build_runner",
         "cached_network_image",

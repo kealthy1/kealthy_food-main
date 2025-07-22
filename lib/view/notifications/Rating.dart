@@ -11,8 +11,6 @@ import 'package:kealthy_food/view/notifications/review_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
-
-
 class RatingPage extends ConsumerWidget {
   final List<String> productNames;
   final String orderId;
@@ -26,103 +24,107 @@ class RatingPage extends ConsumerWidget {
   });
 
   Future<void> submitReviews(BuildContext context, WidgetRef ref) async {
-  // Collect only products that have been rated (rating > 0)
-  final productsToSubmit = productNames.where((productName) {
-    final double rating = ref.read(ratingProvider)[productName] ?? 0;
-    return rating > 0;
-  }).toList();
+    // Collect only products that have been rated (rating > 0)
+    final productsToSubmit = productNames.where((productName) {
+      final double rating = ref.read(ratingProvider)[productName] ?? 0;
+      return rating > 0;
+    }).toList();
 
-  // If no product is rated, show one toast and stay on page.
-  if (productsToSubmit.isEmpty) {
-    ToastHelper.showErrorToast('Please rate a product!');
-    return;
-  }
-
-  // Show an AlertDialog while submitting the reviews.
-  ref.read(isSubmittingProvider.notifier).state = true;
-  showDialog(
-    barrierDismissible: false,
-    context: context,
-    builder: (ctx) {
-      return AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        content: Row(
-          children: [ const CupertinoActivityIndicator(
-                                  color: Colors.black,),
-            const SizedBox(width: 20),
-            Text(
-              "Submitting your reviews...",
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      );
-    },
-  );
-
-  bool allSuccess = true;
-  // Submit reviews only for products that were rated.
-  for (var productName in productsToSubmit) {
-    bool success = await _submitReview(context, ref, productName);
-    if (!success) {
-      allSuccess = false;
+    // If no product is rated, show one toast and stay on page.
+    if (productsToSubmit.isEmpty) {
+      ToastHelper.showErrorToast('Please rate a product!');
+      return;
     }
-  }
 
-  Navigator.of(context).pop(); // Close the AlertDialog
-  ref.read(isSubmittingProvider.notifier).state = false;
-
-  // Show only one success or error toast.
-  if (allSuccess) {
-    ToastHelper.showSuccessToast('Thanks for sharing your thoughts!');
-  } else {
-    ToastHelper.showErrorToast('Failed to submit reviews !');
-  }
-
-  Navigator.pop(context);
-}
-
-// _submitReview returns a bool for success/failure and does not show its own toast.
-Future<bool> _submitReview(
-    BuildContext context, WidgetRef ref, String productName) async {
-  final double? rating = ref.read(ratingProvider)[productName];
-  final String review = (ref.read(reviewProvider)[productName] ?? '').trim();
-
-  if (rating == null || rating == 0) return false;
-
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final String customerName = prefs.getString('selectedName') ?? 'Anonymous';
-
-    final Map<String, dynamic> reviewData = {
-      "productName": productName,
-      "starCount": rating.toInt(),
-      "customerName": customerName,
-      "feedback": review,
-    };
-
-    final response = await http.post(
-      Uri.parse("https://api-jfnhkjk4nq-uc.a.run.app/rate"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode(reviewData),
+    // Show an AlertDialog while submitting the reviews.
+    ref.read(isSubmittingProvider.notifier).state = true;
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          content: Row(
+            children: [
+              const CupertinoActivityIndicator(
+                color: Colors.black,
+              ),
+              const SizedBox(width: 20),
+              Text(
+                "Submitting your reviews...",
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
 
-    if (response.statusCode == 200) {
-      await deleteProductFromOrder(orderId, productName);
-      ref.invalidate(notificationProvider);
-      ref.read(ratingProvider.notifier).updateRating(productName, 0);
-      ref.read(reviewProvider.notifier).updateReview(productName, '');
-      return true;
+    bool allSuccess = true;
+    // Submit reviews only for products that were rated.
+    for (var productName in productsToSubmit) {
+      bool success = await _submitReview(context, ref, productName);
+      if (!success) {
+        allSuccess = false;
+      }
+    }
+
+    Navigator.of(context).pop(); // Close the AlertDialog
+    ref.read(isSubmittingProvider.notifier).state = false;
+
+    // Show only one success or error toast.
+    if (allSuccess) {
+      ToastHelper.showSuccessToast('Thanks for sharing your thoughts!');
     } else {
+      ToastHelper.showErrorToast('Failed to submit reviews !');
+    }
+
+    Navigator.pop(context);
+  }
+
+// _submitReview returns a bool for success/failure and does not show its own toast.
+  Future<bool> _submitReview(
+      BuildContext context, WidgetRef ref, String productName) async {
+    final double? rating = ref.read(ratingProvider)[productName];
+    final String review = (ref.read(reviewProvider)[productName] ?? '').trim();
+
+    if (rating == null || rating == 0) return false;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String customerName =
+          prefs.getString('selectedName') ?? 'Anonymous';
+
+      final Map<String, dynamic> reviewData = {
+        "productName": productName,
+        "starCount": rating.toInt(),
+        "customerName": customerName,
+        "feedback": review,
+        "createdAt": DateTime.now().toIso8601String(),
+      };
+
+      final response = await http.post(
+        Uri.parse("https://api-jfnhkjk4nq-uc.a.run.app/rate"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(reviewData),
+      );
+
+      if (response.statusCode == 200) {
+        await deleteProductFromOrder(orderId, productName);
+        ref.invalidate(notificationProvider);
+        ref.read(ratingProvider.notifier).updateRating(productName, 0);
+        ref.read(reviewProvider.notifier).updateReview(productName, '');
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
       return false;
     }
-  } catch (e) {
-    return false;
   }
-}
 
   Future<void> deleteProductFromOrder(
       String orderId, String productName) async {
@@ -196,18 +198,16 @@ Future<bool> _submitReview(
               borderRadius: BorderRadius.circular(8),
             ),
           ),
-          child:  Text(
-                  "Submit Reviews",
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+          child: Text(
+            "Submit Reviews",
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ),
     );
   }
 }
-
-

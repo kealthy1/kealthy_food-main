@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -399,9 +400,18 @@ class _TimePageState extends ConsumerState<TimePage> {
                           "start"]!; // ✅ Correctly extracting DateTime
                       DateTime slotEnd = selectedSlot["end"]!;
 
-                      if (slotStart.difference(currentTime).inMinutes < 110) {
+                      final slotConfig = await FirebaseFirestore.instance
+                          .collection('slot')
+                          .doc('slotcutoff')
+                          .get();
+
+                      final minLeadTime = slotConfig.data()?['time'] ?? 60;
+
+                      if (slotStart.difference(currentTime).inMinutes <
+                          minLeadTime) {
                         ToastHelper.showErrorToast(
-                            'Selected slot is not available. Please select a valid slot.');
+                          'Selected slot is not available. Please select a valid slot.',
+                        );
                         return;
                       }
 
