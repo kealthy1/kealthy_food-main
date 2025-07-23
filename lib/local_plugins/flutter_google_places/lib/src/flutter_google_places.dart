@@ -161,7 +161,7 @@ class _PlacesAutocompleteOverlayState extends PlacesAutocompleteState {
           bottomLeft: bodyBottomLeftBorderRadius,
           bottomRight: bodyBottomRightBorderRadius,
         ),
-        child: widget.logo ?? PoweredByGoogleImage(),
+        child: widget.logo ?? const PoweredByGoogleImage(),
       );
     } else {
       body = SingleChildScrollView(
@@ -256,7 +256,7 @@ class _PlacesAutocompleteResult extends State<PlacesAutocompleteResult> {
       if (state._searching) {
         children.add(_Loader());
       }
-      children.add(widget.logo ?? PoweredByGoogleImage());
+      children.add(widget.logo ?? const PoweredByGoogleImage());
       return Stack(children: children);
     }
     return PredictionsListView(

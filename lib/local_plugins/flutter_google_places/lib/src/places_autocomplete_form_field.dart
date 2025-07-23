@@ -76,7 +76,7 @@ class PlacesAutocompleteFormField extends FormField<String> {
             return PlacesAutocompleteField(
               key: key,
               inputDecoration:
-                  effectiveDecoration?.copyWith(errorText: state.errorText),
+                  effectiveDecoration.copyWith(errorText: state.errorText),
               controller: state._effectiveController,
               apiKey: apiKey,
               leading: leading,

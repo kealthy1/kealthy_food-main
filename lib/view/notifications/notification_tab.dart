@@ -3,11 +3,13 @@ import 'package:kealthy_food/view/notifications/offers.dart';
 import 'notification_page.dart';
 
 class NotificationTabPage extends StatelessWidget {
-  const NotificationTabPage({super.key});
+  final int initialIndex;
+  const NotificationTabPage({super.key, this.initialIndex = 0});
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
+      initialIndex: initialIndex,
       length: 2,
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -21,7 +23,6 @@ class NotificationTabPage extends StatelessWidget {
             tabs: [
               Tab(text: 'Offers & Deals'),
               Tab(text: 'Rate Us'),
-            
             ],
           ),
         ),

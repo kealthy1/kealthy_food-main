@@ -6,7 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kealthy_food/view/BottomNavBar/bottom_nav_bar.dart';
 import 'package:kealthy_food/view/Login/login_page.dart';
 import 'package:kealthy_food/view/maintanence/maintanence.dart';
+import 'package:kealthy_food/view/splash_screen/required_update.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -24,6 +26,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   Future<void> _initializeApp() async {
     await Future.delayed(const Duration(seconds: 3));
+
+    final shouldUpdate = await _shouldForceUpdate();
+    if (!mounted) return;
+
+    if (shouldUpdate) {
+      Navigator.pushReplacement(
+        context,
+        CupertinoPageRoute(
+          builder: (_) => const ForceUpdatePage(),
+        ),
+      );
+      return;
+    }
 
     final isUnderMaintenance = await _checkMaintenanceStatus();
     if (!mounted) return;
@@ -43,12 +58,35 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       Navigator.pushReplacement(
         context,
         CupertinoModalPopupRoute(
-          builder: (_) => storedPhone.isNotEmpty
-              ? const BottomNavBar()
-              : const LoginFields(),
+          builder: (_) =>
+              storedPhone.isNotEmpty ? BottomNavBar() : const LoginFields(),
         ),
       );
     }
+  }
+
+  Future<bool> _shouldForceUpdate() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    final localVersion = packageInfo.version;
+
+    final doc =
+        await FirebaseFirestore.instance.collection('config').doc('iOS').get();
+    if (!doc.exists) return false;
+
+    final remoteVersion = doc['latest_version'];
+
+    List<int> parseVersion(String version) =>
+        version.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+
+    final localParts = parseVersion(localVersion);
+    final remoteParts = parseVersion(remoteVersion);
+
+    for (int i = 0; i < remoteParts.length; i++) {
+      if (i >= localParts.length || remoteParts[i] > localParts[i]) return true;
+      if (remoteParts[i] < localParts[i]) return false;
+    }
+
+    return false;
   }
 
   Future<bool> _checkMaintenanceStatus() async {
@@ -63,8 +101,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       return false;
     }
   }
-
-  
 
   @override
   Widget build(BuildContext context) {

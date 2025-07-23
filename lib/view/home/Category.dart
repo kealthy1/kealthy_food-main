@@ -452,8 +452,8 @@ class _HomeCategoryState extends ConsumerState<HomeCategory>
                             baseColor: Colors.grey[300]!,
                             highlightColor: Colors.grey[100]!,
                             child: Container(
-                              width: double.infinity,
-                              height: 100,
+                              width: tileWidth,
+                              height: tileHeight,
                               color: Colors.white,
                             ),
                           ),

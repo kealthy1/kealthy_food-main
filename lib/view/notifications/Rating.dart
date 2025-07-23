@@ -163,6 +163,7 @@ class RatingPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        automaticallyImplyLeading: true,
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
         elevation: 0,

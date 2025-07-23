@@ -10,7 +10,7 @@ const kGoogleApiKey =
     "AIzaSyD1MUoakZ0mm8WeFv_GK9k_zAWdGk5r1hA"; // Replace this!
 
 void main() {
-  runApp(RoutesWidget());
+  runApp(const RoutesWidget());
 }
 
 final customTheme = ThemeData(
@@ -36,7 +36,7 @@ class RoutesWidget extends StatelessWidget {
         title: "My App",
         theme: customTheme,
         routes: {
-          "/": (_) => MyApp(),
+          "/": (_) => const MyApp(),
           "/search": (_) => CustomSearchScaffold(),
         },
       );
@@ -158,7 +158,7 @@ class CustomSearchScaffold extends PlacesAutocompleteWidget {
 class _CustomSearchScaffoldState extends PlacesAutocompleteState {
   @override
   Widget build(BuildContext context) {
-    final appBar = AppBar(title: AppBarPlacesAutoCompleteTextField());
+    final appBar = AppBar(title: const AppBarPlacesAutoCompleteTextField());
     final body = PlacesAutocompleteResult(
       onTap: (p) {
         displayPrediction(p, searchScaffoldKey.currentState);

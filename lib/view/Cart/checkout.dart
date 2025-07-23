@@ -335,8 +335,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                                 itemTotal: widget.itemTotal,
                                 distanceInKm: distanceInKm,
                                 offerDiscount: isFirstOrder
-                                    ? (widget.itemTotal >= 100
-                                        ? 100.0
+                                    ? (widget.itemTotal >= 50
+                                        ? 50.0
                                         : widget.itemTotal)
                                     : 0.0,
                                 onTotalCalculated: (value) {

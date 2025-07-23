@@ -60,59 +60,55 @@ class _HomePageState extends ConsumerState<HomePage>
 
   void showKitchenDialog(BuildContext context, WidgetRef ref) {
     Future.delayed(const Duration(milliseconds: 500), () {
-      showGeneralDialog(
+      showModalBottomSheet(
         context: context,
-        barrierDismissible: true,
-        barrierLabel: "Kitchen Dialog",
-        transitionDuration: const Duration(milliseconds: 400),
-        pageBuilder: (context, anim1, anim2) => const SizedBox.shrink(),
-        transitionBuilder: (context, animation, secondaryAnimation, _) {
-          final curvedValue = Curves.easeInOut.transform(animation.value) - 1.0;
-          return Transform.translate(
-            offset: Offset(0, curvedValue * -50),
-            child: Opacity(
-              opacity: animation.value,
-              child: Dialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-                backgroundColor: Colors.transparent,
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    Future.delayed(const Duration(milliseconds: 500), () {
-                      ref.read(tabIndexProvider.notifier).state = 1;
-                    });
-                  },
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      color: Colors.white,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(3.0),
-                            child: ClipRRect(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(16)),
-                              child: Image.asset(
-                                'lib/assets/images/kitchen logo5.png',
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                              ),
-                            ),
-                          ), // Extra white space below
-                        ],
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        builder: (context) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: GestureDetector(
+            onTap: () {
+              Navigator.of(context).pop();
+              Future.delayed(const Duration(milliseconds: 500), () {
+                ref.read(tabIndexProvider.notifier).state = 1;
+              });
+            },
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.asset(
+                      'lib/assets/images/kitchen logo5.png',
+                      fit: BoxFit.cover,
+                      width: 80,
+                      height: 80,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  const Expanded(
+                    child: Text(
+                      'Discover Kealthy Kitchen: your new healthy food destination!',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                ),
+                  const Icon(Icons.arrow_forward_ios_rounded)
+                ],
               ),
             ),
-          );
-        },
+          ),
+        ),
       );
     });
   }
@@ -539,8 +535,9 @@ class _HomePageState extends ConsumerState<HomePage>
                             child: Container(
                               color: const Color(0xFFF4F4F5),
                               child: Image.asset(
-                                'lib/assets/images/Never Run Out of Milk Again-5.png',
-                                height: 80,
+                                'lib/assets/images/new1.png',
+                                height:
+                                    MediaQuery.of(context).size.height * 0.15,
                                 width: double.infinity,
                                 fit: BoxFit.cover,
                               ),
@@ -855,7 +852,7 @@ class _HomePageState extends ConsumerState<HomePage>
                 ),
               ],
             ),
-            //const ReviewAlert(),
+            const ReviewAlert(),
             Consumer(
               builder: (context, ref, child) {
                 return const OrderFeedbackAlert();

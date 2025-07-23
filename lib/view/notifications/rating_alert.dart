@@ -3,41 +3,43 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:kealthy_food/view/notifications/notification_page.dart';
+import 'package:kealthy_food/view/notifications/notification_tab.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// ✅ StateNotifierProvider to track whether alert has been shown
 final hasShownReviewAlertProvider =
     StateNotifierProvider<HasShownReviewNotifier, bool>((ref) {
   return HasShownReviewNotifier();
 });
 
 class HasShownReviewNotifier extends StateNotifier<bool> {
-  HasShownReviewNotifier() : super(false) {
-    _loadHasShownStatus();
-  }
+  HasShownReviewNotifier() : super(false);
 
-  Future<void> _loadHasShownStatus() async {
+  static Future<List<Map<String, dynamic>>> filterUnratedNotificationsOnce(
+    List<Map<String, dynamic>> notifications,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
-    bool storedValue = prefs.getBool('hasShownReviewAlert') ?? false;
-    state = storedValue;
-    print("📌 Has shown review alert: $state");
-  }
+    final seenProducts = <String>{};
 
-  Future<void> setHasShown() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('hasShownReviewAlert', true);
-    state = true;
-  }
+    final filtered = <Map<String, dynamic>>[];
 
-  // Optional: If you want to allow resetting this (for new orders),
-  // add a method like:
-  // Future<void> resetAlert() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   await prefs.remove('hasShownReviewAlert');
-  //   state = false;
-  // }
+    for (final notif in notifications) {
+      final productNames = notif['product_names'] as List<dynamic>? ?? [];
+      final hasUnrated = productNames.any((name) {
+        final wasRated = prefs.getBool('rated_$name') ?? false;
+        final wasSeen = seenProducts.contains(name);
+        return !wasRated && !wasSeen;
+      });
+
+      if (hasUnrated) {
+        filtered.add(notif);
+        seenProducts.addAll(productNames.map((e) => e.toString()));
+      }
+    }
+
+    return filtered;
+  }
 }
 
 class ReviewAlert extends ConsumerWidget {
@@ -45,54 +47,39 @@ class ReviewAlert extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 1) Watch notifications
     final notificationsAsync = ref.watch(notificationProvider);
 
-    // 2) Watch whether the alert has already been shown
-    final hasShownAlert = ref.watch(hasShownReviewAlertProvider);
+    if (notificationsAsync is! AsyncData) return const SizedBox.shrink();
 
-    // 🔒 If we've already shown the alert, do nothing.
-    if (hasShownAlert) return const SizedBox.shrink();
+    final notifications = notificationsAsync.value ?? [];
 
-    return notificationsAsync.when(
-      loading: () => const SizedBox.shrink(),
-      error: (err, stack) {
-        debugPrint("⚠️ Error fetching notifications: $err");
-        return const SizedBox.shrink();
-      },
-      data: (notifications) {
-        if (notifications.isEmpty) return const SizedBox.shrink();
-        final delivered = notifications.where((notif) {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: (() async {
+        if (notifications.isEmpty) return <Map<String, dynamic>>[];
+
+        final delivered = <Map<String, dynamic>>[];
+
+        for (final notif in notifications) {
           final orderId = notif['order_id'] ?? '';
-          final orderExistsAsync = ref.watch(orderExistsProvider(orderId));
-          return orderExistsAsync.when(
-            data: (exists) => !exists,
-            loading: () => false,
-            error: (_, __) => false,
-          );
-        }).toList();
+          final existsAsync =
+              await ref.read(orderExistsProvider(orderId).future);
+          if (!existsAsync) {
+            delivered.add(notif);
+          }
+        }
 
-        if (delivered.isEmpty) {
+        return await HasShownReviewNotifier.filterUnratedNotificationsOnce(
+            delivered);
+      })(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const SizedBox.shrink();
         }
 
-        // 4) Sort by 'timestamp' descending so the newest notification is first
-        //    Ensure your 'timestamp' is a valid DateTime or Timestamp field.
-        delivered.sort((a, b) {
-          final aTime = a['timestamp']?.toDate() ?? DateTime(1970);
-          final bTime = b['timestamp']?.toDate() ?? DateTime(1970);
-          return bTime.compareTo(aTime); // Descending
-        });
-        // 5) Take the newest delivered notification
-        final newestNotification = delivered.first;
+        final newestNotification = snapshot.data!.first;
 
-        // 6) Show the review dialog AFTER build finishes
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          // Double-check we haven't set hasShownAlert in the meantime
-          if (!ref.read(hasShownReviewAlertProvider)) {
-            _showReviewDialog(context, ref, newestNotification);
-            ref.read(hasShownReviewAlertProvider.notifier).setHasShown();
-          }
+          _showReviewDialog(context, ref, newestNotification);
         });
 
         return const SizedBox.shrink();
@@ -108,7 +95,6 @@ class ReviewAlert extends ConsumerWidget {
     final productNames = notification['product_names'] as List<dynamic>? ?? [];
     final orderId = notification['order_id'] ?? '';
 
-    // Guard: If productNames or orderId are missing
     if (productNames.isEmpty || orderId.isEmpty) return;
 
     showDialog(
@@ -184,8 +170,12 @@ class ReviewAlert extends ConsumerWidget {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext); // Close the dialog
+              onPressed: () async {
+                final prefs = await SharedPreferences.getInstance();
+                for (final product in productNames) {
+                  await prefs.setBool('rated_$product', true);
+                }
+                Navigator.pop(dialogContext);
               },
               child: Text(
                 "Not Now",
@@ -202,14 +192,17 @@ class ReviewAlert extends ConsumerWidget {
                 ),
                 backgroundColor: const Color(0xFF273847),
               ),
-              onPressed: () {
-                Navigator.pop(dialogContext); // Close the dialog first
-                // Then open NotificationsScreen
+              onPressed: () async {
+                final prefs = await SharedPreferences.getInstance();
+                for (final product in productNames) {
+                  await prefs.setBool('rated_$product', true);
+                }
+                Navigator.pop(dialogContext);
                 Navigator.push(
                   context,
                   CupertinoPageRoute(
-                    builder: (_) => const NotificationsScreen(),
-                  ),
+                      builder: (_) =>
+                          const NotificationTabPage(initialIndex: 1)),
                 );
               },
               child: Text(

@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:intl/intl.dart';
 import 'package:kealthy_food/view/Toast/toast_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -295,7 +296,9 @@ class OrderService {
       await prefs.setString('order_id', orderId);
       await prefs.setString('latest_order_id', orderId);
 
-      final orderTime = DateTime.now().toIso8601String();
+      final now = DateTime.now();
+      final orderTime =
+          DateFormat('d/M/yyyy, h:mm:ss a').format(now).toLowerCase();
       await prefs.setString('order_completed_time', orderTime);
 
       final orderData = {
@@ -428,12 +431,43 @@ class OrderService {
   // }
 
   static Future<void> saveNotificationToFirestore(
-      String orderId, List cartItems) async {
+    String orderId,
+    List cartItems,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final phoneNumber = prefs.getString('phoneNumber') ?? 'Unknown';
-      final productNames = cartItems.map((item) => item.name).toList();
+      final List<String> newProductNames =
+          cartItems.map((item) => item.name.toString()).toList();
 
+      final firestore = FirebaseFirestore.instance;
+
+      // Fetch past notifications by this phone number
+      final existingDocs = await firestore
+          .collection('Notifications')
+          .where('phoneNumber', isEqualTo: phoneNumber)
+          .get();
+
+      // Collect all previously notified product names
+      final Set<String> alreadyNotifiedProducts = {};
+
+      for (var doc in existingDocs.docs) {
+        final data = doc.data();
+        final List<dynamic> names = data['product_names'] ?? [];
+        alreadyNotifiedProducts.addAll(names.map((e) => e.toString()));
+      }
+
+      // Find products that haven't been notified before
+      final List<String> newProducts = newProductNames
+          .where((name) => !alreadyNotifiedProducts.contains(name))
+          .toList();
+
+      if (newProducts.isEmpty) {
+        print("🟡 Skipping: All products already have review notifications.");
+        return;
+      }
+
+      // Save notification only for new (unrated) products
       final notificationData = {
         'body': "How was your experience? Give us a quick star rating!",
         'imageUrl':
@@ -441,14 +475,12 @@ class OrderService {
         'order_id': orderId,
         'payload': "review_screen",
         'phoneNumber': phoneNumber,
-        'product_names': productNames,
+        'product_names': newProducts,
         'timestamp': DateTime.now().toUtc(),
         'title': "Share Your Thoughts!",
       };
 
-      await FirebaseFirestore.instance
-          .collection('Notifications')
-          .add(notificationData);
+      await firestore.collection('Notifications').add(notificationData);
       print("✅ Notification data saved successfully!");
     } catch (e) {
       print("❌ Error saving notification data: $e");

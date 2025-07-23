@@ -13,7 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 final onlinePaymentEnabledProvider = FutureProvider<bool>((ref) async {
   final doc = await FirebaseFirestore.instance
       .collection('payment')
-      .doc('PaymentOptions')
+      .doc('PaymentOptionss')
       .get();
 
   if (doc.exists && doc.data()?['isOnlinePaymentEnabled'] == false) {

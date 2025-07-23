@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/Cart/cart_controller.dart';
 import 'package:kealthy_food/view/product/add_to_cart.dart';
 import 'package:kealthy_food/view/product/product_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 
 /// Model that maps your Firestore document
@@ -109,6 +110,7 @@ class FoodSubCategoryPage extends ConsumerStatefulWidget {
 }
 
 class _FoodSubCategoryPageState extends ConsumerState<FoodSubCategoryPage> {
+  final TextEditingController _suggestionController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     final dishesAsync = ref.watch(dishesProvider(widget.categoryName));
@@ -185,32 +187,107 @@ class _FoodSubCategoryPageState extends ConsumerState<FoodSubCategoryPage> {
           print("Fetched dishes: ${dishes.length}");
           if (dishes.isEmpty) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset('lib/assets/images/restaurant.png',
-                      width: 60, color: Colors.black),
-                  const SizedBox(height: 16),
-                  Text(
-                    'New dishes coming soon!',
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset('lib/assets/images/restaurant.png',
+                        width: 60, color: Colors.black),
+                    const SizedBox(height: 16),
+                    Text(
+                      'New dishes coming soon!',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey,
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 24),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'What would you like to add to this menu?',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Column(
+                            children: [
+                              TextField(
+                                controller: _suggestionController,
+                                decoration: const InputDecoration(
+                                  hintText: 'Suggest a dish...',
+                                  border: OutlineInputBorder(),
+                                  contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 10),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.black,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(5))),
+                                onPressed: () async {
+                                  final prefs =
+                                      await SharedPreferences.getInstance();
+                                  final phoneNumber =
+                                      prefs.getString('phoneNumber') ??
+                                          'Unknown';
+                                  final suggestion =
+                                      _suggestionController.text.trim();
+
+                                  if (suggestion.isNotEmpty) {
+                                    await FirebaseFirestore.instance
+                                        .collection('MenuSuggestions')
+                                        .add({
+                                      'suggestion': suggestion,
+                                      'phoneNumber': phoneNumber,
+                                      'timestamp': DateTime.now(),
+                                    });
+                                    _suggestionController.clear();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text(
+                                              'Thank you for your suggestion!')),
+                                    );
+                                  }
+                                },
+                                child: const Text(
+                                  'Submit',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           }
           return Padding(
             padding: const EdgeInsets.all(16.0),
-            child: ListView(
-              children: [
-                const SizedBox(height: 16),
-                ...dishes.map(_buildFoodItem),
-                const SizedBox(height: 12),
-              ],
+            child: GridView.builder(
+              itemCount: dishes.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                childAspectRatio: 0.7,
+              ),
+              itemBuilder: (context, index) {
+                return _buildFoodItem(dishes[index]);
+              },
             ),
           );
         },
@@ -231,8 +308,8 @@ class _FoodSubCategoryPageState extends ConsumerState<FoodSubCategoryPage> {
       child: Stack(
         children: [
           Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(5),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
@@ -247,7 +324,7 @@ class _FoodSubCategoryPageState extends ConsumerState<FoodSubCategoryPage> {
                     child: CachedNetworkImage(
                       imageUrl: dish.imageurl,
                       width: double.infinity,
-                      height: 200,
+                      height: MediaQuery.of(context).size.width * 0.32,
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Shimmer.fromColors(
                         baseColor: Colors.grey[300]!,
@@ -267,54 +344,43 @@ class _FoodSubCategoryPageState extends ConsumerState<FoodSubCategoryPage> {
                     ),
                   ),
                 const SizedBox(height: 10),
+                Expanded(
+                  child: Text(
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 3,
+                    dish.name,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
                 Row(
                   children: [
-                    Expanded(
-                      child: Text(
-                        dish.name,
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    Text(
+                      "\u20B9${dish.price}",
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        color: dish.stock > 0 ? Colors.black87 : Colors.grey,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(width: 5),
+                    const Spacer(),
                     Text(
-                      "(${dish.quantity})",
+                      dish.quantity,
                       style: GoogleFonts.poppins(
                           fontSize: 14, color: Colors.black),
                     ),
                   ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Ingredients:',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  dish.ingredients,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style:
-                      GoogleFonts.poppins(fontSize: 14, color: Colors.black87),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  "\u20B9${dish.price}",
-                  style: GoogleFonts.poppins(
-                    fontSize: 20,
-                    color: dish.stock > 0 ? Colors.black87 : Colors.grey,
-                    fontWeight: FontWeight.w600,
-                  ),
                 ),
               ],
             ),
           ),
           if (dish.stock == 0)
             Positioned(
-              bottom: 30,
-              right: 10,
+              top: 10,
+              left: 10,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
