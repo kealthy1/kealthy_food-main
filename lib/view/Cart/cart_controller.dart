@@ -40,7 +40,7 @@ class CartItem {
       quantity: json['Quantity'],
       ean: json['EAN'],
       imageUrl: json['ImageUrl'] ?? '',
-      type: json['Type'], // Handle optional category
+      type: json['type'], // lowercase to match saved key
       soh: json['SOH'] ?? 0, // Handle optional stock on hand
     );
   }
@@ -82,7 +82,7 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
 
   Future<void> _initCart() async {
     await loadCartItems();
-    _checkCartExpiry(); // Check and clear if needed
+    await _checkCartExpiry(); // Add await here
   }
 
   Future<void> loadCartItems() async {
