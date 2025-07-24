@@ -1,12 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart'; // <-- NEW
+import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 import 'package:kealthy_food/view/orders/track_provider.dart';
 
-class TrackOrderPage extends ConsumerWidget {
+class TrackOrderPage extends ConsumerStatefulWidget {
   final String orderId;
   final String deliveryBoy;
   final String address;
@@ -23,19 +23,26 @@ class TrackOrderPage extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    print("TrackOrderPage received orderId: $orderId");
-    final currentLocationAsyncValue = ref.watch(currentLocationProvider(orderId));
+  ConsumerState<TrackOrderPage> createState() => _TrackOrderPageState();
+}
+
+class _TrackOrderPageState extends ConsumerState<TrackOrderPage> {
+  gmaps.GoogleMapController? mapController;
+
+  @override
+  Widget build(BuildContext context) {
+    final currentLocationAsyncValue =
+        ref.watch(currentLocationProvider(widget.orderId));
     final destinationLocationAsyncValue =
-        ref.watch(destinationLocationProvider(orderId));
-    final routeAsyncValue = ref.watch(routeProvider(orderId));
+        ref.watch(destinationLocationProvider(widget.orderId));
+    final routeAsyncValue = ref.watch(routeProvider(widget.orderId));
 
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: true,
         foregroundColor: Colors.black,
         title: Text(
-          'TrackOrder #${getLast9Digits(orderId)}',
+          'TrackOrder #${getLast9Digits(widget.orderId)}',
           style: GoogleFonts.poppins(
             color: Colors.black,
             fontSize: 18,
@@ -76,51 +83,61 @@ class TrackOrderPage extends ConsumerWidget {
                       );
                     }
                     return routeAsyncValue.when(
-                      data: (routePoints) => FlutterMap(
-                        options: MapOptions(
-                          center: currentLocation,
-                          zoom: 14.0,
-                        ),
-                        children: [
-                          TileLayer(
-                            urlTemplate:
-                                "https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png",
-                            subdomains: const ['a', 'b', 'c'],
+                      data: (routePoints) {
+                        final gCurrentLocation = gmaps.LatLng(
+                            currentLocation.latitude,
+                            currentLocation.longitude);
+                        final gDestinationLocation = gmaps.LatLng(
+                            destinationLocation.latitude,
+                            destinationLocation.longitude);
+                        final gRoutePoints = routePoints
+                            .map((p) => gmaps.LatLng(p.latitude, p.longitude))
+                            .toList();
+
+                        final markers = <gmaps.Marker>{
+                          gmaps.Marker(
+                            markerId: const gmaps.MarkerId('currentLocation'),
+                            position: gCurrentLocation,
+                            icon: gmaps.BitmapDescriptor.defaultMarkerWithHue(
+                                gmaps.BitmapDescriptor.hueRed),
                           ),
-                          PolylineLayer(
-                            polylines: [
-                              Polyline(
-                                points: routePoints,
-                                strokeWidth: 4.0,
-                                color: Colors.blue,
-                              ),
-                            ],
+                          gmaps.Marker(
+                            markerId:
+                                const gmaps.MarkerId('destinationLocation'),
+                            position: gDestinationLocation,
+                            icon: gmaps.BitmapDescriptor.defaultMarkerWithHue(
+                                gmaps.BitmapDescriptor.hueAzure),
                           ),
-                          MarkerLayer(
-                            markers: [
-                              Marker(
-                                point: currentLocation,
-                                builder: (ctx) => const Icon(
-                                  size: 25,
-                                  Icons.circle,
-                                  color: Colors.blue,
-                                ),
-                              ),
-                              Marker(
-                                point: destinationLocation,
-                                builder: (ctx) => const Icon(
-                                  size: 30,
-                                  CupertinoIcons.house_fill,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ],
+                        };
+
+                        final polylines = <gmaps.Polyline>{
+                          gmaps.Polyline(
+                            polylineId: const gmaps.PolylineId('route'),
+                            points: gRoutePoints,
+                            color: Colors.blue,
+                            width: 4,
                           ),
-                        ],
-                      ),
+                        };
+
+                        return gmaps.GoogleMap(
+                          initialCameraPosition: gmaps.CameraPosition(
+                            target: gCurrentLocation,
+                            zoom: 14,
+                          ),
+                          markers: markers,
+                          polylines: polylines,
+                          onMapCreated: (controller) {
+                            mapController = controller;
+                          },
+                          myLocationEnabled: false,
+                          myLocationButtonEnabled: false,
+                          rotateGesturesEnabled: false,
+                        );
+                      },
                       loading: () => const Center(
-                        child:  CupertinoActivityIndicator(
-                                  color: Color.fromARGB(255, 65, 88, 108),)
+                        child: CupertinoActivityIndicator(
+                          color: Color.fromARGB(255, 65, 88, 108),
+                        ),
                       ),
                       error: (error, stack) => Center(
                         child: Text(
@@ -134,8 +151,9 @@ class TrackOrderPage extends ConsumerWidget {
                     );
                   },
                   loading: () => const Center(
-                    child:  CupertinoActivityIndicator(
-                                  color: Color.fromARGB(255, 65, 88, 108),)
+                    child: CupertinoActivityIndicator(
+                      color: Color.fromARGB(255, 65, 88, 108),
+                    ),
                   ),
                   error: (error, stack) => Center(
                     child: Text(
@@ -149,8 +167,9 @@ class TrackOrderPage extends ConsumerWidget {
                 );
               },
               loading: () => const Center(
-                child:  CupertinoActivityIndicator(
-                                  color: Color.fromARGB(255, 65, 88, 108),)
+                child: CupertinoActivityIndicator(
+                  color: Color.fromARGB(255, 65, 88, 108),
+                ),
               ),
               error: (error, stack) => Center(
                 child: Text(
@@ -185,7 +204,6 @@ class TrackOrderPage extends ConsumerWidget {
                   return const SizedBox.shrink();
                 }
 
-
                 return Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -213,7 +231,7 @@ class TrackOrderPage extends ConsumerWidget {
                       Row(
                         children: [
                           Text(
-                            status,
+                            widget.status,
                             style: GoogleFonts.poppins(
                               fontSize: 25,
                               fontWeight: FontWeight.bold,
@@ -224,7 +242,7 @@ class TrackOrderPage extends ConsumerWidget {
                       ),
                       const SizedBox(height: 15),
                       Text(
-                        address,
+                        widget.address,
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           color: Colors.black87,
@@ -247,8 +265,8 @@ class TrackOrderPage extends ConsumerWidget {
                                 ),
                                 alignment: Alignment.center,
                                 child: Text(
-                                  deliveryBoy.isNotEmpty
-                                      ? deliveryBoy[0].toUpperCase()
+                                  widget.deliveryBoy.isNotEmpty
+                                      ? widget.deliveryBoy[0].toUpperCase()
                                       : '',
                                   style: GoogleFonts.poppins(
                                     fontSize: 20,
@@ -259,7 +277,7 @@ class TrackOrderPage extends ConsumerWidget {
                               ),
                               const SizedBox(width: 10),
                               Text(
-                                deliveryBoy,
+                                widget.deliveryBoy,
                                 style: GoogleFonts.poppins(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -271,7 +289,7 @@ class TrackOrderPage extends ConsumerWidget {
                           IconButton(
                             onPressed: () async {
                               await FlutterPhoneDirectCaller.callNumber(
-                                phoneNumber,
+                                widget.phoneNumber,
                               );
                             },
                             icon: const Icon(
@@ -287,8 +305,9 @@ class TrackOrderPage extends ConsumerWidget {
                 );
               },
               loading: () => const Center(
-                child:  CupertinoActivityIndicator(
-                                  color: Color.fromARGB(255, 65, 88, 108),)
+                child: CupertinoActivityIndicator(
+                  color: Color.fromARGB(255, 65, 88, 108),
+                ),
               ),
               error: (error, stack) => Center(
                 child: Text(

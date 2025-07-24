@@ -96,126 +96,154 @@ class ReviewAlert extends ConsumerWidget {
     final orderId = notification['order_id'] ?? '';
 
     if (productNames.isEmpty || orderId.isEmpty) return;
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          title: Text(
-            "Love It or Leave It?",
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF273847),
-            ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Consumer(
-                builder: (context, ref, child) {
-                  final productImageAsync =
-                      ref.watch(productImageProvider(productNames.first));
-                  return productImageAsync.when(
-                    data: (imageUrl) {
-                      if (imageUrl == null || imageUrl.isEmpty) {
-                        return const Icon(Icons.image, size: 80);
-                      }
-                      return ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          width: 100,
-                          height: 100,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Shimmer.fromColors(
-                            baseColor: Colors.grey[300]!,
-                            highlightColor: Colors.grey[100]!,
-                            child: Container(
-                              width: 100,
-                              height: 100,
-                              color: Colors.grey[300],
-                            ),
-                          ),
-                          errorWidget: (context, url, error) =>
-                              const Icon(Icons.image_not_supported, size: 80),
-                        ),
-                      );
-                    },
-                    loading: () => Shimmer.fromColors(
-                      baseColor: Colors.grey[300]!,
-                      highlightColor: Colors.grey[100]!,
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        color: Colors.grey[300],
-                      ),
-                    ),
-                    error: (error, stack) => const Icon(Icons.error),
-                  );
-                },
-              ),
-              const SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: Text(
-                  "Tell us what you think about your recent purchase by leaving a star rating ⭐",
-                  textAlign: TextAlign.justify,
-                  style: GoogleFonts.poppins(fontSize: 13),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                final prefs = await SharedPreferences.getInstance();
-                for (final product in productNames) {
-                  await prefs.setBool('rated_$product', true);
-                }
-                Navigator.pop(dialogContext);
-              },
-              child: Text(
-                "Not Now",
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
+    Future.delayed(const Duration(milliseconds: 500), () {
+      showGeneralDialog(
+        context: context,
+        barrierDismissible: true,
+        barrierLabel: "Review Dialog",
+        barrierColor: Colors.black54,
+        transitionDuration: const Duration(milliseconds: 400),
+        pageBuilder: (context, anim1, anim2) => const SizedBox.shrink(),
+        transitionBuilder: (context, animation, secondaryAnimation, _) {
+          final curvedValue = Curves.easeInOut.transform(animation.value) - 1.0;
+          return Transform.translate(
+            offset: Offset(0, curvedValue * -50),
+            child: Opacity(
+              opacity: animation.value,
+              child: Dialog(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
-                backgroundColor: const Color(0xFF273847),
-              ),
-              onPressed: () async {
-                final prefs = await SharedPreferences.getInstance();
-                for (final product in productNames) {
-                  await prefs.setBool('rated_$product', true);
-                }
-                Navigator.pop(dialogContext);
-                Navigator.push(
-                  context,
-                  CupertinoPageRoute(
-                      builder: (_) =>
-                          const NotificationTabPage(initialIndex: 1)),
-                );
-              },
-              child: Text(
-                "Rate Now",
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "Love It or Leave It?",
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF273847),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final productImageAsync = ref
+                              .watch(productImageProvider(productNames.first));
+                          return productImageAsync.when(
+                            data: (imageUrl) {
+                              if (imageUrl == null || imageUrl.isEmpty) {
+                                return const Icon(Icons.image, size: 80);
+                              }
+                              return ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: CachedNetworkImage(
+                                  imageUrl: imageUrl,
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) =>
+                                      Shimmer.fromColors(
+                                    baseColor: Colors.grey[300]!,
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      width: 100,
+                                      height: 100,
+                                      color: Colors.grey[300],
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(Icons.image_not_supported,
+                                          size: 80),
+                                ),
+                              );
+                            },
+                            loading: () => Shimmer.fromColors(
+                              baseColor: Colors.grey[300]!,
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                width: 100,
+                                height: 100,
+                                color: Colors.grey[300],
+                              ),
+                            ),
+                            error: (error, stack) => const Icon(Icons.error),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Text(
+                          "Tell us what you think about your recent purchase by leaving a star rating ⭐",
+                          textAlign: TextAlign.justify,
+                          style: GoogleFonts.poppins(fontSize: 13),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () async {
+                              final prefs =
+                                  await SharedPreferences.getInstance();
+                              for (final product in productNames) {
+                                await prefs.setBool('rated_$product', true);
+                              }
+                              Navigator.pop(context);
+                            },
+                            child: Text(
+                              "Not Now",
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              backgroundColor: const Color(0xFF273847),
+                            ),
+                            onPressed: () async {
+                              final prefs =
+                                  await SharedPreferences.getInstance();
+                              for (final product in productNames) {
+                                await prefs.setBool('rated_$product', true);
+                              }
+                              Navigator.pop(context);
+                              Navigator.push(
+                                context,
+                                CupertinoPageRoute(
+                                  builder: (_) => const NotificationTabPage(
+                                      initialIndex: 1),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              "Rate Now",
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ],
-        );
-      },
-    );
+          );
+        },
+      );
+    });
   }
 }

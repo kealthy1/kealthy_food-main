@@ -443,8 +443,8 @@ class _HomePageState extends ConsumerState<HomePage>
                                       ClipOval(
                                         child: Container(
                                           color: Colors.white,
-                                          width: 60,
-                                          height: 60,
+                                          width: 40,
+                                          height: 40,
                                           child: Lottie.asset(
                                             'lib/assets/animations/Delivery Boy.json',
                                             fit: BoxFit.cover,
@@ -471,8 +471,8 @@ class _HomePageState extends ConsumerState<HomePage>
                                               Text(
                                                 rainMessage,
                                                 style: const TextStyle(
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.w500,
+                                                  fontSize: 9,
+                                                  fontWeight: FontWeight.w600,
                                                 ),
                                               ),
                                             ],
@@ -485,8 +485,8 @@ class _HomePageState extends ConsumerState<HomePage>
                                       // Right rain animation (only if raining)
                                       if (isRaining)
                                         SizedBox(
-                                          width: 60,
-                                          height: 60,
+                                          width: 40,
+                                          height: 40,
                                           child: Lottie.asset(
                                             'lib/assets/animations/Animation - 1751474562248.json',
                                             fit: BoxFit.cover,
@@ -858,21 +858,9 @@ class _HomePageState extends ConsumerState<HomePage>
                 return const OrderFeedbackAlert();
               },
             ),
-            ValueListenableBuilder<bool>(
-              valueListenable: showCartContainer,
-              builder: (context, showCart, child) {
-                return IgnorePointer(
-                  ignoring: !showCart,
-                  child: AnimatedOpacity(
-                    opacity: showCart ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 300),
-                    child: const Align(
-                      alignment: Alignment.bottomCenter,
-                      child: CartContainer(),
-                    ),
-                  ),
-                );
-              },
+            const Align(
+              alignment: Alignment.bottomCenter,
+              child: CartContainer(),
             ),
             if (!_hasLocationPermission) Container(),
           ],
