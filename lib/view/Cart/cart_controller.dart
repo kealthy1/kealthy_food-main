@@ -40,7 +40,7 @@ class CartItem {
       quantity: json['Quantity'],
       ean: json['EAN'],
       imageUrl: json['ImageUrl'] ?? '',
-      type: json['type'], // lowercase to match saved key
+      type: json['type'], // Handle optional category
       soh: json['SOH'] ?? 0, // Handle optional stock on hand
     );
   }
@@ -53,6 +53,7 @@ class CartItem {
       imageUrl: imageUrl,
       type: type,
       soh: soh // Ensure stock on hand is copied
+
       );
 }
 
@@ -82,7 +83,7 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
 
   Future<void> _initCart() async {
     await loadCartItems();
-    await _checkCartExpiry(); // Add await here
+    await _checkCartExpiry();
   }
 
   Future<void> loadCartItems() async {
@@ -137,7 +138,7 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
     _cartTimer?.cancel();
     final endTime = DateTime.now().add(duration);
 
-    _cartTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _cartTimer = Timer.periodic(Duration(seconds: 1), (timer) {
       final remaining = endTime.difference(DateTime.now());
 
       if (remaining <= Duration.zero) {

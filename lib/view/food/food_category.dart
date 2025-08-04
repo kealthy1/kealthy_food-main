@@ -3,8 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/food/food_subcategory.dart';
+
 import 'package:shimmer/shimmer.dart';
 
 class FoodCategory extends ConsumerStatefulWidget {
@@ -78,16 +78,6 @@ class _HomeCategoryState extends ConsumerState<FoodCategory>
                             width: (MediaQuery.of(context).size.width - 40),
                             child: Column(
                               children: [
-                                // Text(
-                                //   category['Categories'] as String,
-                                //   style: GoogleFonts.poppins(
-                                //     color: Colors.black,
-                                //     fontWeight: FontWeight.bold,
-                                //     fontSize: 15,
-                                //   ),
-                                //   textAlign: TextAlign.center,
-                                // ),
-                                const SizedBox(height: 4),
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(8.0),
                                   child: Container(
