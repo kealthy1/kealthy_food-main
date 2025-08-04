@@ -15,7 +15,9 @@ import 'package:kealthy_food/view/subscription/subscription_details.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (Firebase.apps.isEmpty) {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  }
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

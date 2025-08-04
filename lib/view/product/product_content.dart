@@ -1,5 +1,8 @@
+// ignore_for_file: unnecessary_null_comparison
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -16,38 +19,62 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class ProductContent extends ConsumerWidget {
   final PageController pageController;
+  Map<String, num>? prices;
   final Map<String, dynamic> docData;
   final String productId;
+  final List<String>? quantities;
+  String? selectedQuantity;
+  final Function(String) onQuantitySelected;
   final double? rating;
+  Map<String, dynamic>? productIDs;
+  Map<String, dynamic>? productNames;
 
-  const ProductContent({
+  ProductContent({
     super.key,
     required this.docData,
+    this.prices,
     required this.pageController,
     required this.productId,
+    this.quantities,
+    this.selectedQuantity,
+    required this.onQuantitySelected,
     this.rating,
+    this.productIDs,
+    this.productNames,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Parse Firestore fields.
-    final productName = docData['Name'] ?? 'No Name';
-    final productBrand = docData['Brand Name'] ?? 'No Name';
-    final productQty = docData['Qty'] ?? '';
-    final baseProductName = productName.replaceAll(productQty, '').trim();
-    final productPrice = (docData['Price'] is int || docData['Price'] is double)
-        ? docData['Price']
-        : int.tryParse(docData['Price']?.toString() ?? '0') ?? 0;
+    final selectedQty = ref.watch(selectedQuantityProvider);
+    var productName;
+    var productPrice;
+    var offerPrice;
+    if (prices != null) {
+      productName =
+          (productNames?[selectedQty]?['name'] ?? '').toString() ?? '';
+      productPrice = prices![selectedQty] is num
+          ? prices![selectedQty]
+          : int.tryParse(prices![selectedQty]?.toString() ?? '0') ?? 0;
+      offerPrice = (docData['offer_price'] is num
+          ? docData['offer_price']
+          : double.tryParse(docData['offer_price']?.toString() ?? '0') ?? 0);
+    } else {
+      productName = docData['Name'] ?? 'No Name';
+      productPrice = (docData['Price'] is int || docData['Price'] is double)
+          ? docData['Price']
+          : int.tryParse(docData['Price']?.toString() ?? '0') ?? 0;
 
-    final offerPrice =
-        (docData['offer_price'] is int || docData['offer_price'] is double)
-            ? docData['offer_price']
-            : double.tryParse(docData['offer_price']?.toString() ?? '0') ?? 0;
+      offerPrice =
+          (docData['offer_price'] is int || docData['offer_price'] is double)
+              ? docData['offer_price']
+              : double.tryParse(docData['offer_price']?.toString() ?? '0') ?? 0;
+    }
 
     final hasOffer = offerPrice > 0;
 
-    // final rawScore = docData['Kealthy Score'] ?? '100';
-    // final kealthyScore = int.tryParse(rawScore) ?? 100;
+// Continue as you had it
+    final productBrand = docData['Brand Name'] ?? 'No Name';
+    final productQty = selectedQty ?? '';
 
     final productWhatIs = docData['What is it?'] ?? '';
     final productUseFor = docData['What is it used for?'] ?? '';
@@ -56,74 +83,50 @@ class ProductContent extends ConsumerWidget {
             (docData['ImageUrl'] as List).isNotEmpty)
         ? docData['ImageUrl'][0]
         : '';
-    // final productSource = docData['Imported&Marketed By'] ?? '';
     final productOrigin = docData['Orgin'] ?? '';
     final productBestBefore = docData['Best Before'] ?? '';
     final productSoh = (docData['SOH'] is int)
         ? docData['SOH']
-        : int.tryParse(docData['SOH'].toString().split('.')[0]) ?? 0;
+        : int.tryParse(docData['SOH']!.toString().split('.')[0]) ?? 0;
+    final productType = docData['Type'] ?? '';
     final bool needsFormatting = docData['needFormatting'] ?? false;
 
-    String formattedDate = productBestBefore; // default: raw text
-
+// Best before date formatting
+    String formattedDate = productBestBefore;
     if (needsFormatting && productBestBefore.isNotEmpty) {
       try {
         final parsedDate = DateTime.parse(productBestBefore);
-        // e.g. "dd-MM-yyyy" or "dd MMM yyyy" or whichever you prefer
         formattedDate = DateFormat('dd-MM-yyyy').format(parsedDate);
       } catch (e) {
-        // Fallback if parse fails or data is invalid
-        formattedDate = productBestBefore; // or "Invalid Date"
+        formattedDate = productBestBefore;
       }
     }
 
-    // Macro fields.
-    final protein = docData['Protein (g)'] ?? 'Not Applicable';
-    final totalFat = docData['Total Fat (g)'] ?? 'Not Applicable';
-    final carbs = docData['Total Carbohydrates (g)'] ?? 'Not Applicable';
-    final sugars = docData['Sugars (g)'] ?? 'Not Applicable';
-    final cholesterol = docData['Cholesterol (mg)'] ?? 'Not Applicable';
-    final addedSugars = docData['Added Sugars (g)'] ?? 'Not Applicable';
+    // Macro and micro fields
     final Map<String, String> macrosMap = {
-      'Protein (g)': protein,
-      'Total Fat (g)': totalFat,
-      'Carbs (g)': carbs,
-      'Sugars (g)': sugars,
-      'Cholesterol (mg)': cholesterol,
-      'Added Sugars (g)': addedSugars,
+      'Protein (g)': docData['Protein (g)'] ?? 'Not Applicable',
+      'Total Fat (g)': docData['Total Fat (g)'] ?? 'Not Applicable',
+      'Carbs (g)': docData['Total Carbohydrates (g)'] ?? 'Not Applicable',
+      'Sugars (g)': docData['Sugars (g)'] ?? 'Not Applicable',
+      'Cholesterol (mg)': docData['Cholesterol (mg)'] ?? 'Not Applicable',
+      'Added Sugars (g)': docData['Added Sugars (g)'] ?? 'Not Applicable',
     };
-    final sodium = docData['Sodium (mg)'] ?? 'Not Applicable';
-    final iron = docData['Iron (mg)'] ?? 'Not Applicable';
-    final calcium = docData['Calcium (mg)'] ?? 'Not Applicable';
-    final copper = docData['Copper (mg)'] ?? 'Not Applicable';
-    final magnesium = docData['Magnesium (mg)'] ?? 'Not Applicable';
-    final phosphorus = docData['Phosphorus (mg)'] ?? 'Not Applicable';
-    final pottassium = docData['Potassium (mg)'] ?? 'Not Applicable';
-    final zinc = docData['Zinc (mg)'] ?? 'Not Applicable';
-    final manganese = docData['Manganese (mg)'] ?? 'Not Applicable';
-    final selenium = docData['Selenium (mcg)'] ?? 'Not Applicable';
-
     final Map<String, String> microsMap = {
-      'Sodium (mg)': sodium,
-      'Iron (mg)': iron,
-      'Calcium (mg)': calcium,
-      'Copper (mg)': copper,
-      'Magnesium (mg)': magnesium,
-      'Phosphorus (mg)': phosphorus,
-      'Potassium (mg)': pottassium,
-      'Zinc (mg)': zinc,
-      'Manganese (mg)': manganese,
-      'Selenium (mcg)': selenium,
+      'Sodium (mg)': docData['Sodium (mg)'] ?? 'Not Applicable',
+      'Iron (mg)': docData['Iron (mg)'] ?? 'Not Applicable',
+      'Calcium (mg)': docData['Calcium (mg)'] ?? 'Not Applicable',
+      'Copper (mg)': docData['Copper (mg)'] ?? 'Not Applicable',
+      'Magnesium (mg)': docData['Magnesium (mg)'] ?? 'Not Applicable',
+      'Phosphorus (mg)': docData['Phosphorus (mg)'] ?? 'Not Applicable',
+      'Potassium (mg)': docData['Potassium (mg)'] ?? 'Not Applicable',
+      'Zinc (mg)': docData['Zinc (mg)'] ?? 'Not Applicable',
+      'Manganese (mg)': docData['Manganese (mg)'] ?? 'Not Applicable',
+      'Selenium (mcg)': docData['Selenium (mcg)'] ?? 'Not Applicable',
     };
     final List<dynamic> productFSSAI = docData['FSSAI'] ?? [];
     final fssiList = productFSSAI.map((e) => e.toString()).toList();
-
     final List<dynamic> rawIngredients = docData['Ingredients'] ?? [];
     final ingredientsList = rawIngredients.map((e) => e.toString()).toList();
-
-    // Image URLs.
-    final List<dynamic> rawImageUrls = docData['ImageUrl'] ?? [];
-    final imageUrls = rawImageUrls.map((e) => e.toString()).toList();
 
     final validIngredientsList =
         ingredientsList.where((e) => e != "Not Applicable").toList();
@@ -137,35 +140,34 @@ class ProductContent extends ConsumerWidget {
     return SingleChildScrollView(
       child: Column(
         children: [
-          // Top images carousel.
+          // Image carousel
           AspectRatio(
             aspectRatio: 10 / 10.5,
             child: Stack(
-              alignment: Alignment
-                  .bottomCenter, // Align all children to the bottom center
+              alignment: Alignment.bottomCenter,
               children: [
                 PageView.builder(
                   controller: pageController,
-                  itemCount: imageUrls.length,
+                  itemCount: docData['ImageUrl']?.length ?? 1,
                   itemBuilder: (context, index) {
                     return GestureDetector(
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => ImageZoomPage(
-                            imageUrls: imageUrls,
+                            imageUrls:
+                                docData['ImageUrl']?.cast<String>() ?? [],
                             initialIndex: index,
                           ),
                         ),
                       ),
                       child: InteractiveViewer(
-                        clipBehavior:
-                            Clip.none, // Allows zooming without clipping
-                        panEnabled: true, // Enables panning
-                        minScale: 1.0, // Minimum zoom scale
-                        maxScale: 4.0, // Maximum zoom scale
+                        clipBehavior: Clip.none,
+                        panEnabled: true,
+                        minScale: 1.0,
+                        maxScale: 4.0,
                         child: CachedNetworkImage(
-                          imageUrl: imageUrls[index],
+                          imageUrl: docData['ImageUrl']?[index] ?? '',
                           fit: BoxFit.cover,
                           placeholder: (_, __) => Shimmer.fromColors(
                             baseColor: Colors.grey[300]!,
@@ -179,11 +181,10 @@ class ProductContent extends ConsumerWidget {
                   },
                 ),
                 Padding(
-                  padding:
-                      const EdgeInsets.only(bottom: 10.0), // Adjust as needed
+                  padding: const EdgeInsets.only(bottom: 10.0),
                   child: SmoothPageIndicator(
                     controller: pageController,
-                    count: imageUrls.length,
+                    count: docData['ImageUrl']?.length ?? 1,
                     effect: const ExpandingDotsEffect(
                       dotHeight: 10,
                       dotWidth: 10,
@@ -196,12 +197,10 @@ class ProductContent extends ConsumerWidget {
               ],
             ),
           ),
-          // Overlapping details container.
+          // Product details
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-            ),
+            decoration: const BoxDecoration(color: Colors.white),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -209,9 +208,7 @@ class ProductContent extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        productName.contains(productQty)
-                            ? productName
-                            : '$productName \n$productQty',
+                        productName,
                         overflow: TextOverflow.visible,
                         style: GoogleFonts.poppins(
                           textStyle: const TextStyle(
@@ -221,97 +218,57 @@ class ProductContent extends ConsumerWidget {
                         ),
                       ),
                     ),
-
-                    // KealthyScoreSection(productIdOrName: productId),
                   ],
                 ),
-                // Rating/Stars display
-                (() {
-                  if (rating != null) {
-                    if (rating == 0.0) {
-                      return const SizedBox(); // Hide stars if rating is 0
-                    }
-
-                    int fullStars = rating!.floor();
-                    bool hasHalfStar = rating! - fullStars >= 0.5;
-
-                    return Row(
-                      children: [
-                        Text(
-                          rating!.toStringAsFixed(1),
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            color: Colors.black54,
-                          ),
-                        ),
-                        ...List.generate(
-                            fullStars,
-                            (index) => const Icon(Icons.star,
-                                color: Colors.orange, size: 16)),
-                        if (hasHalfStar)
-                          const Icon(Icons.star_half,
-                              color: Colors.orange, size: 20),
-                        ...List.generate(
-                          5 - fullStars - (hasHalfStar ? 1 : 0),
-                          (index) => const Icon(Icons.star_border,
-                              color: Colors.orange, size: 20),
-                        ),
-                      ],
-                    );
-                  } else {
-                    return Consumer(
-                      builder: (context, ref, child) {
-                        final averageStarsAsync =
-                            ref.watch(averageStarsProvider(productName));
-                        return averageStarsAsync.when(
-                          data: (rating) {
-                            if (rating == 0.0) {
-                              return const SizedBox(); // Hide stars if rating is 0
-                            }
-
-                            int fullStars = rating.floor();
-                            bool hasHalfStar = rating - fullStars >= 0.5;
-
-                            return Row(
-                              children: [
-                                Text(
-                                  rating.toStringAsFixed(1),
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 14,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                                ...List.generate(
-                                    fullStars,
-                                    (index) => const Icon(Icons.star,
-                                        color: Colors.orange, size: 16)),
-                                if (hasHalfStar)
-                                  const Icon(Icons.star_half,
-                                      color: Colors.orange, size: 20),
-                                ...List.generate(
-                                  5 - fullStars - (hasHalfStar ? 1 : 0),
-                                  (index) => const Icon(Icons.star_border,
-                                      color: Colors.orange, size: 20),
-                                ),
-                              ],
-                            );
-                          },
-                          loading: () => Container(),
-                          error: (error, _) => const Text('N/A'),
+                // Rating display
+                Consumer(
+                  builder: (context, ref, child) {
+                    final averageStarsAsync =
+                        ref.watch(averageStarsProvider(productName));
+                    return averageStarsAsync.when(
+                      data: (rating) {
+                        if (rating == 0.0) {
+                          return const SizedBox();
+                        }
+                        int fullStars = rating.floor();
+                        bool hasHalfStar = rating - fullStars >= 0.5;
+                        return Row(
+                          children: [
+                            Text(
+                              rating.toStringAsFixed(1),
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: Colors.black54,
+                              ),
+                            ),
+                            ...List.generate(
+                                fullStars,
+                                (index) => const Icon(Icons.star,
+                                    color: Colors.orange, size: 16)),
+                            if (hasHalfStar)
+                              const Icon(Icons.star_half,
+                                  color: Colors.orange, size: 20),
+                            ...List.generate(
+                              5 - fullStars - (hasHalfStar ? 1 : 0),
+                              (index) => const Icon(Icons.star_border,
+                                  color: Colors.orange, size: 20),
+                            ),
+                          ],
                         );
                       },
+                      loading: () => const SizedBox(),
+                      error: (error, _) => const Text('N/A'),
                     );
-                  }
-                })(),
-
+                  },
+                ),
                 const SizedBox(height: 20),
+                // Price and quantity selection
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Price display with offer logic
                         if (hasOffer)
                           Container(
                             padding: const EdgeInsets.symmetric(
@@ -320,7 +277,7 @@ class ProductContent extends ConsumerWidget {
                               color: Colors.red.shade700,
                             ),
                             child: Text(
-                              '${(((productPrice - offerPrice) / productPrice) * 100).round()}% off',
+                              '${(((productPrice! - offerPrice) / productPrice) * 100).round()}% off',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
@@ -328,9 +285,7 @@ class ProductContent extends ConsumerWidget {
                               ),
                             ),
                           ),
-                        const SizedBox(
-                          height: 10,
-                        ),
+                        const SizedBox(height: 10),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -383,13 +338,141 @@ class ProductContent extends ConsumerWidget {
                       productEAN: productEAN,
                       soh: productSoh,
                       imageurl: productImageUrl,
-                      type: docData['Type'] ?? '',
+                      type: productType,
+                      quantityName: productQty,
                     ),
                   ],
                 ),
-                const SizedBox(height: 40),
-                // Macro / Ingredients / Micros row.
+                const SizedBox(height: 20),
+                // Quantity selection
+                // ... inside your ProductContent's build, after docData etc. parsed
 
+                StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                  stream: FirebaseFirestore.instance
+                      .collection('Products')
+                      .where('BaseProductName', isEqualTo: productName)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const SizedBox(
+                          height: 40,
+                          child: Center(child: CupertinoActivityIndicator()));
+                    }
+                    if (snapshot.hasError) {
+                      return const SizedBox(
+                        height: 40,
+                        child: Center(child: Text('Error loading quantities')),
+                      );
+                    }
+                    final firestoreQuantities = snapshot.data?.docs
+                            .map((doc) => doc.data()['Qty']?.toString() ?? '')
+                            .where((qty) => qty.isNotEmpty)
+                            .toSet() ??
+                        {};
+
+                    final allQuantities = {
+                      if (docData['Qty'] != null && docData['Qty'].isNotEmpty)
+                        docData['Qty'],
+                      ...?quantities, // from parent if supplied
+                      ...firestoreQuantities,
+                    }..removeWhere((e) => e.isEmpty);
+
+                    final sortedQuantities = allQuantities.toList()
+                      ..sort((a, b) {
+                        // Place 'g'/'kg'/'ml'/'L'/'unlabelled' in readable order if needed
+                        // Here it's just alphabetical
+                        return a.compareTo(b);
+                      });
+
+                    if (sortedQuantities.isEmpty)
+                      return const SizedBox(height: 5);
+
+                    return SizedBox(
+                      height: 60,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Options:',
+                            style: GoogleFonts.poppins(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          SizedBox(
+                            height: 28,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: sortedQuantities.length,
+                              separatorBuilder: (c, i) =>
+                                  const SizedBox(width: 6),
+                              itemBuilder: (context, index) {
+                                final qty = sortedQuantities[index];
+                                final isSelected =
+                                    qty == ref.watch(selectedQuantityProvider);
+
+                                final docInfo = snapshot.data!.docs
+                                    .where((doc) => doc.data()['Qty'] == qty)
+                                    .toList()
+                                    .firstOrNull;
+                                print('docInfo--$docInfo');
+                                final docId = docInfo?.id;
+
+                                return GestureDetector(
+                                  onTap: (!isSelected)
+                                      ? () {
+                                          ref
+                                              .read(selectedQuantityProvider
+                                                  .notifier)
+                                              .state = qty;
+
+                                          if (docId != null) {
+                                            onQuantitySelected(docId);
+                                          } else {
+                                            print(
+                                                'docId is null — cannot call onQuantitySelected');
+                                          }
+                                        }
+                                      : null,
+                                  child: Container(
+                                    width: 60,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? Colors.blue.shade100
+                                          : Colors.white,
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? Colors.blue
+                                            : Colors.grey.shade400,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      qty,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: isSelected
+                                            ? Colors.blue
+                                            : Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 30),
+                // Macros, Micros, Ingredients
                 Row(
                   children: [
                     if (filteredMacrosMap.isNotEmpty)
@@ -457,124 +540,19 @@ class ProductContent extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 30),
-                // Price + Kealthy Score section.
+                // Additional product info
                 const Divider(),
                 Row(
                   children: [
                     const ReusableText(
-                      text: 'Brand : ',
+                      text: 'Brand: ',
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
-                    ReusableText(text: '$productBrand', fontSize: 16),
+                    ReusableText(text: productBrand, fontSize: 16),
                   ],
                 ),
-
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 10),
-                    StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                      stream: FirebaseFirestore.instance
-                          .collection('Products')
-                          .where('Name',
-                              isGreaterThanOrEqualTo: baseProductName)
-                          .where('Name', isLessThan: baseProductName + 'z')
-                          .where('Qty', isNotEqualTo: productQty)
-                          .snapshots(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        }
-                        if (snapshot.hasError) {
-                          return Center(
-                              child: Text(
-                            'Error: ${snapshot.error}',
-                            style: GoogleFonts.poppins(),
-                          ));
-                        }
-                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                          return const SizedBox
-                              .shrink(); // Return an invisible widget
-                        }
-
-                        final relatedProducts = snapshot.data!.docs;
-
-                        return Container(
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20)),
-                          height: 100,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: relatedProducts.length,
-                            itemBuilder: (context, index) {
-                              final product = relatedProducts[index].data();
-                              final qty = product['Qty'];
-
-                              return GestureDetector(
-                                onTap: () {
-                                  if (relatedProducts[index].id != productId) {
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => ProductPage(
-                                            productId:
-                                                relatedProducts[index].id),
-                                      ),
-                                    );
-                                  }
-                                },
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    if (relatedProducts.isNotEmpty)
-                                      Text(
-                                        'Options :',
-                                        style: GoogleFonts.poppins(
-                                          textStyle: const TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                      ),
-                                    const SizedBox(height: 10),
-
-                                    // Replace product image with styled quantity box
-                                    Container(
-                                      width: 60,
-                                      height: 40,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(
-                                            color: Colors.grey.shade400),
-                                      ),
-                                      child: Text(
-                                        '$qty',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.black,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-
-                // "What is it?" section.
+                const SizedBox(height: 10),
                 if (productWhatIs.isNotEmpty) ...[
                   Text(
                     'What is it?',
@@ -611,17 +589,14 @@ class ProductContent extends ConsumerWidget {
                     ),
                     child: ExpansionTile(
                       shape: const RoundedRectangleBorder(
-                        // No border when expanded
                         borderRadius: BorderRadius.zero,
                         side: BorderSide.none,
                       ),
                       collapsedShape: const RoundedRectangleBorder(
-                        // No border when collapsed
                         borderRadius: BorderRadius.zero,
                         side: BorderSide.none,
                       ),
-                      tilePadding: EdgeInsets
-                          .zero, // Remove default padding// Adjust content padding
+                      tilePadding: EdgeInsets.zero,
                       title: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -640,10 +615,9 @@ class ProductContent extends ConsumerWidget {
                           if (fssiList.isNotEmpty)
                             ReusableText(
                                 text: 'FSSAI: ${fssiList.join('\n')}',
-                                fontSize: 14)
+                                fontSize: 14),
                         ],
                       ),
-
                       children: [
                         const SizedBox(height: 10),
                         const Align(

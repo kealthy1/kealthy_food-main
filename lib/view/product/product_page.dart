@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,24 +7,33 @@ import 'package:kealthy_food/view/Cart/cart_controller.dart';
 import 'package:kealthy_food/view/product/alert_dialogue.dart';
 import 'package:kealthy_food/view/product/product_content.dart';
 
-// import 'package:kealthy_food/view/product/kealthy_score.dart';
-
-// ----------------------------------------------------------------------
 
 final currentPageProvider = StateProvider<int>((ref) => 0);
+final selectedQuantityProvider = StateProvider<String?>((ref) => null);
+final currentProductIdProvider = StateProvider<String?>((ref) => null);
 
-/// ProductPage - a single page that shows a product's details from Firestore.
-/// We pass only the productId, then fetch product data from Firestore.
-class ProductPage extends StatefulWidget {
-  final String productId; // Firestore document ID
+class ProductPage extends ConsumerStatefulWidget {
+  final String productId;
+  final List<String>? quantities;
+  Map<String, num>? prices;
+  final String? selectedQuantity;
+  Map<String, dynamic>? productIds;
+  Map<String, dynamic>? productName;
 
-  const ProductPage({super.key, required this.productId});
+  ProductPage(
+      {super.key,
+      required this.productId,
+      this.quantities,
+      this.prices,
+      this.selectedQuantity,
+      this.productIds,
+      this.productName});
 
   @override
-  State<ProductPage> createState() => _ProductPageState();
+  ConsumerState<ProductPage> createState() => _ProductPageState();
 }
 
-class _ProductPageState extends State<ProductPage>
+class _ProductPageState extends ConsumerState<ProductPage>
     with WidgetsBindingObserver, AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
@@ -34,21 +42,41 @@ class _ProductPageState extends State<ProductPage>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this); // <-- Use 'this', not 'widget'
+    WidgetsBinding.instance.addObserver(this);
     _pageController = PageController();
+    // Initialize currentProductIdProvider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(currentProductIdProvider.notifier).state = widget.productId;
+      ref.read(selectedQuantityProvider.notifier).state =
+          widget.selectedQuantity ??
+              (widget.quantities?.isNotEmpty ?? false
+                  ? widget.quantities!.first
+                  : '');
+      print(
+          '🔄 Initialized selectedQuantityProvider with: ${ref.read(selectedQuantityProvider)}, productId: ${ref.read(currentProductIdProvider)}');
+    });
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance
-        .removeObserver(this); // <-- Use 'this', not 'widget'
+    WidgetsBinding.instance.removeObserver(this);
     _pageController.dispose();
     super.dispose();
+  }
+
+  void onQuantitySelected(String newProductId, String newQuantity) {
+    ref.read(currentProductIdProvider.notifier).state = newProductId;
+    ref.read(selectedQuantityProvider.notifier).state = newQuantity;
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final selectedQuantity = ref.watch(selectedQuantityProvider);
+    final currentProductId =
+        ref.watch(currentProductIdProvider) ?? widget.productId;
+
     return Scaffold(
       appBar: AppBar(
         surfaceTintColor: Colors.white,
@@ -97,7 +125,6 @@ class _ProductPageState extends State<ProductPage>
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 12,
-                              fontWeight: FontWeight.bold,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -117,7 +144,7 @@ class _ProductPageState extends State<ProductPage>
             child: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
               future: FirebaseFirestore.instance
                   .collection('Products')
-                  .doc(widget.productId)
+                  .doc(currentProductId)
                   .get(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -146,9 +173,18 @@ class _ProductPageState extends State<ProductPage>
                 }
                 final docData = snapshot.data!.data()!;
                 return ProductContent(
+                  productIDs: widget.productIds,
+                  productNames: widget.productName,
+                  prices: widget.prices,
                   docData: docData,
                   pageController: _pageController,
-                  productId: widget.productId,
+                  productId: currentProductId,
+                  quantities: widget.quantities,
+                  selectedQuantity: selectedQuantity,
+                  onQuantitySelected: (newProductId) {
+                    final newQty = docData['Qty'] ?? selectedQuantity;
+                    onQuantitySelected(newProductId, newQty);
+                  },
                 );
               },
             ),

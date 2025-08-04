@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kealthy_food/view/Cart/cart.dart';
 import 'package:kealthy_food/view/Cart/cart_controller.dart';
 
+
 // Provider for total item count in cart
 final cartItemCountProvider = StateProvider<int>((ref) => 0);
 
@@ -35,9 +36,9 @@ class CartContainer extends ConsumerWidget {
       },
       child: Container(
         height: 70,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(10),
         decoration: const BoxDecoration(
-          // color:  Color.fromARGB(255, 249, 227, 201),
+          // color: Colors.white,
           gradient: LinearGradient(
             colors: [
               Color.fromARGB(255, 255, 255, 255), // Light blue
@@ -48,7 +49,7 @@ class CartContainer extends ConsumerWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Color.fromARGB(31, 173, 170, 170),
+              color: Colors.black12,
               blurRadius: 3,
               spreadRadius: 5,
             ),
@@ -62,25 +63,29 @@ class CartContainer extends ConsumerWidget {
         ),
         child: Row(
           children: [
-            Image.asset('lib/assets/images/bag.png',
-                width: 30, color: Colors.black),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Cart',
-                  style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black),
-                ),
-                Text(
-                  '$totalItems item(s) selected',
-                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.black),
-                ),
-              ],
+            Image.asset(
+              'lib/assets/images/bag.png',
+              width: 30,
+              color: Colors.black,
             ),
+            const SizedBox(width: 10),
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(
+                'Cart',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                ),
+              ),
+              Text(
+                '$totalItems item(s) selected',
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  color: Colors.black,
+                ),
+              ),
+            ]),
             const Spacer(),
             const SizedBox(width: 10),
             Container(
@@ -97,13 +102,12 @@ class CartContainer extends ConsumerWidget {
                   end: Alignment.bottomCenter,
                 ),
                 shape: BoxShape.circle,
-                color: Colors
-                    .grey.shade200, // Change if you want a different background
+                color: Colors.grey.shade200,
               ),
               child: const Icon(
                 Icons.arrow_forward_ios,
                 color: Colors.black,
-                size: 18, // slightly smaller inside circle
+                size: 18,
               ),
             ),
           ],
