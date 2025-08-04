@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import 'package:kealthy_food/view/Cart/cart_controller.dart';
 import 'package:kealthy_food/view/product/product_page.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -35,6 +35,7 @@ class TrialDish {
   final String whatisitusedfor;
   final String sugar;
   final String carbs;
+  final Map<String, int>? quantitySoh;
 
   TrialDish({
     required this.id,
@@ -60,6 +61,7 @@ class TrialDish {
     required this.whatisitusedfor,
     required this.sugar,
     required this.carbs,
+    this.quantitySoh,
   });
 
   factory TrialDish.fromFirestore(
@@ -68,6 +70,7 @@ class TrialDish {
       List<String> quantities,
       Map<String, num> quantityPrices,
       Map<String, dynamic> quantityIds,
+      Map<String, int> quantitySoh,
       Map<String, dynamic> productNames) {
     // Create set of unique prices from quantityPrices
     final prices = quantityPrices.values.toSet();
@@ -101,6 +104,7 @@ class TrialDish {
       imageurl: (data['ImageUrl'] is List && data['ImageUrl'].isNotEmpty)
           ? data['ImageUrl'][0]
           : '',
+      quantitySoh: quantitySoh,
     );
   }
 }
@@ -112,12 +116,11 @@ final dishesProvider =
       .where('Type', isEqualTo: categoryName)
       .snapshots()
       .map((snapshot) {
-    final dishMap =
-        <String, Map<String, dynamic>>{}; // Base name to document data
-    final quantityMap = <String, List<String>>{}; // Base name to quantities
-    final priceMap =
-        <String, Map<String, num>>{}; // Base name to quantity:price
-    final baseNameMap = <String, String>{}; // Dish ID to base name
+    final dishMap = <String, Map<String, dynamic>>{};
+    final quantityMap = <String, List<String>>{};
+    final priceMap = <String, Map<String, num>>{};
+    final baseNameMap = <String, String>{};
+    final quantitySohMap = <String, Map<String, int>>{};
     for (var doc in snapshot.docs) {
       final fullName = doc.data()['Name']?.toString() ?? '';
       final quantity = doc.data()['Qty']?.toString() ?? '';
@@ -138,6 +141,9 @@ final dishesProvider =
 
       // Collect unique quantities and prices for this base name
       if (quantity.isNotEmpty) {
+        quantitySohMap[baseName] = quantitySohMap[baseName] ?? {};
+        quantitySohMap[baseName]![quantity] =
+            int.tryParse(doc.data()['SOH'].toString()) ?? 0;
         quantityMap[baseName] = quantityMap[baseName] ?? [];
         priceMap[baseName] = priceMap[baseName] ?? {};
         if (!quantityMap[baseName]!.contains(quantity)) {
@@ -157,8 +163,11 @@ final dishesProvider =
     return dishMap.entries.map((entry) {
       final baseName = entry.key;
       final quantities = quantityMap[baseName] ?? ['Default'];
-      quantities.sort();
-
+      quantities.sort((a, b) {
+        final aNum = int.tryParse(RegExp(r'\d+').stringMatch(a) ?? '') ?? 0;
+        final bNum = int.tryParse(RegExp(r'\d+').stringMatch(b) ?? '') ?? 0;
+        return bNum.compareTo(aNum);
+      });
       final priceData = priceMap[baseName] ?? {};
 
       final quantityIds = <String, dynamic>{};
@@ -185,6 +194,7 @@ final dishesProvider =
         quantities,
         quantityPrices,
         quantityIds,
+        quantitySohMap[baseName] ?? {},
         productNames,
       );
     }).toList();
@@ -205,7 +215,7 @@ class FoodSubCategoryPage extends ConsumerStatefulWidget {
 
 class _FoodSubCategoryPageState extends ConsumerState<FoodSubCategoryPage> {
   final TextEditingController _suggestionController = TextEditingController();
-  final Map<String, String> _selectedQuantities = {};
+  final Map<String, String?> _selectedQuantities = {};
 
   @override
   Widget build(BuildContext context) {
@@ -386,136 +396,234 @@ class _FoodSubCategoryPageState extends ConsumerState<FoodSubCategoryPage> {
   }
 
   Widget _buildFoodItem(TrialDish dish) {
+    const till11 = [
+      'Herbrost Chicken Veggie Bowl',
+      'Buttercraft Beef Tenderloin Bowl',
+      'Masalacraft Tuna Bowl',
+      'Millet Pasta Veggie Bowl',
+      'Mushroom Mix Thai Bowl',
+      'Non-Veg Style Cauli Rice Bowl',
+      'Quinoa & Tuna Fusion Bowl',
+      'Soya Paneer Bowl',
+      'Egg Veggie Power Salad',
+      'Chicken Veggie Power Salad',
+    ];
+
+    const after11 = [
+      'Herbrost Beef Tenderloin Bowl',
+      'Buttercraft Chicken Bowl',
+      'Herbrost Tuna Fish Bowl',
+      'Millet Pasta Chicken Bowl',
+      'Tuna & Vegetable Protein Bowl',
+      'Mushroom Mix Conti Bowl',
+      'Veg Style Cauli Rice Bowl',
+      'Soya Paneer Bowl',
+      'Egg Veggie Power Salad',
+      'Chicken Veggie Power Salad',
+    ];
+
+    const common = [
+      'Soya Paneer Bowl',
+      'Egg Veggie Power Salad',
+      'Chicken Veggie Power Salad',
+    ];
+
+    final isTill11 = till11.contains(dish.name);
+    final isAfter11 = after11.contains(dish.name);
+    final isCommon = common.contains(dish.name);
+
+    final currentHour = DateTime.now().hour + DateTime.now().minute / 60.0;
+
+    bool isInSlot1 = currentHour >= 17.0 || currentHour < 11.0;
+    bool isInSlot2 = currentHour >= 11.0 && currentHour < 17.0;
+
+    final isInList = isTill11 || isAfter11 || isCommon;
+
+    final isAvailableNow = !isInList ||
+        isCommon ||
+        (isTill11 && isInSlot1) ||
+        (isAfter11 && isInSlot2);
+
     _selectedQuantities[dish.id] ??= dish.quantities.first;
 
-    final selectedPrice =
-        dish.quantityPrices[_selectedQuantities[dish.id]] ?? dish.price;
+    final availableQuantities = dish.quantities
+        .where((q) => (dish.quantitySoh?[q] ?? dish.stock) > 0)
+        .toList()
+      ..sort((a, b) => (dish.quantityPrices[b] ?? dish.price)
+          .compareTo(dish.quantityPrices[a] ?? dish.price));
+    if (!availableQuantities.contains(_selectedQuantities[dish.id])) {
+      _selectedQuantities[dish.id] =
+          availableQuantities.isNotEmpty ? availableQuantities.first : null;
+    }
+    final selectedQuantity = _selectedQuantities[dish.id];
+    final selectedPrice = selectedQuantity != null
+        ? dish.quantityPrices[selectedQuantity] ?? dish.price
+        : dish.price;
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          CupertinoPageRoute(
-            builder: (context) => ProductPage(
-                productIds: dish.quantityIds,
-                prices: dish.quantityPrices,
-                productId: dish.id,
-                quantities: dish.quantities,
-                selectedQuantity: _selectedQuantities[dish.id],
-                productName: dish.productNames),
-          ),
-        );
-      },
-      child: Stack(
-        children: [
-          Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(5),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.grey.shade300, width: 1),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (dish.imageurl.isNotEmpty)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: CachedNetworkImage(
-                      imageUrl: dish.imageurl,
-                      width: double.infinity,
-                      height: MediaQuery.of(context).size.width * 0.32,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Shimmer.fromColors(
-                        baseColor: Colors.grey[300]!,
-                        highlightColor: Colors.grey[100]!,
-                        child: Container(
+    final isOutOfStock =
+        dish.quantitySoh?.values.every((soh) => soh <= 0) ?? dish.stock == 0;
+
+    return IgnorePointer(
+      ignoring: isOutOfStock || !isAvailableNow,
+      child: Opacity(
+        opacity: (isOutOfStock || !isAvailableNow) ? 0.5 : 1,
+        child: GestureDetector(
+          onTap: () {
+            if (isAvailableNow && !isOutOfStock) {
+              Navigator.push(
+                context,
+                CupertinoPageRoute(
+                  builder: (context) => ProductPage(
+                      productIds: dish.quantityIds,
+                      prices: dish.quantityPrices,
+                      productId: dish.id,
+                      quantities: dish.quantities,
+                      selectedQuantity: _selectedQuantities[dish.id],
+                      productName: dish.productNames),
+                ),
+              );
+            }
+          },
+          child: Stack(
+            children: [
+              Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.grey.shade300, width: 1),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (dish.imageurl.isNotEmpty)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: CachedNetworkImage(
+                          imageUrl: dish.imageurl,
                           width: double.infinity,
-                          height: 200,
-                          color: Colors.white,
+                          height: MediaQuery.of(context).size.width * 0.32,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              width: double.infinity,
+                              height: 200,
+                              color: Colors.white,
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            height: 200,
+                            color: Colors.grey[200],
+                            child: const Center(
+                                child: Icon(Icons.image_not_supported)),
+                          ),
                         ),
                       ),
-                      errorWidget: (context, url, error) => Container(
-                        height: 200,
-                        color: Colors.grey[200],
-                        child: const Center(
-                            child: Icon(Icons.image_not_supported)),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: Text(
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 3,
+                        dish.name,
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
-                const SizedBox(height: 10),
-                Expanded(
-                  child: Text(
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 3,
-                    dish.name,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Text(
-                      "\u20B9$selectedPrice",
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        color: dish.stock > 0 ? Colors.black87 : Colors.grey,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const Spacer(),
-                    DropdownButton<String>(
-                      value: _selectedQuantities[dish.id],
-                      items: dish.quantities.map((String quantity) {
-                        return DropdownMenuItem<String>(
-                          value: quantity,
-                          child: Text(
-                            quantity,
-                            style: GoogleFonts.poppins(
-                                fontSize: 14, color: Colors.black),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Text(
+                          "\u20B9$selectedPrice",
+                          style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            color: !isOutOfStock ? Colors.black87 : Colors.grey,
+                            fontWeight: FontWeight.w600,
                           ),
-                        );
-                      }).toList(),
-                      onChanged: dish.stock > 0
-                          ? (String? newValue) {
-                              setState(() {
-                                _selectedQuantities[dish.id] = newValue!;
-                                print(
-                                    '🔄 Selected quantity for ${dish.name}: $newValue, Price: ${dish.quantityPrices[newValue]}');
-                              });
-                            }
-                          : null,
+                        ),
+                        const Spacer(),
+                        DropdownButton<String>(
+                          value: availableQuantities
+                                  .contains(_selectedQuantities[dish.id])
+                              ? _selectedQuantities[dish.id]
+                              : (availableQuantities.isNotEmpty
+                                  ? availableQuantities.first
+                                  : null),
+                          items: (availableQuantities.toList()
+                                ..sort((a, b) {
+                                  final aNum = int.tryParse(
+                                          RegExp(r'\d+').stringMatch(a) ??
+                                              '') ??
+                                      0;
+                                  final bNum = int.tryParse(
+                                          RegExp(r'\d+').stringMatch(b) ??
+                                              '') ??
+                                      0;
+                                  return bNum.compareTo(aNum);
+                                }))
+                              .map((String quantity) {
+                            final isAvailable =
+                                (dish.quantitySoh?[quantity] ?? dish.stock) > 0;
+
+                            return DropdownMenuItem<String>(
+                              value: quantity,
+                              enabled: isAvailable,
+                              child: IgnorePointer(
+                                ignoring: !isAvailable,
+                                child: Opacity(
+                                  opacity: !isAvailable ? 0.5 : 1,
+                                  child: Text(
+                                    quantity,
+                                    style: GoogleFonts.poppins(
+                                        fontSize: 14, color: Colors.black),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: dish.stock > 0
+                              ? (String? newValue) {
+                                  setState(() {
+                                    _selectedQuantities[dish.id] = newValue!;
+                                    print(
+                                        '🔄 Selected quantity for ${dish.name}: $newValue, Price: ${dish.quantityPrices[newValue]}');
+                                  });
+                                }
+                              : null,
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-          if (dish.stock == 0)
-            Positioned(
-              top: 10,
-              left: 10,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade600,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  'Out of Stock',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+              ),
+              if (isOutOfStock)
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade600,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      'Out of Stock',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }
